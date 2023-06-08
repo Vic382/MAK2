@@ -1,0 +1,39 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+ExecuteProcess( 'SLS_CAL_CUB_SLS_SALES_PLAN_SWITCH_SALES_GROUP_PRICE');
+ExecuteProcess( 'SLS_CAL_CUB_SLS_SALES_PLAN_SWITCH_SALES_GROUP_VOL');
+
+#modif DIMO le 25/11/2021 on exécute le process de SWITCH dans SLS_Price qu'en current phase. RFC non concernée.
+
+C_zSELECT = 'zSELECT';
+vClients = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+Phase_En_Cours = CellGetS(C_zSELECT, vClients, 'Current Phase Sales');
+
+IF (Phase_En_Cours @='Current Phase');
+
+ExecuteProcess('SLS_CAL_CUB_SLS_PRICE_SWITCH_SALES_GROUP');
+
+Endif;
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#mise à jour sécurité Sales Group sur Customer
+ExecuteProcess( 'zSecu_Customer');
+#endregion

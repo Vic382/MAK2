@@ -1,0 +1,33 @@
+{
+	"@type":"Process",
+	"Name":"SLS_CAL_CUB_SLS_SALES_PLAN_REPART",
+	"HasSecurityAccess":false,
+	"Code@Code.link":"SLS_CAL_CUB_SLS_SALES_PLAN_REPART.ti",
+	"UIData":"_ParameterConstraints=e30=€",
+	"DataSource":
+	{
+		"Type":"TM1DimensionSubset",
+		"dataSourceNameForClient":"SLS_SALES_PLAN_IND",
+		"dataSourceNameForServer":"SLS_SALES_PLAN_IND",
+		"subset":"Price_20_Alcohol"
+	},
+	"Parameters":
+	[
+		{
+			"Name":"v_indic_subset",
+			"Prompt":"",
+			"Value":"",
+			"Type":"String"
+		}
+	],
+	"Variables":
+	[
+		{
+			"Name":"v_SLS_SALES_PLAN_IND",
+			"Type":"String",
+			"Position":1,
+			"StartByte":0,
+			"EndByte":0
+		}
+	]
+}

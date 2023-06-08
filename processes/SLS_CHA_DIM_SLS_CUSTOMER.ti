@@ -1,0 +1,975 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#############################################################################################################################
+#                                               DESCRIPTION DU PROCESSUS                                                    #
+#                                                                                                                           #
+# Date :   29/08/2018                                                                                                       #
+#                                                                                                                           #
+# Fait par :   Elisabeth MOUNIER       Modification le 11/03/2019 par Ann BESNARD : création de la dim PRICE, + Revu Alias  #
+#                                                                                                                           #
+# Action : Processus de chargement des dimensions SLS_CUSTOMER,  SLS_INCOTERM,                                              #
+#	SLS_SALES_GROUP, SLS_PAYER, SLS_SOLD_TO, SLS_PAY_TERMS et	                                                            #
+#	SLS_SHIP_COND                                  					                                                        #
+#                                                                                                                           #
+#############################################################################################################################
+
+SetInputCharacterSet('TM1CS_UTF8');
+
+#====================================#
+#             Déclaration des variables                   #
+#====================================#
+
+#--------------------Cubes--------------------#
+C_zPROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+C_zPARAM = 'zPARAM';
+C_Attr_CUSTOMER = '}ElementAttributes_SLS_CUSTOMER';
+
+#--------------------Dimensions--------------------#
+
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_Attr_CUSTOMER = '}ElementAttributes_SLS_CUSTOMER';
+D_CUSTOMER_PRICE = 'SLS_CUSTOMER_PRICE';
+D_INCOTERM = 'SLS_INCOTERM';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_zSALES_GROUP = 'zSALES_GROUP';
+D_PAYER = 'SLS_PAYER';
+D_SOLD_TO = 'SLS_SOLD_TO';
+D_MATERIAL = '1_G_MATERIAL';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+
+
+#DimensionDeleteAllElements(D_CUSTOMER);
+#DimensionDeleteAllElements(D_CUSTOMER_PRICE);
+#DimensionDeleteAllElements(D_INCOTERM);
+#DimensionDeleteAllElements(D_SALES_GROUP);
+#DimensionDeleteAllElements(D_PAYER);
+#DimensionDeleteAllElements(D_SOLD_TO);
+#ProcessBreak;
+
+#--------------------Elements--------------------#
+
+TOT_CUST = 'TOTAL_CUSTOMER';
+TOT_INCO = 'TOTAL_INCOTERM';
+TOT_SALES_GROUP = 'TOTAL_SALES_GROUP';
+TOT_PAYER = 'TOTAL_PAYER';
+TOT_SOLD_TO = 'TOTAL_SOLD_TO';
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_temp = 'z_temp_' | vUSER |'_' | vPRO_NAME;
+
+
+#--------------------Sources de données--------------------#
+DatasourceNameForServer = CellGetS( C_zPROCESS_ADMINISTRATION, vPRO_NAME, 'DATASOURCE_NAME_FOR_SERVER', 'Comment');
+
+
+
+# Init des totaux
+
+If( DIMIX( D_CUSTOMER, TOT_CUST) = 0);
+	DimensionElementInsert(D_CUSTOMER, '', TOT_CUST, 'C');
+EndIf;
+
+If( DIMIX( D_INCOTERM, TOT_INCO) = 0);
+	DimensionElementInsert(D_INCOTERM, '', TOT_INCO, 'C');
+EndIf;
+
+If( DIMIX( D_SALES_GROUP, TOT_SALES_GROUP) = 0);
+	DimensionElementInsert(D_SALES_GROUP, '', TOT_SALES_GROUP, 'C');
+EndIf;
+
+If( DIMIX( D_PAYER, TOT_PAYER) = 0);
+	DimensionElementInsert(D_PAYER, '', TOT_PAYER, 'C');
+EndIf;
+
+If( DIMIX( D_SOLD_TO, TOT_SOLD_TO) = 0);
+	DimensionElementInsert(D_SOLD_TO, '', TOT_SOLD_TO, 'C');
+EndIf;
+
+
+
+#Init N/A 
+
+If( DIMIX( D_CUSTOMER, 'N/A_CUSTOMER') = 0);
+	DimensionElementInsert(D_CUSTOMER, '','N/A_CUSTOMER', 'N');
+	DimensionElementComponentAdd(D_CUSTOMER, TOT_CUST, 'N/A_CUSTOMER', 1);
+EndIf;
+
+If( DIMIX(D_INCOTERM, 'N/A_INCOTERM') = 0);
+	DimensionElementInsert(D_INCOTERM, '','N/A_INCOTERM', 'N');
+	DimensionElementComponentAdd(D_INCOTERM, TOT_INCO, 'N/A_INCOTERM', 1);
+EndIf;
+
+If( DIMIX(D_SALES_GROUP,'N/A_SALES_GROUP') = 0);
+	DimensionElementInsert(D_SALES_GROUP, '','N/A_SALES_GROUP', 'N');
+	DimensionElementComponentAdd(D_SALES_GROUP, TOT_SALES_GROUP, 'N/A_SALES_GROUP', 1);
+EndIf;
+
+If( DIMIX( D_PAYER,'N/A_PAYER') = 0);
+	DimensionElementInsert(D_PAYER, '','N/A_PAYER', 'N');
+	DimensionElementComponentAdd(D_PAYER,TOT_PAYER, 'N/A_PAYER', 1);
+EndIf;
+
+If( DIMIX(D_SOLD_TO, 'N/A_SOLD_TO') = 0);
+	DimensionElementInsert(D_SOLD_TO, '', 'N/A_SOLD_TO', 'N');
+	DimensionElementComponentAdd(D_SOLD_TO, TOT_SOLD_TO, 'N/A_SOLD_TO', 1);
+EndIf;
+
+If( DIMIX(D_DISTRIB_CHANNEL, 'N/A_DISTRIB_CHANNEL') = 0);
+	DimensionElementInsert(D_DISTRIB_CHANNEL, '', 'N/A_DISTRIB_CHANNEL', 'N');
+	DimensionElementComponentAdd(D_DISTRIB_CHANNEL, 'TOTAL_DISTRIB_CHANNEL', 'N/A_DISTRIB_CHANNEL', 1);
+EndIf;
+
+
+
+#Création d'un subset avec tous les attributs
+SubsetDestroy(D_Attr_CUSTOMER, subset_temp);
+MDX_Attr = '{{['|D_Attr_CUSTOMER|'].[Caption]},{TM1SUBSETALL(['|D_Attr_CUSTOMER|'])}}';
+SubsetCreatebyMDX( subset_temp, MDX_Attr, 1 );
+SubsetElementDelete(D_Attr_CUSTOMER, subset_temp, 1);
+Subsize = SubsetGetSize(D_Attr_CUSTOMER, subset_temp);
+
+#Parcours du subset
+elem_nb = 1;
+While(elem_nb<=Subsize);
+	#Vérification du flag pour chacun des éléments du subset
+    elem = SubsetGetElementName( D_Attr_CUSTOMER, subset_temp, elem_nb);
+    Flag = AttrN(D_Attr_CUSTOMER, elem,'Flag_Hier');
+    #Si l'attr doit être une hiérarchie : suppression de la hiérarchie le temps de la construction de la hiérarchie principale pour éviter les collisions
+    If(Flag = 1);
+        HierarchyDestroy( D_CUSTOMER, elem );
+	EndIf;    
+	elem_nb = elem_nb + 1;
+End;
+
+CellPutS('', C_zPARAM,'Concat_Nv_Cust','Value');
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#Chargement de la dimension SLS_CUSTOMER
+#Concaténation pour rendre le ShipTo unique
+vShipTo_code = ShipTo_code|'_'|Sales_Org_code|Distrib_code|Division_code ;
+
+
+
+########################## SLS_CUSTOMER - Hiérarchie principale (IC) ###############################
+
+If( IC1_code @= '');
+	IC1_code = 'Other';
+EndIf;
+If(IC2_code @= ''); 
+	IC2_code = 'Other - '|IC1_code;
+EndIf;
+If(IC3_code @= '');
+	IC3_code = 'Other - '|IC2_code ; 
+EndIf;
+
+#concaténation du numéro de l'IC avec son code pour unicité, pour éviter par exemple IC2 = IC3
+IC1_code = 'IC1 - '|IC1_code;
+IC2_code = 'IC2 - '|IC2_code;
+IC3_code = 'IC3 - '|IC3_code;
+
+
+#Insertion de Ship-to-party, IC3, IC2 et IC1 dans la dimension SLS_CUSTOMER
+
+#-------------Ship To Party-------------#
+If( DIMIX( D_CUSTOMER, vShipTo_code) = 0);
+	DimensionElementInsert(D_CUSTOMER, '', vShipTo_code, 'N');
+    #On flag les nouveaux customers
+    Concat = CellGetS(C_zPARAM,'Concat_Nv_Cust','Value');
+    Concat = Concat |';'|vShipTo_Code;
+    CellPutS(Concat, C_zPARAM,'Concat_Nv_Cust','Value');
+EndIf;
+
+If( DIMIX( D_CUSTOMER_PRICE, vShipTo_code) = 0);
+	DimensionElementInsert(D_CUSTOMER_PRICE, '', vShipTo_code, 'N');
+EndIf;
+
+#------------------IC3------------------#
+If( DIMIX( D_CUSTOMER, IC3_code) = 0);
+	DimensionElementInsert(D_CUSTOMER, '', IC3_code, 'C');
+EndIf;
+If( DIMIX( D_CUSTOMER_PRICE, IC3_code) = 0);
+	DimensionElementInsert(D_CUSTOMER_PRICE, '', IC3_code, 'N');
+EndIf;
+
+#------------------IC2------------------#
+If( DIMIX( D_CUSTOMER, IC2_code) = 0);
+	DimensionElementInsert(D_CUSTOMER, '', IC2_code, 'C');
+EndIf;
+If( DIMIX( D_CUSTOMER_PRICE, IC2_code) = 0);
+	DimensionElementInsert(D_CUSTOMER_PRICE, '', IC2_code, 'N');
+EndIf;
+
+#------------------IC1------------------#
+If( DIMIX( D_CUSTOMER, IC1_code) = 0);
+	DimensionElementInsert(D_CUSTOMER, '', IC1_code, 'C');
+EndIf;
+If( DIMIX( D_CUSTOMER_PRICE, IC1_code) = 0);
+	DimensionElementInsert(D_CUSTOMER_PRICE, '', IC1_code, 'N');
+EndIf;
+
+
+#Création de la hiérarchie Tot > IC1 > IC2 > IC3 > Ship-to-party
+#Attention, un Ship-to-party n'est pas toujours rattaché à un IC2 ou un IC3
+
+#itemskip;
+If( IC3_code @<> '');
+
+	vConso_Cust_code = ELPAR(D_CUSTOMER, vShipTo_code, 1);
+	If(vConso_Cust_code @<> '');
+		DimensionElementComponentDeleteDirect(D_CUSTOMER, vConso_Cust_code, vShipTo_code);
+	EndIf;
+	DimensionElementComponentAddDirect(D_CUSTOMER, IC3_code, vShipTo_code, 1);
+
+	#si IC2 existe, IC2>IC3, sinon IC1>IC3
+	If(IC2_code @<> '');
+		vConso_IC3_code = ELPAR(D_CUSTOMER, IC3_code, 1);
+		If(vConso_IC3_code @<> '');
+			DimensionElementComponentDeleteDirect(D_CUSTOMER, vConso_IC3_code, IC3_code);
+		EndIf;
+		DimensionElementComponentAddDirect(D_CUSTOMER, IC2_code, IC3_code, 1);
+
+		vConso_IC2_code = ELPAR(D_CUSTOMER, IC2_code, 1);
+		If(vConso_IC2_code @<> '');
+			DimensionElementComponentDeleteDirect(D_CUSTOMER, vConso_IC2_code, IC2_code);
+		EndIf;
+		DimensionElementComponentAddDirect(D_CUSTOMER, IC1_code, IC2_code, 1);
+
+	Else;
+	
+		vConso_IC3_code = ELPAR(D_CUSTOMER, IC3_code, 1);
+		If(vConso_IC3_code @<> '');
+			DimensionElementComponentDeleteDirect(D_CUSTOMER, vConso_IC3_code, IC3_code);
+		EndIf;
+		DimensionElementComponentAddDirect(D_CUSTOMER, IC1_code, IC3_code, 1);
+
+	EndIf;
+
+ElseIf( IC2_code @<> '');
+
+	vConso_Cust_code = ELPAR(D_CUSTOMER, vShipTo_code, 1);
+	If(vConso_Cust_code @<> '');
+		DimensionElementComponentDeleteDirect(D_CUSTOMER, vConso_Cust_code, vShipTo_code);
+	EndIf;
+	DimensionElementComponentAddDirect(D_CUSTOMER, IC2_code, vShipTo_code, 1);
+
+	vConso_IC2_code = ELPAR(D_CUSTOMER, IC2_code, 1);
+	If(vConso_IC2_code @<> '');
+		DimensionElementComponentDeleteDirect(D_CUSTOMER, vConso_IC2_code, IC2_code);
+	EndIf;
+	DimensionElementComponentAddDirect(D_CUSTOMER, IC1_code, IC2_code, 1);
+
+Else;
+
+	vConso_Cust_code = ELPAR(D_CUSTOMER, vShipTo_code, 1);
+	If(vConso_Cust_code @<> '');
+		DimensionElementComponentDeleteDirect(D_CUSTOMER, vConso_Cust_code, vShipTo_code);
+	EndIf;
+	DimensionElementComponentAddDirect(D_CUSTOMER, IC1_code, vShipTo_code, 1);
+
+EndIf;
+
+vConso_IC1_code = ELPAR(D_CUSTOMER,IC1_code, 1);
+If(vConso_IC1_code @<> '');
+	DimensionElementComponentDeleteDirect(D_CUSTOMER, vConso_IC1_code, IC1_code);
+EndIf;
+DimensionElementComponentAddDirect(D_CUSTOMER, TOT_CUST, IC1_code, 1);
+
+
+
+########################## SLS_INCOTERM ###############################
+
+#Insertion des Incoterms dans la dimension SLS_INCOTERM
+
+If(Incoterm1_code @<> '');
+	If( DIMIX( D_INCOTERM, Incoterm1_code) = 0);
+		DimensionElementInsert(D_INCOTERM, '', Incoterm1_code, 'N');
+	EndIf;
+
+	#Création de la hiérarchie Tot > Incoterm
+	DimensionElementComponentAdd(D_INCOTERM, TOT_INCO, Incoterm1_code, 1);
+
+EndIf;
+
+########################## SLS_SALES_GROUP ###############################
+
+#Insertion des Sales Group dans la dimension SLS_SALES_GROUP
+
+If(Sales_Group_code @<> '');
+	If( DIMIX( D_SALES_GROUP, Sales_Group_code) = 0);
+		DimensionElementInsert(D_SALES_GROUP, '', Sales_Group_code, 'N');
+	EndIf;
+
+	#Création de la hiérarchie Tot > Sales Group
+	DimensionElementComponentAdd(D_SALES_GROUP, TOT_SALES_GROUP, Sales_Group_code, 1);
+    
+    
+    If( DIMIX( D_zSALES_GROUP, Sales_Group_code) = 0);
+		DimensionElementInsert(D_zSALES_GROUP, '', Sales_Group_code, 'N');
+	EndIf;
+
+EndIf;
+
+
+
+########################## SLS_PAYER ###############################
+
+#Insertion des Payer dans la dimension SLS_PAYER
+
+#Lecture de la cellule Payer_code
+If(Payer_code @<> '');
+	If( DIMIX( D_PAYER, Payer_code) = 0);
+		DimensionElementInsert(D_PAYER, '', Payer_code, 'N');
+	EndIf;
+
+	#Création de la hiérarchie Tot > Payer
+	DimensionElementComponentAdd(D_PAYER, TOT_PAYER, Payer_code, 1);
+
+EndIf;
+
+#Lecture de la cellule Payer_role
+If(Payer_role @<> '');
+	If( DIMIX( D_PAYER, ShipTo_code) = 0);
+		DimensionElementInsert(D_PAYER, '', ShipTo_code, 'N');
+	EndIf;
+
+	#Création de la hiérarchie Tot > Payer
+	DimensionElementComponentAdd(D_PAYER, TOT_PAYER, ShipTo_code, 1);
+
+EndIf;
+
+
+########################## SLS_SOLD_TO ###############################
+
+#Insertion des SoldTo dans la dimension SLS_SOLD_TO
+
+
+
+#Lecture de la cellule SoldTo_code
+If(SoldTo_code @<> '');
+	Longueur = LONG(SoldTo_Code);
+	Debut = Longueur-5;
+	SoldTo_Code = SUBST(SoldTo_code, Debut, 6);
+	If( DIMIX( D_SOLD_TO, SoldTo_code) = 0);
+		DimensionElementInsert(D_SOLD_TO, '', SoldTo_code, 'N');
+	EndIf;
+
+	#Création de la hiérarchie Tot > SoldTo
+	DimensionElementComponentAdd(D_SOLD_TO, TOT_SOLD_TO, SoldTo_code, 1);
+
+EndIf;
+
+
+
+#Lecture de la cellule SoldTo_role
+If(SoldTo_role @<> '');
+	If( DIMIX( D_SOLD_TO, ShipTo_code) = 0);
+		DimensionElementInsert(D_SOLD_TO, '', ShipTo_code, 'N');
+	EndIf;
+
+	#Création de la hiérarchie Tot > Payer
+	DimensionElementComponentAdd(D_SOLD_TO, TOT_SOLD_TO, ShipTo_code, 1);
+
+EndIf;
+
+
+########################## Création de divisions ###############################
+#Création de divisions
+Div = 'D_' | Division_code;
+If(DIMIX(D_MATERIAL, Div) = 0);
+	DimensionElementInsert(D_MATERIAL, '', Div, 'N');
+	DimensionElementComponentAdd(D_MATERIAL, 'TOTAL_MATERIAL', Div, 1);
+EndIf;
+
+If(DIMIX(D_MATERIAL_PLAN, Div) = 0);
+	DimensionElementInsert(D_MATERIAL_PLAN, '', Div, 'N');
+	DimensionElementComponentAdd(D_MATERIAL_PLAN, 'TOTAL_PLANNING_MATERIAL', Div, 1);
+EndIf;
+
+
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#concaténation pour que le ShipTo soit unique
+vShipTo_code = ShipTo_code | '_' | Sales_Org_code | Distrib_code | Division_code ;
+
+Sales_Org_desc = AttrS( D_SALES_ORG, Sales_Org_Code, 'Caption');
+Distrib_desc = AttrS(D_DISTRIB_CHANNEL, Distrib_code, 'Caption');
+Division_desc = AttrS(D_MATERIAL_PLAN, 'D_'|Division_code, 'Description');
+vShipTo_desc = ShipTo_code | ' - ' |  ShipTo_desc | ' _ ' | Sales_Org_desc | ' _ ' | Distrib_desc | ' _ ' | Division_desc ;
+
+########################## SLS_CUSTOMER - Hiérarchie principale (IC) ###############################
+
+#Attribut Nouveau Customer
+Nvx_Cust = CellGetS(C_zPARAM, 'Concat_Nv_Cust','Value');
+If(SCAN(vShipTo_code, Nvx_Cust)<>0);
+	AttrPutN(1, D_CUSTOMER, vShipTo_code, 'Nv_Cust');
+    AttrPutN(1, D_CUSTOMER_PRICE, vShipTo_code, 'Nv_Cust');
+EndIf;
+
+#Noms Ics
+If( IC1_code @= '');
+	IC1_code = 'Other';
+EndIf;
+If(IC2_code @= ''); 
+	IC2_code = 'Other - '|IC1_code;
+EndIf;
+If(IC3_code @= '');
+	IC3_code = 'Other - '|IC2_code ; 
+EndIf;
+
+
+#concaténation du numéro de l'IC avec son code pour unicité, pour éviter par exemple IC2 = IC3
+vIC1_code = 'IC1 - '|IC1_code;
+vIC2_code = 'IC2 - '|IC2_code;
+vIC3_code = 'IC3 - '|IC3_code;
+
+#Description non unique car l'alias contient des codes
+AttrPutS(ShipTo_desc, D_CUSTOMER, vShipTo_code, 'Description' );
+AttrPutS(IC3_desc, D_CUSTOMER, vIC3_code, 'Description' );
+AttrPutS(IC2_desc, D_CUSTOMER, vIC2_code, 'Description' );
+AttrPutS(IC1_desc, D_CUSTOMER, vIC1_code, 'Description' );
+
+AttrPutS(ShipTo_desc, D_CUSTOMER_PRICE, vShipTo_code, 'Description' );
+AttrPutS(IC3_desc, D_CUSTOMER_PRICE, vIC3_code, 'Description' );
+AttrPutS(IC2_desc, D_CUSTOMER_PRICE, vIC2_code, 'Description' );
+AttrPutS(IC1_desc, D_CUSTOMER_PRICE, vIC1_code, 'Description' );
+
+AttrPutS('Ship-to-party', D_CUSTOMER_PRICE, vShipTo_code, 'Level' );
+AttrPutS('IC3', D_CUSTOMER_PRICE, vIC3_code, 'Level' );
+AttrPutS('IC2', D_CUSTOMER_PRICE, vIC2_code, 'Level' );
+AttrPutS('IC1', D_CUSTOMER_PRICE, vIC1_code, 'Level' );
+
+
+
+#Attributs du Ship-to-party dans la dimension SLS_CUSTOMER
+
+If( DIMIX( D_CUSTOMER, vShipTo_code) = 0);
+	itemskip;	
+EndIf;
+
+If( IC1_code @<> '');
+	#Attribut code du IC1 non concaténé
+	AttrPutS(IC1_code, D_CUSTOMER, vIC1_code, 'Code' );
+    AttrPutS(IC1_code, D_CUSTOMER_PRICE, vIC1_code, 'Code' );
+EndIf;
+If( IC2_code @<> '');
+	#Attribut code du IC2 non concaténé
+	AttrPutS(IC2_code, D_CUSTOMER, vIC2_code, 'Code' );
+    AttrPutS(IC2_code, D_CUSTOMER_PRICE, vIC2_code, 'Code' );
+EndIf;
+If( IC3_code @<> '');
+	#Attribut code du IC3 non concaténé
+	AttrPutS(IC3_code, D_CUSTOMER, vIC3_code, 'Code' );
+    AttrPutS(IC3_code, D_CUSTOMER_PRICE, vIC3_code, 'Code' );
+EndIf;
+
+
+
+#Attribut code du ShipTo non concaténé
+AttrPutS(ShipTo_code, D_CUSTOMER, vShipTo_code, 'code' );
+AttrPutS(ShipTo_code, D_CUSTOMER_PRICE, vShipTo_code, 'code' );
+
+#Alias Code - Caption
+AttrPutS(vShipTo_desc, D_CUSTOMER, vShipTo_code, 'Code - Caption' );
+AttrPutS(vIC3_code | ' - ' | IC3_desc, D_CUSTOMER, vIC3_code, 'Code - Caption' );
+AttrPutS(vIC2_code | ' - ' | IC2_desc, D_CUSTOMER, vIC2_code, 'Code - Caption' );
+AttrPutS(vIC1_code | ' - ' | IC1_desc, D_CUSTOMER, vIC1_code, 'Code - Caption' );
+
+AttrPutS(vShipTo_desc, D_CUSTOMER_PRICE, vShipTo_code, 'Code - Caption' );
+AttrPutS(vIC3_code | ' - ' | IC3_desc, D_CUSTOMER_PRICE, vIC3_code, 'Code - Caption' );
+AttrPutS(vIC2_code | ' - ' | IC2_desc, D_CUSTOMER_PRICE, vIC2_code, 'Code - Caption' );
+AttrPutS(vIC1_code | ' - ' | IC1_desc, D_CUSTOMER_PRICE, vIC1_code, 'Code - Caption' );
+
+#### attribut IC1 code/IC2 code/IC3 code ########
+AttrPutS(vIC1_code, D_CUSTOMER, vShipTo_code, 'IC1' );
+AttrPutS(vIC2_code, D_CUSTOMER, vShipTo_code, 'IC2' );
+AttrPutS(vIC3_code, D_CUSTOMER, vShipTo_code, 'IC3' );
+AttrPutS(IC1_Desc, D_CUSTOMER, vShipTo_code, 'IC1 Name' );
+AttrPutS(IC2_Desc, D_CUSTOMER, vShipTo_code, 'IC2 Name' );
+AttrPutS(IC3_Desc, D_CUSTOMER, vShipTo_code, 'IC3 Name' );
+AttrPutS(vIC1_code, D_CUSTOMER_PRICE, vShipTo_code, 'IC1' );
+AttrPutS(vIC2_code, D_CUSTOMER_PRICE, vShipTo_code, 'IC2' );
+AttrPutS(vIC3_code, D_CUSTOMER_PRICE, vShipTo_code, 'IC3' );
+AttrPutS(vIC1_code, D_CUSTOMER_PRICE, vIC3_code, 'IC1' );
+AttrPutS(vIC2_code, D_CUSTOMER_PRICE, vIC3_code, 'IC2' );
+AttrPutS(vIC3_code, D_CUSTOMER_PRICE, vIC3_code, 'IC3' );
+AttrPutS(vIC1_code, D_CUSTOMER_PRICE, vIC2_code, 'IC1' );
+AttrPutS(vIC2_code, D_CUSTOMER_PRICE, vIC2_code, 'IC2' );
+AttrPutS(vIC1_code, D_CUSTOMER_PRICE, vIC1_code, 'IC1' );
+
+#Modif caption 21/05/2019 : erreur à chaque changement de fichier, obligé de lancer 3 fois le process
+#modif : faire des DIMIX sur CUSTOMER et CUSTOMER_PRICE -> du coup on n'a pas la meme caption pour un meme code dans les 2 dims différentes
+
+#tant que la description existe déjà (et qu'il s'agit de la description d'un autre élément)
+ShipTo_desc_Price = ShipTo_desc;
+
+while(DIMIX(D_CUSTOMER, ShipTo_desc) <> 0 & DIMIX(D_CUSTOMER, ShipTo_desc) <> DIMIX(D_CUSTOMER, vShipTo_code));
+	ShipTo_desc = ShipTo_desc|'.';
+End; 
+
+while(DIMIX(D_CUSTOMER_PRICE, ShipTo_desc_Price) <> 0 & DIMIX(D_CUSTOMER_PRICE, ShipTo_desc_Price) <> DIMIX(D_CUSTOMER_PRICE, vShipTo_code));
+	ShipTo_desc_Price = ShipTo_desc_Price|'.';
+End; 
+
+
+If(DIMIX(D_CUSTOMER, ShipTo_desc) = 0 & DIMIX(D_CUSTOMER, ShipTo_desc) <> DIMIX(D_CUSTOMER, vShipTo_code));
+	AttrPutS('', D_CUSTOMER, vShipTo_code,'Caption');
+	AttrPutS(ShipTo_desc, D_CUSTOMER, vShipTo_code,'Caption');	
+EndIf;
+If(DIMIX(D_CUSTOMER_PRICE, ShipTo_desc_Price) = 0 & DIMIX(D_CUSTOMER_Price, ShipTo_desc_price) <> DIMIX(D_CUSTOMER_price, vShipTo_code));
+	AttrPutS('', D_CUSTOMER_PRICE, vShipTo_code, 'Caption' );
+	AttrPutS(ShipTo_desc_price, D_CUSTOMER_PRICE, vShipTo_code, 'Caption' );	
+EndIf;
+
+##fin modif caption
+
+While(  DIMIX(D_CUSTOMER, IC3_desc) <> 0 & DIMIX(D_CUSTOMER, IC3_desc) <> DIMIX(D_CUSTOMER, vIC3_code) );
+	IC3_desc = IC3_desc|'.';
+End;
+If(DIMIX(D_CUSTOMER, IC3_desc) <> DIMIX(D_CUSTOMER, vIC3_code));
+	AttrPutS(IC3_desc, D_CUSTOMER, vIC3_code, 'Caption');
+	AttrPutS(IC3_desc, D_CUSTOMER_PRICE, vIC3_code, 'Caption');
+EndIf;
+
+While(  DIMIX(D_CUSTOMER, IC2_desc) <> 0 & DIMIX(D_CUSTOMER, IC2_desc) <> DIMIX(D_CUSTOMER, vIC2_code) );
+	IC2_desc = IC2_desc|'.';
+End;
+If(DIMIX(D_CUSTOMER, IC2_desc) <> DIMIX(D_CUSTOMER, vIC2_code));
+	AttrPutS(IC2_desc, D_CUSTOMER, vIC2_code, 'Caption' );
+	AttrPutS(IC2_desc, D_CUSTOMER_PRICE, vIC2_code, 'Caption');
+EndIf;
+
+While(  DIMIX(D_CUSTOMER, IC1_desc) <> 0 & DIMIX(D_CUSTOMER, IC1_desc) <> DIMIX(D_CUSTOMER, vIC1_code) );
+	IC1_desc = IC1_desc|'.';
+End;
+
+If(DIMIX(D_CUSTOMER, IC1_desc) <> DIMIX(D_CUSTOMER, vIC1_code));
+	AttrPutS(IC1_desc, D_CUSTOMER, vIC1_code, 'Caption' );
+	AttrPutS(IC1_desc, D_CUSTOMER_PRICE, vIC1_code, 'Caption' );
+EndIf;
+
+#Attributs de l'Incoterm
+AttrPutS(Incoterm1_code, D_CUSTOMER, vShipTo_code, 'Incoterm');
+AttrPutS(Incoterm1_desc, D_CUSTOMER, vShipTo_code, 'Incoterm Name');
+AttrPutS(Incoterm2, D_CUSTOMER, vShipTo_code, 'Incoterm2' );
+AttrPutS(Incoterm1_code, D_CUSTOMER_PRICE, vShipTo_code, 'Incoterm');
+AttrPutS(Incoterm1_desc, D_CUSTOMER_PRICE, vShipTo_code, 'Incoterm Name');
+AttrPutS(Incoterm2, D_CUSTOMER_PRICE, vShipTo_code, 'Incoterm2' );
+
+#Attributs Sales Org
+AttrPutS(Sales_Org_Code, D_CUSTOMER, vShipTo_code, 'Sales Organisation');
+AttrPutS(Sales_Org_Desc, D_CUSTOMER, vShipTo_code, 'Sales Organisation Name');
+AttrPutS(Sales_Org_Code, D_CUSTOMER_PRICE, vShipTo_code, 'Sales Organisation');
+AttrPutS(Sales_Org_Desc, D_CUSTOMER_PRICE, vShipTo_code, 'Sales Organisation Name');
+
+#Attributs Division
+AttrPutS(Division_Code, D_CUSTOMER, vShipTo_code, 'Division');
+AttrPutS(Division_Desc, D_CUSTOMER, vShipTo_code, 'Division Name');
+AttrPutS(Division_Code, D_CUSTOMER_PRICE, vShipTo_code, 'Division');
+AttrPutS(Division_Desc, D_CUSTOMER_PRICE, vShipTo_code, 'Division Name');
+
+
+#Attribut Distrib Channel
+AttrPutS(Distrib_code, D_CUSTOMER, vShipTo_code, 'Distribution Channel' );
+AttrPutS(Distrib_Channel_desc, D_CUSTOMER, vShipTo_code, 'Distribution Channel Name' );
+AttrPutS(Distrib_code, D_CUSTOMER_PRICE, vShipTo_code, 'Distribution Channel' );
+AttrPutS(Distrib_Channel_desc, D_CUSTOMER_PRICE, vShipTo_code, 'Distribution Channel Name' );
+
+#Distrib Channel pour les IC
+
+Attr_vIC3_code = ATTRS(D_CUSTOMER, vIC3_code, 'Distribution Channel');
+Attr_vIC3_Code = DimensionElementPrincipalName( D_DISTRIB_CHANNEL, Attr_vIC3_code );
+
+
+If( Attr_vIC3_code @= '' );
+	AttrPutS(Distrib_code, D_CUSTOMER, vIC3_code, 'Distribution Channel' );
+	AttrPutS(Distrib_Channel_desc, D_CUSTOMER, vIC3_code, 'Distribution Channel Name' );
+    AttrPutS(Distrib_code, D_CUSTOMER_PRICE, vIC3_code, 'Distribution Channel' );
+	AttrPutS(Distrib_Channel_desc, D_CUSTOMER_PRICE, vIC3_code, 'Distribution Channel Name' );
+
+ElseIf( Attr_vIC3_code @<> Distrib_code );	
+	If(SCAN(Distrib_code, Attr_vIC3_code) = 0);
+		AttrPutS(Distrib_code | ' & ' | Attr_vIC3_code, D_CUSTOMER, vIC3_code, 'Distribution Channel' );
+        AttrPutS(Distrib_code | ' & ' | Attr_vIC3_code, D_CUSTOMER_PRICE, vIC3_code, 'Distribution Channel' );
+	EndIf;
+
+	Attr_vIC3_desc = ATTRS(D_CUSTOMER, vIC3_code, 'Distribution Channel Name');
+
+	If(SCAN(Distrib_desc, Attr_vIC3_desc) = 0);
+		AttrPutS(Distrib_Channel_desc | ' & ' | Attr_vIC3_desc, D_CUSTOMER, vIC3_code, 'Distribution Channel Name');
+        AttrPutS(Distrib_Channel_desc | ' & ' | Attr_vIC3_desc, D_CUSTOMER_PRICE, vIC3_code, 'Distribution Channel Name');
+	EndIf;
+	
+Else;
+	AttrPutS(Distrib_code, D_CUSTOMER, vIC3_code, 'Distribution Channel' );
+	AttrPutS(Distrib_Channel_desc, D_CUSTOMER, vIC3_code, 'Distribution Channel Name' );
+    AttrPutS(Distrib_code, D_CUSTOMER_PRICE, vIC3_code, 'Distribution Channel' );
+	AttrPutS(Distrib_Channel_desc, D_CUSTOMER_PRICE, vIC3_code, 'Distribution Channel Name' );
+EndIf;
+
+Attr_vIC2_code = ATTRS(D_CUSTOMER, vIC2_code, 'Distribution Channel');
+
+If( Attr_vIC2_code @= '' );
+
+	AttrPutS(Distrib_code, D_CUSTOMER, vIC2_code, 'Distribution Channel' );
+	AttrPutS(Distrib_Channel_desc, D_CUSTOMER, vIC2_code, 'Distribution Channel Name' );
+	AttrPutS(Distrib_code, D_CUSTOMER_PRICE, vIC2_code, 'Distribution Channel' );
+	AttrPutS(Distrib_Channel_desc, D_CUSTOMER_PRICE, vIC2_code, 'Distribution Channel Name' );
+
+ElseIf( Distrib_code @<> Attr_vIC2_code);
+	If(SCAN(Distrib_code, Attr_vIC2_code) = 0);
+
+		AttrPutS(Distrib_code | ' & ' | Attr_vIC2_code, D_CUSTOMER, vIC2_code, 'Distribution Channel');
+        AttrPutS(Distrib_code | ' & ' | Attr_vIC2_code, D_CUSTOMER_PRICE, vIC2_code, 'Distribution Channel');
+
+	EndIf;
+
+	Attr_vIC2_desc = ATTRS(D_CUSTOMER, vIC2_code, 'Distribution Channel Name');
+
+	If(SCAN(Distrib_Channel_desc, Attr_vIC2_desc) = 0);
+
+		AttrPutS(Distrib_Channel_desc | ' & ' | Attr_vIC2_desc, D_CUSTOMER, vIC2_code, 'Distribution Channel Name');
+        AttrPutS(Distrib_Channel_desc | ' & ' | Attr_vIC2_desc, D_CUSTOMER_PRICE, vIC2_code, 'Distribution Channel Name');
+
+	EndIf;
+
+Else;
+
+	AttrPutS(Distrib_code, D_CUSTOMER, vIC2_code, 'Distribution Channel');
+	AttrPutS(Distrib_Channel_desc, D_CUSTOMER, vIC2_code, 'Distribution Channel Name' );
+    AttrPutS(Distrib_code, D_CUSTOMER_PRICE, vIC2_code, 'Distribution Channel');
+	AttrPutS(Distrib_Channel_desc, D_CUSTOMER_PRICE, vIC2_code, 'Distribution Channel Name' );
+EndIf;
+
+
+
+
+
+Attr_vIC1_code = ATTRS(D_CUSTOMER, vIC1_code, 'Distribution Channel');
+
+If( Attr_vIC1_code @= '' );
+	AttrPutS(Distrib_code, D_CUSTOMER, vIC1_code, 'Distribution Channel' );
+	AttrPutS(Distrib_Channel_desc, D_CUSTOMER, vIC1_code, 'Distribution Channel Name' );
+    AttrPutS(Distrib_code, D_CUSTOMER_PRICE, vIC1_code, 'Distribution Channel' );
+	AttrPutS(Distrib_Channel_desc, D_CUSTOMER_PRICE, vIC1_code, 'Distribution Channel Name' );
+ElseIf(Distrib_code @<> Attr_vIC1_code );
+	If(SCAN(Distrib_code, Attr_vIC1_code) = 0);
+		AttrPutS(Distrib_code | ' & ' | Attr_vIC1_code, D_CUSTOMER, vIC1_code, 'Distribution Channel');
+        AttrPutS(Distrib_code | ' & ' | Attr_vIC1_code, D_CUSTOMER_PRICE, vIC1_code, 'Distribution Channel');
+	EndIf;
+
+	Attr_vIC1_desc = ATTRS(D_CUSTOMER, vIC1_code, 'Distribution Channel Name');
+	If(SCAN(Distrib_desc, Attr_vIC1_desc) = 0);
+		AttrPutS(Distrib_Channel_desc | ' & ' | Attr_vIC1_desc, D_CUSTOMER, vIC1_code, 'Distribution Channel Name');
+        AttrPutS(Distrib_Channel_desc | ' & ' | Attr_vIC1_desc, D_CUSTOMER_PRICE, vIC1_code, 'Distribution Channel Name');
+	EndIf;
+
+Else;
+	AttrPutS(Distrib_code, D_CUSTOMER, vIC1_code, 'Distribution Channel' );
+	AttrPutS(Distrib_Channel_desc, D_CUSTOMER, vIC1_code, 'Distribution Channel Name' );
+    AttrPutS(Distrib_code, D_CUSTOMER_PRICE, vIC1_code, 'Distribution Channel' );
+	AttrPutS(Distrib_Channel_desc, D_CUSTOMER_PRICE, vIC1_code, 'Distribution Channel Name' );
+EndIf;
+
+
+#Attribut Sales Group
+AttrPutS(Sales_group_code, D_CUSTOMER, vShipTo_code, 'Sales Group' );
+AttrPutS(Sales_group_desc, D_CUSTOMER, vShipTo_code, 'Sales Group Name' );
+AttrPutS(Sales_group_code, D_CUSTOMER_PRICE, vShipTo_code, 'Sales Group' );
+AttrPutS(Sales_group_desc, D_CUSTOMER_PRICE, vShipTo_code, 'Sales Group Name' );
+
+#Sales Group pour les IC
+
+
+If( ATTRS(D_CUSTOMER, vIC3_code, 'Sales Group') @= '' );
+	AttrPutS(Sales_Group_code, D_CUSTOMER, vIC3_code, 'Sales Group' );
+	AttrPutS(Sales_group_desc, D_CUSTOMER, vIC3_code, 'Sales Group Name' );
+	AttrPutS(Sales_Group_code, D_CUSTOMER_PRICE, vIC3_code, 'Sales Group' );
+	AttrPutS(Sales_group_desc, D_CUSTOMER_PRICE, vIC3_code, 'Sales Group Name' );
+ElseIf( ATTRS(D_CUSTOMER, vIC3_code, 'Sales Group') @<> Sales_group_code );
+	AttrPutS('Multiple_Sales_Group', D_CUSTOMER, vIC3_code, 'Sales Group' );
+	AttrPutS('Multiple Sales Group', D_CUSTOMER, vIC3_code, 'Sales Group Name' );
+    AttrPutS('Multiple_Sales_Group', D_CUSTOMER_PRICE, vIC3_code, 'Sales Group' );
+	AttrPutS('Multiple Sales Group', D_CUSTOMER_PRICE, vIC3_code, 'Sales Group Name' );
+Else;
+	AttrPutS(Sales_Group_code, D_CUSTOMER, vIC3_code, 'Sales Group' );
+	AttrPutS(Sales_Group_desc, D_CUSTOMER, vIC3_code, 'Sales Group Name' );
+    AttrPutS(Sales_Group_code, D_CUSTOMER_PRICE, vIC3_code, 'Sales Group' );
+	AttrPutS(Sales_Group_desc, D_CUSTOMER_PRICE, vIC3_code, 'Sales Group Name' );
+EndIf;
+
+If( ATTRS(D_CUSTOMER, vIC2_code, 'Sales Group') @= '' );
+	IC3_SG = ATTRS(D_CUSTOMER, vIC3_code, 'Sales Group');
+	AttrPutS(IC3_SG, D_CUSTOMER, vIC2_code, 'Sales Group' );
+    AttrPutS(IC3_SG, D_CUSTOMER_PRICE, vIC2_code, 'Sales Group' );
+	IC3_SG_desc = ATTRS(D_CUSTOMER, vIC3_code, 'Sales Group Name');
+	AttrPutS(IC3_SG_desc, D_CUSTOMER, vIC2_code, 'Sales Group Name' );
+    AttrPutS(IC3_SG_desc, D_CUSTOMER_PRICE, vIC2_code, 'Sales Group Name' );
+ElseIf( ATTRS(D_CUSTOMER, vIC2_code, 'Sales Group') @<>  ATTRS(D_CUSTOMER, vIC3_code, 'Sales Group' ) );
+	AttrPutS('Multiple_Sales_Group', D_CUSTOMER, vIC2_code, 'Sales Group' );
+	AttrPutS('Multiple Sales Group', D_CUSTOMER, vIC2_code, 'Sales Group Name' );
+    AttrPutS('Multiple_Sales_Group', D_CUSTOMER_PRICE, vIC2_code, 'Sales Group' );
+	AttrPutS('Multiple Sales Group', D_CUSTOMER_PRICE, vIC2_code, 'Sales Group Name' );
+
+Else;
+	IC3_SG = ATTRS(D_CUSTOMER, vIC3_code, 'Sales Group');
+	AttrPutS(IC3_SG, D_CUSTOMER, vIC2_code, 'Sales Group' );
+    AttrPutS(IC3_SG, D_CUSTOMER_PRICE, vIC2_code, 'Sales Group' );
+	IC3_SG_desc = ATTRS(D_CUSTOMER, vIC3_code, 'Sales Group Name');
+	AttrPutS(IC3_SG_desc, D_CUSTOMER, vIC2_code, 'Sales Group Name' );
+    AttrPutS(IC3_SG_desc, D_CUSTOMER_PRICE, vIC2_code, 'Sales Group Name' );
+EndIf;
+
+If( ATTRS(D_CUSTOMER, vIC1_code, 'Sales Group') @= '' );
+	IC2_SG = ATTRS(D_CUSTOMER, vIC2_code, 'Sales Group');
+	AttrPutS(IC2_SG, D_CUSTOMER, vIC1_code, 'Sales Group' );
+    AttrPutS(IC2_SG, D_CUSTOMER_PRICE, vIC1_code, 'Sales Group' );
+	IC2_SG_desc = ATTRS(D_CUSTOMER, vIC2_code, 'Sales Group Name');
+	AttrPutS(IC2_SG_desc, D_CUSTOMER, vIC1_code, 'Sales Group Name' );
+    AttrPutS(IC2_SG_desc, D_CUSTOMER_PRICE, vIC1_code, 'Sales Group Name' );
+ElseIf( ATTRS(D_CUSTOMER, vIC1_code, 'Sales Group') @<>  ATTRS(D_CUSTOMER, vIC2_code, 'Sales Group' ) );
+	AttrPutS('Multiple_Sales_Group', D_CUSTOMER, vIC1_code, 'Sales Group' );
+	AttrPutS('Multiple_Sales_Group', D_CUSTOMER, vIC1_code, 'Sales Group' );
+    AttrPutS('Multiple_Sales_Group', D_CUSTOMER_PRICE, vIC1_code, 'Sales Group' );
+	AttrPutS('Multiple_Sales_Group', D_CUSTOMER_PRICE, vIC1_code, 'Sales Group' );
+Else;
+	IC2_SG = ATTRS(D_CUSTOMER, vIC2_code, 'Sales Group');
+	AttrPutS(IC2_SG, D_CUSTOMER, vIC1_code, 'Sales Group' );
+    AttrPutS(IC2_SG, D_CUSTOMER_PRICE, vIC1_code, 'Sales Group' );
+	IC2_SG_desc = ATTRS(D_CUSTOMER, vIC2_code, 'Sales Group Name');
+	AttrPutS(IC2_SG_desc, D_CUSTOMER, vIC1_code, 'Sales Group Name' );
+    AttrPutS(IC2_SG_desc, D_CUSTOMER_PRICE, vIC1_code, 'Sales Group Name' );
+
+EndIf;
+
+#Attribut Devise de Facturation
+AttrPutS(Currency, D_CUSTOMER, vShipTo_code, 'Currency' );
+AttrPutS(Currency, D_CUSTOMER_PRICE, vShipTo_code, 'Currency' );
+
+#Attribut Expertise
+AttrPutS(Expertise, D_CUSTOMER, vShipTo_code, 'Expertise' );
+AttrPutS(Expertise, D_CUSTOMER_PRICE, vShipTo_code, 'Expertise' );
+
+#Attribut Country
+AttrPutS(Country_code, D_CUSTOMER, vShipTo_code, 'Country' );
+AttrPutS(Country_desc, D_CUSTOMER, vShipTo_code, 'Country Name' );
+AttrPutS(Country_code, D_CUSTOMER_PRICE, vShipTo_code, 'Country' );
+AttrPutS(Country_desc, D_CUSTOMER_PRICE, vShipTo_code, 'Country Name' );
+
+#Attribut Agent
+AttrPutS(Agent_code, D_CUSTOMER, vShipTo_code, 'Agent' );
+AttrPutS(Agent_desc, D_CUSTOMER, vShipTo_code, 'Agent Name' );
+AttrPutS(Agent_code, D_CUSTOMER_PRICE, vShipTo_code, 'Agent' );
+AttrPutS(Agent_desc, D_CUSTOMER_PRICE, vShipTo_code, 'Agent Name' );
+
+#Attributs Payer et Sold-to-party
+AttrPutS(Payer_code, D_CUSTOMER, vShipTo_code, 'Payer' );
+AttrPutS(Payer_desc, D_CUSTOMER, vShipTo_code, 'Payer Name' );
+AttrPutS(SoldTo_code, D_CUSTOMER, vShipTo_code, 'Sold-to' );
+AttrPutS(SoldTo_desc, D_CUSTOMER, vShipTo_code, 'Sold-to Name' );
+AttrPutS(Payer_code, D_CUSTOMER_PRICE, vShipTo_code, 'Payer' );
+AttrPutS(Payer_desc, D_CUSTOMER_PRICE, vShipTo_code, 'Payer Name' );
+AttrPutS(SoldTo_code, D_CUSTOMER_PRICE, vShipTo_code, 'Sold-to' );
+AttrPutS(SoldTo_desc, D_CUSTOMER_PRICE, vShipTo_code, 'Sold-to Name' );
+
+#Attribut Industry
+AttrPutS(Industry_code, D_CUSTOMER, vShipTo_code, 'IC' );
+AttrPutS(Industry_desc, D_CUSTOMER, vShipTo_code, 'IC Name' );
+AttrPutS(Industry_code, D_CUSTOMER_PRICE, vShipTo_code, 'IC' );
+AttrPutS(Industry_desc, D_CUSTOMER_PRICE, vShipTo_code, 'IC Name' );
+
+#Attributs des rôles
+AttrPutS(ShipTo_role, D_CUSTOMER, vShipTo_code, 'Ship-to role' );
+AttrPutS(Payer_role, D_CUSTOMER, vShipTo_code, 'Payer role' );
+AttrPutS(SoldTo_role, D_CUSTOMER, vShipTo_code, 'Sold-to role' );
+AttrPutS(ShipTo_role, D_CUSTOMER_PRICE, vShipTo_code, 'Ship-to role' );
+AttrPutS(Payer_role, D_CUSTOMER_PRICE, vShipTo_code, 'Payer role' );
+AttrPutS(SoldTo_role, D_CUSTOMER_PRICE, vShipTo_code, 'Sold-to role' );
+
+#Attribut Statut
+AttrPutS(Status, D_CUSTOMER, vShipTo_code, 'Customer status' );
+AttrPutS(Status, D_CUSTOMER_PRICE, vShipTo_code, 'Customer status' );
+AttrPutS(Status_Desc, D_CUSTOMER, vShipTo_code, 'Customer status Name' );
+AttrPutS(Status_Desc, D_CUSTOMER_PRICE, vShipTo_code, 'Customer status Name' );
+
+#Attribut Vendor Priority
+AttrPutS(Vendor_Priority, D_CUSTOMER, vShipTo_code, 'Vendor Priority' );
+
+#Attributs de l'adresse
+AttrPutS(Postal_code, D_CUSTOMER, vShipTo_code, 'Code postal' );
+AttrPutS(City, D_CUSTOMER, vShipTo_code, 'Ville' );
+AttrPutS(Address, D_CUSTOMER, vShipTo_code, 'Adresse complète' );
+AttrPutS(Postal_code, D_CUSTOMER_PRICE, vShipTo_code, 'Code postal' );
+AttrPutS(City, D_CUSTOMER_PRICE, vShipTo_code, 'Ville' );
+AttrPutS(Address, D_CUSTOMER_PRICE, vShipTo_code, 'Adresse complète' );
+
+#Attribut Payment terms
+AttrPutS(Payment_code, D_CUSTOMER, vShipTo_code, 'Payment terms' );
+AttrPutS(Payment_desc, D_CUSTOMER, vShipTo_code, 'Payment terms Name' );
+AttrPutS(Payment_code, D_CUSTOMER_PRICE, vShipTo_code, 'Payment terms' );
+AttrPutS(Payment_desc, D_CUSTOMER_PRICE, vShipTo_code, 'Payment terms Name' );
+
+#Attribut Shipping Conditions
+AttrPutS(Ship_cond_code, D_CUSTOMER, vShipTo_code, 'Shipping conditions' );
+AttrPutS(Ship_cond_desc, D_CUSTOMER, vShipTo_code, 'Shipping conditions Name' );
+AttrPutS(Ship_cond_code, D_CUSTOMER_PRICE, vShipTo_code, 'Shipping conditions' );
+AttrPutS(Ship_cond_desc, D_CUSTOMER_PRICE, vShipTo_code, 'Shipping conditions Name' );
+
+#Attribut Transporteur Priority
+AttrPutS(Transp_Priority, D_CUSTOMER, vShipTo_code, 'Transporteur' );
+AttrPutS(Transp_Priority, D_CUSTOMER_PRICE, vShipTo_code, 'Transporteur' );
+
+#Attribut Classe ABC / TYPOLOGY 
+AttrPutS(vTypology_Name, D_CUSTOMER, vShipTo_code, 'Typology' );
+
+#Attribut Zone Distribution / SALES_DISTRICT_NAME
+AttrPutS(vSalesDistrict_Name, D_CUSTOMER, vShipTo_code, 'Sales District' );
+
+#Attribut Agence commerciale / SALES_OFFICE_NAME
+AttrPutS(vSalesOffice_code|'-'|vSalesOffice_Name, D_CUSTOMER, vShipTo_code, 'Sales Office' );
+
+#Attribut Classe Client / POTENTIAL DESC
+AttrPutS(vPotentialVol_Name, D_CUSTOMER, vShipTo_code, 'Potential volume' );
+
+
+########################## SLS_INCOTERM ###############################
+
+#Alias de l'incoterm dans la dimension SLS_INCOTERM
+If(Incoterm1_code @<> '');
+	AttrPutS(Incoterm1_code | ' - ' | Incoterm1_desc, D_INCOTERM, Incoterm1_code, 'Code - Caption' );
+	While(DIMIX(D_INCOTERM,Incoterm1_desc)<>0 & Incoterm1_desc @<> ATTRS(D_INCOTERM, Incoterm1_code, 'Caption'));
+		Incoterm1_desc = Incoterm1_desc|'.';
+	End;
+	AttrPutS(Incoterm1_desc, D_INCOTERM, Incoterm1_code, 'Caption' );
+EndIf;
+
+########################## SLS_SALES_GROUP ###############################
+
+#Alias du Sales Group dans la dimension SLS_SALES_GROUP
+If(Sales_Group_code @<> '');
+	AttrPutS(Sales_Group_code | ' - ' | Sales_Group_desc, D_SALES_GROUP, Sales_Group_code, 'Code - Caption' );
+	While(DIMIX(D_SALES_GROUP, Sales_Group_desc) <> 0 & Sales_Group_desc @<> ATTRS(D_SALES_GROUP, Sales_Group_code, 'Caption'));
+		Sales_Group_desc = Sales_Group_desc|'.';
+	End;
+	AttrPutS(Sales_Group_desc, D_SALES_GROUP, Sales_Group_code, 'Caption' );
+    
+    AttrPutS(Sales_Group_code | ' - ' | Sales_Group_desc, D_zSALES_GROUP, Sales_Group_code, 'Code - Caption' );
+    While(DIMIX(D_zSALES_GROUP, Sales_Group_desc) <> 0 & Sales_Group_desc @<> ATTRS(D_zSALES_GROUP, Sales_Group_code, 'Caption'));
+		Sales_Group_desc = Sales_Group_desc|'.';
+	End;
+	AttrPutS(Sales_Group_desc, D_zSALES_GROUP, Sales_Group_code, 'Caption' );
+EndIf;
+
+########################## SLS_PAYER ###############################
+
+#Alias du Payer dans la dimension SLS_PAYER
+If(Payer_code @<> '');
+	AttrPutS(Payer_code|' - '|Payer_desc, D_PAYER, Payer_code, 'Code - Caption' );
+	While(DIMIX(D_PAYER, Payer_desc)<> 0 & Payer_desc @<> ATTRS(D_PAYER, Payer_code, 'Caption'));
+		Payer_desc = Payer_desc|'.';
+	End;
+	AttrPutS(Payer_desc, D_PAYER, Payer_code, 'Caption' );
+EndIf;
+
+########################## SLS_SOLD_TO ###############################
+
+#Alias du SOLD_TO dans la dimension SLS_SOLD_TO
+If(SoldTo_code @<> '');	
+	Longueur = LONG(SoldTo_Code);
+	Debut = Longueur-5;
+	SoldTo_Code = SUBST(SoldTo_code, Debut, 6);	
+	AttrPutS(SoldTo_code| ' - ' |SoldTo_desc, D_SOLD_TO, SoldTo_code, 'Code - Caption' );
+	If(DIMIX(D_SOLD_TO, SoldTo_desc) <> 0);
+		While(DIMIX(D_SOLD_TO, SoldTo_desc) <> 0 & SoldTo_desc @<> ATTRS(D_SOLD_TO, SoldTo_code, 'Caption'));
+			SoldTo_desc = SoldTo_desc|'.';
+		End;
+	EndIf;
+	AttrPutS(SoldTo_desc, D_SOLD_TO, SoldTo_code, 'Caption' );
+EndIf;
+
+########################## Création de divisions ###############################
+
+#Alias de la Division dans les dimensions 1_G_MATERIAL et SLS_MATERIAL_PLAN
+AttrPutS(Division_desc, '1_G_MATERIAL', 'D_'|Division_code, 'Caption' );
+AttrPutS(Division_desc, 'SLS_MATERIAL_PLAN', 'D_'|Division_code, 'Caption' );
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#Alias Totaux
+AttrPutS('Total Customer', D_CUSTOMER, TOT_CUST, 'Caption');
+AttrPutS('Total Incoterm', D_INCOTERM, TOT_INCO, 'Caption');
+AttrPutS('Total Sales Group', D_SALES_GROUP, TOT_SALES_GROUP, 'Caption');
+AttrPutS('Total Payer', D_PAYER, TOT_PAYER, 'Caption');
+AttrPutS('Total Sold To', D_SOLD_TO, TOT_SOLD_TO, 'Caption');
+AttrPutS('Total Distribution Channel', D_DISTRIB_CHANNEL, 'TOTAL_DISTRIB_CHANNEL', 'Caption');
+
+AttrPutS('Total Customer', D_CUSTOMER, TOT_CUST, 'Code - Caption');
+AttrPutS('Total Incoterm', D_INCOTERM, TOT_INCO, 'Code - Caption');
+AttrPutS('Total Sales Group', D_SALES_GROUP, TOT_SALES_GROUP, 'Code - Caption');
+AttrPutS('Total Payer', D_PAYER, TOT_PAYER, 'Code - Caption');
+AttrPutS('Total Sold To', D_SOLD_TO, TOT_SOLD_TO, 'Code - Caption');
+AttrPutS('Total Distrib Channel', D_DISTRIB_CHANNEL, 'TOTAL_DISTRIB_CHANNEL', 'Code - Caption');
+
+#Alias N/A
+
+AttrPutS('N/A Customer', D_CUSTOMER, 'N/A_CUSTOMER', 'Caption');
+AttrPutS('N/A Incoterm', D_INCOTERM, 'N/A_INCOTERM', 'Caption');
+AttrPutS('N/A Sales Group', D_SALES_GROUP, 'N/A_SALES_GROUP', 'Caption');
+AttrPutS('N/A Payer', D_PAYER, 'N/A_PAYER', 'Caption');
+AttrPutS('N/A Sold To', D_SOLD_TO, 'N/A_SOLD_TO', 'Caption');
+
+AttrPutS('NA Customer', D_CUSTOMER, 'N/A_CUSTOMER', 'Code - Caption');
+AttrPutS('NA Incoterm', D_INCOTERM, 'N/A_INCOTERM', 'Code - Caption');
+AttrPutS('NA Sales Group', D_SALES_GROUP, 'N/A_SALES_GROUP', 'Code - Caption');
+AttrPutS('NA Payer', D_PAYER, 'N/A_PAYER', 'Code - Caption');
+AttrPutS('NA Sold To', D_SOLD_TO, 'N/A_SOLD_TO', 'Code - Caption');
+
+# Affectation des libellés aux sous-ensembles clients Forecast
+SubsetAliasSet ( D_CUSTOMER , 'Level 0' , 'Code - Caption' ) ;
+SubsetAliasSet ( D_CUSTOMER , 'Clients_Forecast_Desactives' , 'Code - Caption' ) ;
+SubsetAliasSet ( D_CUSTOMER , 'Clients_Forecast_Actives' , 'Code - Caption' ) ;
+SubsetAliasSet ( D_CUSTOMER , 'Clients_Forecast' , 'Code - Caption' ) ;
+#endregion

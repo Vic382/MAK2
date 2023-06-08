@@ -1,0 +1,59 @@
+#region Prolog
+MinorErrorLogMax = -1;
+OnMinorErrorDoItemSkip = 1;
+CurrentLogSetting = CubeGetLogChanges('SLS_ASSIGN');
+#CubeSetLogChanges('SLS_ASSIGN', 0);
+NumRowsRead = 0;
+NumRowsProcessed = 0;
+SetInputCharacterSet('TM1CS_UTF8');
+#endregion
+#region Data
+NumRowsRead = NumRowsRead + 1;
+# CellPutS(vShip_Point,'SLS_ASSIGN','Current Phase','Final Version','-','Cristalco','Retail',vDim6,vDim7,vDim8,'Shipping Point');
+# CellPutS(vShip_Plant,'SLS_ASSIGN','Current Phase','Final Version','-','Cristalco','Retail',vDim6,vDim7,vDim8,'Shipping Plant');
+# CellPutS(vProd_Plant,'SLS_ASSIGN','Current Phase','Final Version','-','Cristalco','Retail',vDim6,vDim7,vDim8,'Production Plant');
+Old_Vendor = CellGetS('SLS_ASSIGN','Current Phase','Final Version','-','Cristalco','Retail',vDim6,vDim7,vDim8,'Vendor');
+If(Old_Vendor @= vShip_Point);
+CellPutS(vVendor,'SLS_ASSIGN','Current Phase','Final Version','-','Cristalco','Retail',vDim6,vDim7,vDim8,'Vendor');
+EndIf;
+# CellPutN(v2019_10_S,'SLS_ASSIGN','Current Phase','Final Version','2019.10','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2019_11_S,'SLS_ASSIGN','Current Phase','Final Version','2019.11','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2019_12_S,'SLS_ASSIGN','Current Phase','Final Version','2019.12','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2020_01_S,'SLS_ASSIGN','Current Phase','Final Version','2020.01','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2020_02_S,'SLS_ASSIGN','Current Phase','Final Version','2020.02','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2020_03_S,'SLS_ASSIGN','Current Phase','Final Version','2020.03','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2020_04_S,'SLS_ASSIGN','Current Phase','Final Version','2020.04','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2020_05_S,'SLS_ASSIGN','Current Phase','Final Version','2020.05','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2020_06_S,'SLS_ASSIGN','Current Phase','Final Version','2020.06','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2020_07_S,'SLS_ASSIGN','Current Phase','Final Version','2020.07','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2020_08_S,'SLS_ASSIGN','Current Phase','Final Version','2020.08','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2020_09_S,'SLS_ASSIGN','Current Phase','Final Version','2020.09','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2020_10_S,'SLS_ASSIGN','Current Phase','Final Version','2020.10','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2020_11_S,'SLS_ASSIGN','Current Phase','Final Version','2020.11','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2020_12_S,'SLS_ASSIGN','Current Phase','Final Version','2020.12','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2021_01_S,'SLS_ASSIGN','Current Phase','Final Version','2021.01','Cristalco','Retail',vDim6,vDim7,vDim8,'Sales Volume');
+# CellPutN(v2019_10_A,'SLS_ASSIGN','Current Phase','Final Version','2019.10','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2019_11_A,'SLS_ASSIGN','Current Phase','Final Version','2019.11','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2019_12_A,'SLS_ASSIGN','Current Phase','Final Version','2019.12','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2020_01_A,'SLS_ASSIGN','Current Phase','Final Version','2020.01','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2020_02_A,'SLS_ASSIGN','Current Phase','Final Version','2020.02','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2020_03_A,'SLS_ASSIGN','Current Phase','Final Version','2020.03','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2020_04_A,'SLS_ASSIGN','Current Phase','Final Version','2020.04','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2020_05_A,'SLS_ASSIGN','Current Phase','Final Version','2020.05','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2020_06_A,'SLS_ASSIGN','Current Phase','Final Version','2020.06','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2020_07_A,'SLS_ASSIGN','Current Phase','Final Version','2020.07','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2020_08_A,'SLS_ASSIGN','Current Phase','Final Version','2020.08','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2020_09_A,'SLS_ASSIGN','Current Phase','Final Version','2020.09','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2020_10_A,'SLS_ASSIGN','Current Phase','Final Version','2020.10','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2020_11_A,'SLS_ASSIGN','Current Phase','Final Version','2020.11','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2020_12_A,'SLS_ASSIGN','Current Phase','Final Version','2020.12','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+# CellPutN(v2021_01_A,'SLS_ASSIGN','Current Phase','Final Version','2021.01','Cristalco','Retail',vDim6,vDim7,vDim8,'Assigned Volume');
+NumRowsProcessed = NumRowsProcessed + 1;
+#endregion
+#region Epilog
+If (pResult @<> '');
+TextOutput(pResult, NumberToString(NumRowsRead), NumberToString(NumRowsProcessed));
+EndIf;
+CubeSaveData('SLS_ASSIGN');
+CubeSetLogChanges('SLS_ASSIGN', CurrentLogSetting);
+#endregion

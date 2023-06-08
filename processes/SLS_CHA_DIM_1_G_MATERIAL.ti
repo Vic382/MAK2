@@ -1,0 +1,1264 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#######################################################################################################################
+#                                               DESCRIPTION DU PROCESSUS                                              #
+#                                                                                                                     #
+# Date :   28/08/2018                                                                                                 #
+#                                                                                                                     #
+# Fait par :   Elisabeth MOUNIER                                                                                      #
+#                                                                                                                     #
+# Action : Processus de chargement des dimensions 1_G_MATERIAL, SLS_MATERIAL_PLAN									  #
+#  et SLS_MATERIAL_EXT     																							  #
+#                 + Chargement cube SLS_VOL_CONVERT    																  #
+#																													  #
+# Modifié le 11/03/2019 par Elisabeth Mounier.																		  #
+# Action : Chargement de la dimension SLS_MATERIAL_PLAN_PRICE + modification de la hiérarchie de SLS_MATERIAL_PLAN    #
+#
+# Modifié le 03/06/2020 par Emmanuel Loutsch  #
+# Action : suppression et création des attributs afin qu'ils soient correctement mis à jour, notamment lors d'un changement de libellé #
+#######################################################################################################################
+
+SetInputCharacterSet('TM1CS_UTF8');
+
+#=========================================#
+#             Déclaration des variables   #
+#=========================================#
+
+#--------------------Cubes--------------------#
+C_zPROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+C_zPARAM = 'zPARAM';
+
+C_Vol_Convert = 'SLS_VOL_CONVERT';
+C_Attr_MAT_PLAN = '}ElementAttributes_SLS_MATERIAL_PLAN';
+
+
+
+#--------------------Dimensions--------------------#
+
+D_MATERIAL = '1_G_MATERIAL';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_MATERIAL_PRICE = 'SLS_MATERIAL_PLAN_PRICE';
+D_MATERIAL_EXT = 'SLS_MATERIAL_EXT';
+
+D_ATTR_MAT_PLAN = '}ElementAttributes_SLS_MATERIAL_PLAN';
+
+D_VOL_UNIT = '1_G_VOLUME_UNIT'; 
+D_VOL_CONVERT = 'SLS_VOL_CONVERT_IND'; 
+
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL'; 
+
+#--------------------Hiérarchies--------------------#
+Stt_PM = 'Status_PM';
+Stt = 'Status';
+
+#DimensionDeleteAllElements(D_MATERIAL);
+#DimensionDeleteAllElements(D_MATERIAL_PLAN);
+#DimensionDeleteAllElements(D_MATERIAL_PRICE);
+#processbreak();
+#--------------------Elements--------------------#
+
+TOT_MAT = 'TOTAL_MATERIAL';
+TOT_PM = 'TOTAL_PLANNING_MATERIAL';
+TOT_EXT_MAT = 'TOTAL_EXTERNAL_MATERIAL';
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#DatasourceASCIIDecimalSeparator=',';
+#DatasourceASCIIThousandSeparator='';
+
+#--------------------Sources de données--------------------#
+DatasourceNameForServer = CellGetS( C_zPROCESS_ADMINISTRATION, vPRO_NAME, 'DATASOURCE_NAME_FOR_SERVER', 'Comment');
+
+# Init des totaux
+
+If( DIMIX( D_MATERIAL, TOT_MAT) = 0);
+	DimensionElementInsert(D_MATERIAL, '', TOT_MAT, 'N');
+EndIf;
+
+If( DIMIX( D_MATERIAL_PLAN, TOT_PM) = 0);
+	DimensionElementInsert(D_MATERIAL_PLAN, '', TOT_PM, 'N');
+EndIf;
+
+#Init N/A 
+
+If( DIMIX( D_MATERIAL, 'N/A_MATERIAL') = 0);
+	DimensionElementInsert(D_MATERIAL, '','N/A_MATERIAL', 'N');
+	DimensionElementComponentAdd(D_MATERIAL, TOT_MAT, 'N/A_MATERIAL', 1);
+EndIf;
+
+If( DIMIX( D_MATERIAL_PLAN, 'N/A_PLANNING_MATERIAL') = 0);
+	DimensionElementInsert(D_MATERIAL_PLAN, '','N/A_PLANNING_MATERIAL', 'N');
+	DimensionElementComponentAdd(D_MATERIAL_PLAN, TOT_PM, 'N/A_PLANNING_MATERIAL', 1);
+EndIf;
+
+If( DIMIX( D_MATERIAL_PRICE, 'N/A_PLANNING_MATERIAL') = 0);
+	DimensionElementInsert(D_MATERIAL_PRICE, '','N/A_PLANNING_MATERIAL', 'N');
+EndIf;
+
+If( DIMIX( D_MATERIAL_EXT, 'N/A_MATERIAL_EXT') = 0);
+	DimensionElementInsert(D_MATERIAL_EXT, '','N/A_MATERIAL_EXT', 'N');
+EndIf;
+
+
+Flag = 0;
+
+
+# Suppression de l'attribut Sales organisation pour les dimensions 1_G_MATERIAL (D_MATERIAL), SLS_MATERIAL_PLAN (D_MATERIAL_PLAN ) et SLS_MATERIAL_PLAN (D_MATERIAL_PRICE)
+AttrDelete ( D_MATERIAL , 'Sales Organisation' ) ;
+AttrDelete ( D_MATERIAL_PLAN , 'Sales Organisation' ) ;
+AttrDelete ( D_MATERIAL_PRICE , 'Sales Organisation' ) ;
+
+# Suppression de l'attribut Sales organisation Name pour les dimensions 1_G_MATERIAL (D_MATERIAL), SLS_MATERIAL_PLAN (D_MATERIAL_PLAN ) et SLS_MATERIAL_PLAN (D_MATERIAL_PRICE)
+AttrDelete ( D_MATERIAL , 'Sales Organisation Name' ) ;
+AttrDelete ( D_MATERIAL_PLAN , 'Sales Organisation Name' ) ;
+AttrDelete ( D_MATERIAL_PRICE , 'Sales Organisation Name' ) ;
+
+# Suppression de l'attribut Distribution Channel pour les dimensions 1_G_MATERIAL (D_MATERIAL), SLS_MATERIAL_PLAN (D_MATERIAL_PLAN ) et SLS_MATERIAL_PLAN (D_MATERIAL_PRICE)
+AttrDelete ( D_MATERIAL , 'Distribution Channel' ) ;
+AttrDelete ( D_MATERIAL_PLAN , 'Distribution Channel' ) ;
+AttrDelete ( D_MATERIAL_PRICE , 'Distribution Channel' ) ;
+
+# Suppression de l'attribut Distribution Channel Name pour les dimensions 1_G_MATERIAL (D_MATERIAL), SLS_MATERIAL_PLAN (D_MATERIAL_PLAN ) et SLS_MATERIAL_PLAN (D_MATERIAL_PRICE)
+AttrDelete ( D_MATERIAL , 'Distribution Channel Name' ) ;
+AttrDelete ( D_MATERIAL_PLAN , 'Distribution Channel Name' ) ;
+AttrDelete ( D_MATERIAL_PRICE , 'Distribution Channel Name' ) ;
+
+# Création de l'attribut Sales organisation pour les dimensions 1_G_MATERIAL (D_MATERIAL), SLS_MATERIAL_PLAN (D_MATERIAL_PLAN ) et SLS_MATERIAL_PLAN (D_MATERIAL_PRICE)
+AttrInsert ( D_MATERIAL , '' , 'Sales Organisation' , 'S' ) ;
+AttrInsert ( D_MATERIAL_PLAN , '' , 'Sales Organisation' , 'S' ) ;
+AttrInsert ( D_MATERIAL_PRICE , '' , 'Sales Organisation' , 'S' ) ;
+
+# Création de l'attribut Sales organisation Name pour les dimensions 1_G_MATERIAL (D_MATERIAL), SLS_MATERIAL_PLAN (D_MATERIAL_PLAN ) et SLS_MATERIAL_PLAN (D_MATERIAL_PRICE)
+AttrInsert ( D_MATERIAL , '' , 'Sales Organisation Name' , 'S' ) ;
+AttrInsert ( D_MATERIAL_PLAN , '' , 'Sales Organisation Name' , 'S' ) ;
+AttrInsert ( D_MATERIAL_PRICE , '' , 'Sales Organisation Name' , 'S' ) ;
+
+# Création de l'attribut Distribution Channel pour les dimensions 1_G_MATERIAL (D_MATERIAL), SLS_MATERIAL_PLAN (D_MATERIAL_PLAN ) et SLS_MATERIAL_PLAN (D_MATERIAL_PRICE)
+AttrInsert ( D_MATERIAL , '' , 'Distribution Channel' , 'S' ) ;
+AttrInsert ( D_MATERIAL_PLAN , '' , 'Distribution Channel' , 'S' ) ;
+AttrInsert ( D_MATERIAL_PRICE , '' , 'Distribution Channel' , 'S' ) ;
+
+# Création de l'attribut Distribution Channel Name pour les dimensions 1_G_MATERIAL (D_MATERIAL), SLS_MATERIAL_PLAN (D_MATERIAL_PLAN ) et SLS_MATERIAL_PLAN (D_MATERIAL_PRICE)
+AttrInsert ( D_MATERIAL , '' , 'Distribution Channel Name' , 'S' ) ;
+AttrInsert ( D_MATERIAL_PLAN , '' , 'Distribution Channel Name' , 'S' ) ;
+AttrInsert ( D_MATERIAL_PRICE , '' , 'Distribution Channel Name' , 'S' ) ;
+
+### Modif VRT 16/06/2022 : Suppresion du fichier ASCII alimenté en data et création d'une variable pour entete   ####
+IF ( FileExists ( '..\Rejects\reject_material_PM_code.csv' ) <> 0 ) ;
+  ASCIIDELETE ( '..\Rejects\reject_material.csv' ) ;
+ENDIF ;
+
+vCompteur = 0 ;
+sMatCode = 'First' ;
+
+###        FIN MODIF VRT           ####
+
+
+### Modif VRT : Création des nouveaux attributs   ####
+
+# Dimension 1_G_MATERIAL
+
+AttrInsert( D_MATERIAL , '' , 'PH1-Raw material' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'PH1-Raw material Name' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'PH2-Product family' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'PH2-Product family Name' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'PH3-Calib_TAV_Charac' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'PH3-Calib_TAV_Charac Name' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'PH4-Packag. Format' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'PH4-Packag. Format Name' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'PH5-Sales Unit' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'PH5-Sales Unit Name' , 'S' );
+
+AttrInsert( D_MATERIAL , '' , 'MG1-Market solution' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'MG1-Market solution Name' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'MG2-Brand' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'MG2-Brand Name' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'MG3-Sourcing' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'MG3-Sourcing Name' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'MG4-Color_Und-Denat' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'MG4-Color_Und-Denat Name' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'MG5-Formulation' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'MG5-Formulation Name' , 'S' );
+
+AttrInsert( D_MATERIAL , '' , 'C-Certificates' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'C-Certificates Name' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'C-Packaging type' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'C-Packaging type Name' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'C-Pallet type' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'C-Pallet type Name' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'C-Specific marks' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'C-Specific marks Name' , 'S' );
+AttrInsert( D_MATERIAL , '' , 'C-Bundle unit' , 'S' );
+
+
+# Dimension SLS_MATERIAL_PLAN
+
+AttrInsert( D_MATERIAL_PLAN , '' , 'PH1-Raw material' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'PH1-Raw material Name' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'PH2-Product family' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'PH2-Product family Name' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'PH3-Calib_TAV_Charac' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'PH3-Calib_TAV_Charac Name' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'PH4-Packag. Format' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'PH4-Packag. Format Name' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'PH5-Sales Unit' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'PH5-Sales Unit Name' , 'S' );
+
+AttrInsert( D_MATERIAL_PLAN , '' , 'MG1-Market solution' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'MG1-Market solution Name' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'MG2-Brand' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'MG2-Brand Name' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'MG3-Sourcing' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'MG3-Sourcing Name' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'MG4-Color_Und-Denat' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'MG4-Color_Und-Denat Name' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'MG5-Formulation' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'MG5-Formulation Name' , 'S' );
+
+AttrInsert( D_MATERIAL_PLAN , '' , 'C-Certificates' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'C-Certificates Name' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'C-Packaging type' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'C-Packaging type Name' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'C-Pallet type' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'C-Pallet type Name' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'C-Specific marks' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'C-Specific marks Name' , 'S' );
+AttrInsert( D_MATERIAL_PLAN , '' , 'C-Bundle unit' , 'S' );
+
+# Dimension SLS_MATERIAL_PLAN_PRICE
+
+AttrInsert(D_MATERIAL_PRICE , '' , 'PH1-Raw material' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'PH1-Raw material Name' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'PH2-Product family' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'PH2-Product family Name' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'PH3-Calib_TAV_Charac' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'PH3-Calib_TAV_Charac Name' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'PH4-Packag. Format' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'PH4-Packag. Format Name' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'PH5-Sales Unit' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'PH5-Sales Unit Name' , 'S' );
+
+AttrInsert(D_MATERIAL_PRICE , '' , 'MG1-Market solution' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'MG1-Market solution Name' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'MG2-Brand' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'MG2-Brand Name' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'MG3-Sourcing' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'MG3-Sourcing Name' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'MG4-Color_Und-Denat' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'MG4-Color_Und-Denat Name' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'MG5-Formulation' , 'S' );
+AttrInsert(D_MATERIAL_PRICE , '' , 'MG5-Formulation Name' , 'S' );
+
+AttrInsert( D_MATERIAL_PRICE , '' , 'C-Certificates' , 'S' );
+AttrInsert( D_MATERIAL_PRICE , '' , 'C-Certificates Name' , 'S' );
+AttrInsert( D_MATERIAL_PRICE , '' , 'C-Packaging type' , 'S' );
+AttrInsert( D_MATERIAL_PRICE , '' , 'C-Packaging type Name' , 'S' );
+AttrInsert( D_MATERIAL_PRICE , '' , 'C-Pallet type' , 'S' );
+AttrInsert( D_MATERIAL_PRICE , '' , 'C-Pallet type Name' , 'S' );
+AttrInsert( D_MATERIAL_PRICE , '' , 'C-Specific marks' , 'S' );
+AttrInsert( D_MATERIAL_PRICE , '' , 'C-Specific marks Name' , 'S' );
+AttrInsert( D_MATERIAL_PRICE , '' , 'C-Bundle unit' , 'S' );
+
+#####                  Fin Modif VRT                    #####
+
+
+
+
+
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+Div = 'D_'|Division;
+NA_Div = 'N/A_'|Division;
+
+#Si Planning Material vide, égal au Material
+If( PM_code @= '');
+             PM_code = Mat_code;
+EndIf;
+
+
+#-----------------Chargement de la dimension 1_G_MATERIAL----------------#
+
+#Insertion de Material préfixé, Planning Material et Division dans la dimension 1_G_MATERIAL
+If( DIMIX( D_MATERIAL, Mat_code|'.') = 0);
+	DimensionElementInsert(D_MATERIAL, '', Mat_code|'.', 'N');
+EndIf;
+
+If( DIMIX( D_MATERIAL, PM_code)=0);
+	DimensionElementInsert(D_MATERIAL, '',PM_code, 'N');
+EndIf;
+
+If( DIMIX( D_MATERIAL, Div)=0 & PM_code @<> '');
+	DimensionElementInsert(D_MATERIAL, '', Div, 'N');
+	DimensionElementInsert(D_MATERIAL, '', NA_Div, 'N');
+EndIf;
+
+
+#Création de la hiérarchie Tot > Division > PM > Mat
+
+vConso_Mat_code = ELPAR(D_MATERIAL, Mat_code|'.', 1);
+If(vConso_Mat_code @<> '');
+	DimensionElementComponentDelete(D_MATERIAL, vConso_Mat_code,  Mat_code|'.');
+EndIf;
+DimensionElementComponentAdd(D_MATERIAL, PM_code, Mat_code|'.', 1);
+
+vConso_PM_code = ELPAR(D_MATERIAL, PM_code, 1);
+If(vConso_PM_code @<> '');
+	DimensionElementComponentDelete(D_MATERIAL, vConso_PM_code,  PM_code);
+EndIf;
+If(PM_code @<> '');
+	DimensionElementComponentAdd(D_MATERIAL, Div, PM_code, 1);
+EndIf;
+
+#pas besoin de supprimer le rattachement à la dim
+DimensionElementComponentAdd(D_MATERIAL, TOT_MAT, Div, 1);
+
+vConso_Div_code =  ELPAR(D_MATERIAL, NA_Div, 1);
+If(vConso_Div_code @<> '');
+	DimensionElementComponentDelete(D_MATERIAL, vConso_Div_code,  NA_Div);
+EndIf;
+If(PM_code @<> '');
+	DimensionElementComponentAdd(D_MATERIAL, Div, NA_Div, 1);
+EndIf;
+
+
+#-----------------Chargement de la dimension SLS_MATERIAL_PLAN----------------#
+
+#Insertion de Planning Material et Division dans la dimension SLS_MATERIAL_PLAN
+If( DIMIX( D_MATERIAL_PLAN, PM_code) = 0);
+	DimensionElementInsert(D_MATERIAL_PLAN, '', PM_code, 'N');
+EndIf;
+               
+If( DIMIX( D_MATERIAL_PLAN, Div)=0 & PM_code @<> '');
+     DimensionElementInsert(D_MATERIAL_PLAN, '', Div, 'N');
+EndIf;
+
+#Création de la hiérarche Tot > Division > PM
+If(PM_code @= Mat_code);
+
+	#Il faut supprimer le parent avant de le rattacher car d'un csv à un autre le rattachement peut changer
+
+	vConso_PM_code = ELPAR(D_MATERIAL_PLAN, PM_code, 1);
+	If(vConso_PM_code @<> '');
+		DimensionElementComponentDelete(D_MATERIAL_PLAN, vConso_PM_code, PM_code);
+	EndIf;
+    If(PM_code @<> '');
+    	DimensionElementComponentAdd(D_MATERIAL_PLAN, Div, PM_code, 1);
+	EndIf;
+	DimensionElementComponentAdd(D_MATERIAL_PLAN, TOT_PM, Div, 1);
+
+EndIf; 
+
+
+
+#-----------------Chargement de la dimension SLS_MATERIAL_PLAN_PRICE----------------#
+
+#Insertion de Planning Material, Lab Office et Division dans la dimension SLS_MATERIAL_PLAN_PRICE
+If( DIMIX( D_MATERIAL_PRICE, PM_code) = 0);
+	DimensionElementInsert(D_MATERIAL_PRICE, '', PM_code, 'N');
+EndIf;
+
+If( DIMIX( D_MATERIAL_PRICE, Lab_code)=0);
+    DimensionElementInsert(D_MATERIAL_PRICE, '',Lab_code, 'N');
+EndIf;
+
+
+#-----------------Chargement de la dimension SLS_MATERIAL_EXT----------------#
+
+#Insertion de External Material Group dans la dimension SLS_MATERIAL_EXT
+If( DIMIX( D_MATERIAL_EXT, Ext_Mat_Group) = 0);
+	DimensionElementInsert(D_MATERIAL_EXT, '', Ext_Mat_Group, 'N');
+EndIf;
+
+If( DIMIX( D_MATERIAL_EXT, 'Total '|Division) = 0);
+	DimensionElementInsert(D_MATERIAL_EXT, '', 'Total '|Division, 'N');
+EndIf;
+
+#Création d'un attribut pour chaque sales org
+If(DIMIX(D_Attr_MAT_PLAN, Sales_Org)=0);
+	AttrInsert( D_MATERIAL_PLAN, 'Sales Organisation Name', Sales_Org, 'N' );
+EndIf;
+
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#### VRT : 16/06/2022 : Création d'une entete pour le fichier   ######
+IF ( vCompteur = 0 ) ;
+  ASCIIOUTPUT ( '..\Rejects\reject_material_PM_code.csv' , 'Material Code' , 'PM Code','Sales Org' ) ;
+  vCompteur = vCompteur + 1 ;
+ENDIF ;
+
+#####   FIN VRT   ####
+
+Material_Code = Mat_code|'.';
+Div = 'D_'|Division;
+
+Flag = AttrN( D_MATERIAL_PLAN, Div, 'Flag');
+
+#Flag conso retail à 1 pour le N/A
+AttrPutN(1, D_MATERIAL_PLAN, 'N/A_PLANNING_MATERIAL', 'Flag_conso_Retail');
+
+#récupérer l'alias de la division
+Div_desc = CellGetS('}ElementAttributes_1_G_MATERIAL', Div, 'Caption');
+
+#Alias Distrib Channel
+AttrPutS(Distrib_Channel_desc, D_DISTRIB_CHANNEL, Distrib_Channel, 'Name');
+
+AttrPutS(Div_desc, D_MATERIAL_EXT, 'Total '|Division, 'Division_desc' );
+
+#Attribut Code
+AttrPutS(Mat_code, D_MATERIAL, Material_code, 'Code');
+AttrPutS(PM_code, D_MATERIAL_PLAN, PM_code, 'Code');
+AttrPutS(PM_code, D_MATERIAL_PRICE, PM_code, 'Code');
+AttrPutS(Division, D_MATERIAL, Div, 'Code');
+
+#Attribut Sales Org
+AttrPutN(1, D_MATERIAL_PLAN, Div, Sales_Org);
+
+
+#Attribut Niveau
+AttrPutN(0, D_MATERIAL, Material_Code, 'Flag_Niveau');
+AttrPutN(1, D_MATERIAL, PM_Code, 'Flag_Niveau');
+AttrPutN(2, D_MATERIAL, Div, 'Flag_Niveau');
+
+#Le Parent Planning Material en attribut du Material, car différence de niveau de Hiérarchie Retail
+AttrPutS( PM_code, D_MATERIAL, Material_Code, 'Planning Material');
+
+#Concaténation Attribut Distrib Channel
+Distrib_Material = ATTRS(D_MATERIAL, Material_Code, 'Distribution Channel');
+If(Distrib_Material @= '');
+	#Material
+		AttrPutS(Distrib_Channel, D_MATERIAL, Material_code, 'Distribution Channel' );
+		AttrPutS(Distrib_Channel_desc, D_MATERIAL, Material_code, 'Distribution Channel Name' );
+ElseIf(SCAN(Distrib_Channel, Distrib_Material) = 0);
+	#Material
+	AttrPutS(Distrib_Material | ' & ' | Distrib_Channel,  D_MATERIAL, Material_code, 'Distribution Channel' );
+    Distrib_Name_Material = ATTRS(D_MATERIAL, Material_Code, 'Distribution Channel Name');
+    AttrPutS(Distrib_Name_Material | ' & ' | Distrib_Channel_desc,  D_MATERIAL, Material_code, 'Distribution Channel Name' );
+EndIf;   
+
+#désactivé le 09/07/20
+#  VRT : Réactivé le 16/06/2022 avec fichier rejet
+If( PM_code @= Mat_code);
+
+		IF ( sMatCode @= Mat_code ) ;
+		
+		ELSE ;
+			
+			ASCIIOUTPUT ( '..\Rejects\reject_material_PM_code.csv' , Mat_code , PM_code ) ;
+			sMatCode = Mat_code ;
+		ENDIF ;
+
+		Distrib_Material_Plan = ATTRS(D_MATERIAL_PLAN, Mat_code, 'Distribution Channel');
+
+		If(Distrib_Material_Plan @= '');
+    			#Material Plan
+    			AttrPutS(Distrib_Channel, D_MATERIAL_PLAN, Mat_code, 'Distribution Channel' );
+			AttrPutS(Distrib_Channel_desc, D_MATERIAL_PLAN, Mat_code, 'Distribution Channel Name' );
+   		ElseIf(SCAN(Distrib_Channel, Distrib_Material_Plan) = 0);
+      			AttrPutS(Distrib_Material_Plan | ' & ' | Distrib_Channel,  D_MATERIAL_PLAN, Mat_code, 'Distribution Channel' );
+    			Distrib_Name_Material_Plan = ATTRS(D_MATERIAL_PLAN, Mat_code, 'Distribution Channel Name');
+    			AttrPutS(Distrib_Name_Material_Plan | ' & ' | Distrib_Channel_desc,  D_MATERIAL_PLAN, Mat_code, 'Distribution Channel Name' );
+   	 	EndIf;
+    
+		Distrib_Material_Plan_Price = ATTRS(D_MATERIAL_PRICE, Mat_code, 'Distribution Channel');
+
+	If(Distrib_Material_Plan_Price @= '');
+    		#Material Plan
+    		AttrPutS(Distrib_Channel, D_MATERIAL_PRICE, Mat_code, 'Distribution Channel' );
+		AttrPutS(Distrib_Channel_desc, D_MATERIAL_PRICE, Mat_code, 'Distribution Channel Name' );
+   	ElseIf(SCAN(Distrib_Channel, Distrib_Material_Plan_Price) = 0);
+      		AttrPutS(Distrib_Material_Plan_Price | ' & ' | Distrib_Channel,  D_MATERIAL_PRICE, Mat_code, 'Distribution Channel' );
+    		Distrib_Name_Material_Plan_Price = ATTRS(D_MATERIAL_PRICE, Mat_code, 'Distribution Channel Name');
+    		AttrPutS(Distrib_Name_Material_Plan_Price | ' & ' | Distrib_Channel_desc,  D_MATERIAL_PRICE, Mat_code, 'Distribution Channel Name' );
+    	EndIf;
+
+
+#désactivé le 09/07/20
+#  VRT : Réactivé le 16/06/2022 avec fichier rejet
+EndIf;
+
+
+#Concaténation Sales Organisation car non unique par Material
+Sales_Org_Material = ATTRS(D_MATERIAL, Material_Code, 'Sales Organisation');
+If(Sales_Org_Material @= '');
+	#Material
+		AttrPutS(Sales_Org, D_MATERIAL, Material_code, 'Sales Organisation' );
+		AttrPutS(Sales_Org_desc, D_MATERIAL, Material_code, 'Sales Organisation Name' );
+ElseIf(SCAN(Sales_Org, Sales_Org_Material) = 0);
+	#Material
+	AttrPutS(Sales_Org_Material | ' & ' | Sales_Org,  D_MATERIAL, Material_code, 'Sales Organisation' );
+    Sales_Org_Name_Material = ATTRS(D_MATERIAL, Material_Code, 'Sales Organisation Name');
+    AttrPutS(Sales_Org_Name_Material | ' & ' | Sales_Org_desc,  D_MATERIAL, Material_code, 'Sales Organisation Name' );
+EndIf;   
+
+#désactivé le 09/07/20
+#  VRT : Réactivé le 16/06/2022 avec fichier rejet
+If( PM_code @= Mat_code);
+
+	#IF ( DIMIX ( Mat_code , D_MATERIAL_PLAN ) = 0 ) ;
+		
+		IF ( sMatCode @= Mat_code ) ;
+		
+		ELSE ;
+			
+			ASCIIOUTPUT ( '..\Rejects\reject_material_PM_code.csv' , Mat_code , PM_code , Sales_Org) ;
+			sMatCode = Mat_code ;
+		ENDIF ;
+	#ELSE ;
+
+		Sales_Org_Material_Plan = ATTRS(D_MATERIAL_PLAN, Mat_code, 'Sales Organisation');
+		If(Sales_Org_Material_Plan @= '');
+    			#Material Plan
+    			AttrPutS(Sales_Org, D_MATERIAL_PLAN, Mat_code, 'Sales Organisation' );
+			AttrPutS(Sales_Org_desc, D_MATERIAL_PLAN, Mat_code, 'Sales Organisation Name' );
+   		ElseIf(SCAN(Sales_Org, Sales_Org_Material_Plan) = 0);
+      			AttrPutS(Sales_Org_Material_Plan | ' & ' | Sales_Org,  D_MATERIAL_PLAN, Mat_code, 'Sales Organisation' );
+    			Sales_Org_Name_Material_Plan = ATTRS(D_MATERIAL_PLAN, Mat_code, 'Sales Organisation Name');
+    			AttrPutS(Sales_Org_Name_Material_Plan | ' & ' | Sales_Org_desc,  D_MATERIAL_PLAN, Mat_code, 'Sales Organisation Name' );
+    		EndIf;
+    
+    		Sales_Org_Material_Plan_Price = ATTRS(D_MATERIAL_PRICE, Mat_code, 'Sales Organisation');	
+		If(Sales_Org_Material_Plan_Price @= '');
+    			#Material Plan
+    			AttrPutS(Sales_Org, D_MATERIAL_PRICE, Mat_code, 'Sales Organisation' );
+			AttrPutS(Sales_Org_desc, D_MATERIAL_PRICE, Mat_code, 'Sales Organisation Name' );
+   		ElseIf(SCAN(Sales_Org, Sales_Org_Material_Plan_Price) = 0);
+      			AttrPutS(Sales_Org_Material_Plan_Price | ' & ' | Sales_Org,  D_MATERIAL_PRICE, Mat_code, 'Sales Organisation' );
+    			Sales_Org_Name_Material_Plan_Price = ATTRS(D_MATERIAL_PRICE, Mat_code, 'Sales Organisation Name');
+   		 	AttrPutS(Sales_Org_Name_Material_Plan_Price | ' & ' | Sales_Org_desc,  D_MATERIAL_PRICE, Mat_code, 'Sales Organisation Name' );
+   		 EndIf;
+	#ENDIF ;
+
+#désactivé le 09/07/20
+#  VRT : Réactivé le 16/06/2022 avec fichier rejet
+EndIf;
+
+
+If(Flag = 0);
+	#On renseigne les descriptions des divisions
+	AttrPutS(Division_desc, D_MATERIAL, Div, 'Description');
+	AttrPutS(Division_desc, D_MATERIAL_PLAN, Div, 'Description');
+
+	AttrPutS(Division_desc, D_MATERIAL, Div, 'Caption');
+	AttrPutS(Division_desc, D_MATERIAL_PLAN, Div, 'Caption');
+
+	AttrPutS(Division_desc, D_MATERIAL, Div, 'Code - Caption');
+	AttrPutS(Division_desc, D_MATERIAL_PLAN, Div, 'Code - Caption');
+                  
+	AttrPutS('Total '|Division_desc, D_MATERIAL_EXT,  'Total '|Division, 'Caption' );
+	AttrPutS(Division, D_MATERIAL_EXT, 'Total '|Division, 'Division' );
+
+
+	AttrPutN(1, D_MATERIAL_PLAN, Div, 'Flag');
+EndIf;
+
+#Si Planning Material vide, égal au Material
+If( PM_code @= '');
+             PM_code = Mat_code;
+             PLAN_MAT_DESC = Mat_desc;
+EndIf;
+
+AttrPutN(1, D_MATERIAL_PLAN, PM_code, 'Flag_conso_retail');
+
+
+#Attributs de Material dans la dimension 1_G_MATERIAL
+
+#Description, non alias car non unique
+AttrPutS(Mat_desc, D_MATERIAL, Material_Code, 'Description' );
+
+#alias non unique donc concaténation
+AttrPutS(Mat_code|' - '|Mat_desc|'.', D_MATERIAL, Material_Code, 'Code - Caption' );
+
+Mat_desc = Mat_desc|'.';
+While(DIMIX(D_MATERIAL, Mat_desc) <> 0 & DIMIX(D_MATERIAL, Mat_desc) <> DIMIX(D_MATERIAL, Material_Code));
+      Mat_desc = Mat_desc|'.';
+End; 
+    
+Attr_Mat = AttrS(D_MATERIAL, Material_code,'Caption');
+If(DIMIX(D_MATERIAL, Mat_desc) <> DIMIX(D_MATERIAL, Material_Code));
+	AttrPutS(Mat_desc, D_MATERIAL, Material_code, 'Caption' );
+EndIf;
+#Status de l'article
+AttrPutS(Status_code, D_MATERIAL, Material_Code, 'Status');
+AttrPutS(Status_desc, D_MATERIAL, Material_Code, 'Status Name');
+
+
+#Attributs Group Material 
+AttrPutS(Group_Material_code, D_MATERIAL, Material_Code, 'Group material' );
+AttrPutS(Group_Material_desc, D_MATERIAL, Material_Code, 'Group material name' );
+
+
+#####    Modif VRT : Modification de attributs    #####
+# Même source mais cible différente
+
+#Attributs PH1 à PH6
+#AttrPutS(PH1_code, D_MATERIAL, Material_Code, 'PH1 Type' );
+#AttrPutS(PH1_desc, D_MATERIAL, Material_Code, 'PH1 Type Name' );
+#AttrPutS(PH2_code, D_MATERIAL, Material_Code, 'PH2 Segment' );
+#AttrPutS(PH2_desc, D_MATERIAL, Material_Code, 'PH2 Segment Name' );
+#AttrPutS(PH3_code, D_MATERIAL, Material_Code, 'PH3 Range' );
+#AttrPutS(PH3_desc, D_MATERIAL, Material_Code, 'PH3 Range Name' );
+#AttrPutS(PH4_code, D_MATERIAL, Material_Code, 'PH4 Family' );
+#AttrPutS(PH4_desc, D_MATERIAL, Material_Code, 'PH4 Family Name' );
+#AttrPutS(PH5_code, D_MATERIAL, Material_Code, 'PH5 Sub Family' );
+#AttrPutS(PH5_desc, D_MATERIAL, Material_Code, 'PH5 Sub Family Name' );
+#AttrPutS(PH6_code, D_MATERIAL, Material_Code, 'PH6 Trade Unit' );
+#AttrPutS(PH6_desc, D_MATERIAL, Material_Code, 'PH6 Trade Unit Name' );
+
+AttrPutS(PH1_code, D_MATERIAL, Material_Code, 'PH1-Raw material' );
+AttrPutS(PH1_desc, D_MATERIAL, Material_Code, 'PH1-Raw material Name' );
+AttrPutS(PH2_code, D_MATERIAL, Material_Code, 'PH2-Product family' );
+AttrPutS(PH2_desc, D_MATERIAL, Material_Code, 'PH2-Product family Name' );
+AttrPutS(PH3_code, D_MATERIAL, Material_Code, 'PH3-Calib_TAV_Charac' );
+IF ( PH3_desc @= '99,9' ) ;
+  PH3_desc = PH3_desc | '.' ;
+ENDIF;
+AttrPutS(PH3_desc, D_MATERIAL, Material_Code, 'PH3-Calib_TAV_Charac Name' );
+AttrPutS(PH4_code, D_MATERIAL, Material_Code, 'PH4-Packag. Format' );
+AttrPutS(PH4_desc, D_MATERIAL, Material_Code, 'PH4-Packag. Format Name' );
+AttrPutS(PH5_code, D_MATERIAL, Material_Code, 'PH5-Sales Unit' );
+AttrPutS(PH5_desc, D_MATERIAL, Material_Code, 'PH5-Sales Unit Name' );
+
+#####                  Fin Modif VRT                    #####
+
+#Attribut Base Unit
+AttrPutS(Base_Unit, D_MATERIAL, Material_Code, 'Base Unit');
+
+#Attribut Material Pricing Group
+AttrPutS(Mat_Pricing_Group_code, D_MATERIAL, Material_Code, 'Material Pricing Group' );
+AttrPutS(Mat_Pricing_Group_desc, D_MATERIAL, Material_Code, 'Material Pricing Group Name' );
+
+#####    Modif VRT : Modification de attributs    #####
+# Même source mais cible différente
+
+#Attribut Material Group 1 à 5
+#AttrPutS(Mat_Group_1_code, D_MATERIAL, Material_Code, 'Material Group 1' );
+#AttrPutS(Mat_Group_1_desc, D_MATERIAL, Material_Code, 'Material Group 1 Name' );
+#AttrPutS(Mat_Group_2_code, D_MATERIAL, Material_Code, 'Material Group 2' );
+#AttrPutS(Mat_Group_2_desc, D_MATERIAL, Material_Code, 'Material Group 2 Name' );
+#AttrPutS(Mat_Group_3_code, D_MATERIAL, Material_Code, 'Material Group 3' );
+#AttrPutS(Mat_Group_3_desc, D_MATERIAL, Material_Code, 'Material Group 3 Name' );
+#AttrPutS(Mat_Group_4_code, D_MATERIAL, Material_Code, 'Material Group 4' );
+#AttrPutS(Mat_Group_4_desc, D_MATERIAL, Material_Code, 'Material Group 4 Name' );
+#AttrPutS(Mat_Group_5_code, D_MATERIAL, Material_Code, 'Material Group 5' );
+#AttrPutS(Mat_Group_5_desc, D_MATERIAL, Material_Code, 'Material Group 5 Name' );
+
+
+AttrPutS(Mat_Group_1_code, D_MATERIAL, Material_Code, 'MG1-Market solution' );
+AttrPutS(Mat_Group_1_desc, D_MATERIAL, Material_Code, 'MG1-Market solution Name' );
+AttrPutS(Mat_Group_2_code, D_MATERIAL, Material_Code, 'MG2-Brand' );
+AttrPutS(Mat_Group_2_desc, D_MATERIAL, Material_Code, 'MG2-Brand Name' );
+AttrPutS(Mat_Group_3_code, D_MATERIAL, Material_Code, 'MG3-Sourcing' );
+AttrPutS(Mat_Group_3_desc, D_MATERIAL, Material_Code, 'MG3-Sourcing Name' );
+AttrPutS(Mat_Group_4_code, D_MATERIAL, Material_Code, 'MG4-Color_Und-Denat' );
+AttrPutS(Mat_Group_4_desc, D_MATERIAL, Material_Code, 'MG4-Color_Und-Denat Name' );
+AttrPutS(Mat_Group_5_code, D_MATERIAL, Material_Code, 'MG5-Formulation' );
+AttrPutS(Mat_Group_5_desc, D_MATERIAL, Material_Code, 'MG5-Formulation Name' );
+
+
+### Modif VRT : Alimentation des nouveaux attributs   ####
+
+AttrPutS( C_CERTIFICATIONS , D_MATERIAL, Material_Code, 'C-Certificates' );
+AttrPutS( C_CERTIFICATIONS_NAME , D_MATERIAL, Material_Code, 'C-Certificates Name' );
+AttrPutS( C_PACKAGING_TYPE , D_MATERIAL, Material_Code, 'C-Packaging type' );
+AttrPutS( C_PACKAGING_TYPE_NAME , D_MATERIAL, Material_Code, 'C-Packaging type Name' );
+AttrPutS( C_PALLET_TYPE , D_MATERIAL, Material_Code, 'C-Pallet type' );
+AttrPutS( C_PALLET_TYPE_NAME , D_MATERIAL, Material_Code, 'C-Pallet type Name' );
+AttrPutS( C_SPECIFIC_MARKS , D_MATERIAL, Material_Code, 'C-Specific marks' );
+AttrPutS( C_SPECIFIC_MARKS_NAME , D_MATERIAL, Material_Code, 'C-Specific marks Name' );
+AttrPutS( C_BUNDLE_UNIT , D_MATERIAL, Material_Code, 'C-Bundle unit' );
+
+
+#####                  Fin Modif VRT                    #####
+
+
+
+#############Flag l'attribut 'Vol_Promo' de la dimension 1_G_MATERIAL pour identifier les articles spécifiques promo#################"
+#SI Mat Group 5 = 
+
+#If( ((Mat_Group_2_code @= '03' % Mat_Group_2_code @= '04' ) & ( Mat_Group_5_code @= '84L' % Mat_Group_5_code @= '86L' ) & Lab_code @= 'RSP') % Lab_code @= 'RPO' );
+If( ((Mat_Group_2_code @= 'S06' % Mat_Group_2_code @= 'S12' ) & ( C_PALLET_TYPE @= '84L' % C_PALLET_TYPE @= '86L' ) & Lab_code @= 'RSP') % Lab_code @= 'RPO' );
+	AttrPutN(1, D_MATERIAL, Material_Code, 'Vol_Promo');
+Else;
+	 AttrPutN(0, D_MATERIAL, Material_Code, 'Vol_Promo');
+EndIf; 
+
+
+#Attribut External Material Group
+AttrPutS(Ext_Mat_Group, D_MATERIAL, Material_Code, 'Ext. Matl Group' );
+AttrPutS(Ext_Mat_Group_desc, D_MATERIAL, Material_Code, 'Ext. Matl Group Name' );
+
+
+#Attribut Material Type
+AttrPutS(Mat_Type_code, D_MATERIAL, Material_Code, 'Material Type' );
+AttrPutS(Mat_Type_desc, D_MATERIAL, Material_Code, 'Material Type Name' );
+
+#Attribut Tamisage
+AttrPutS(Tamisage, D_MATERIAL, Material_Code, 'Tamisage' );
+
+#Attribut Imputation Group Material
+AttrPutS(Imputation_Group_Mat_code, D_MATERIAL, Material_Code, 'Imputation Group Mat' );
+
+#Attribut Material Price
+AttrPutS(Mat_Price_code, D_MATERIAL, Material_Code, 'Material Price' );
+
+#Attribut Material Group Pack
+AttrPutS(Mat_Group_Pack_code, D_MATERIAL, Material_Code, 'Mat Group Pack' );
+AttrPutS(Mat_Group_Pack_desc, D_MATERIAL, Material_Code, 'Mat Group Pack Name' );
+
+#Attribut EAN/UPC
+AttrPutS(EAN, D_MATERIAL, Material_Code, 'EAN/UPC' );
+
+#Attributs à ajouter
+AttrPutS('', D_MATERIAL, Material_Code, 'Type d appro' );
+AttrPutS('', D_MATERIAL, Material_Code, 'Clé d appro' );
+
+If( Lab_code @<> '');
+	AttrPutS(Lab_code |' - ' | Lab_desc, D_MATERIAL_PRICE, Lab_code, 'Caption');
+    AttrPutS(Lab_code |' - ' | Lab_desc, D_MATERIAL_PRICE, Lab_code, 'Code - Caption');
+	AttrPutS(Lab_desc, D_MATERIAL_PRICE, Lab_code, 'Description');
+    AttrPutN(1, D_MATERIAL_PRICE, Lab_code, 'Flag_Lab');
+EndIf;
+
+#Attribut Lab/Office
+AttrPutS(Lab_code, D_MATERIAL, Material_Code, 'Lab' );
+
+
+######################################## ATTRIBUTS DE PLANNING MATERIAL ######################################
+
+#Les attributs du Planning Material sont uniques seulement si Planning Material égal au Material
+
+
+If( PM_code @= Mat_code);
+
+	#Alias du Planning Material dans la dimension 1_G_MATERIAL
+	#Si Planning Material égal au Material, insérer l'alias (optimisé)
+	AttrPutS(PM_code|' - '|PLAN_MAT_DESC, D_MATERIAL, PM_code, 'Code - Caption' );
+	AttrPutS(PLAN_MAT_DESC, D_MATERIAL, PM_code, 'Description' );
+	#Attributs de Planning Material dans la dimension SLS_MATERIAL_PLAN
+	#alias non unique donc concaténation
+	AttrPutS(PM_code|' - '|PLAN_MAT_DESC, D_MATERIAL_PLAN, PM_code, 'Code - Caption' );
+
+	#Description, non alias car non unique
+	AttrPutS(PLAN_MAT_DESC, D_MATERIAL_PLAN, PM_code, 'Description' );
+
+    while(DIMIX(D_MATERIAL_PLAN, PLAN_MAT_DESC) <> 0 & DIMIX(D_MATERIAL_PLAN, PLAN_MAT_DESC) <> DIMIX(D_MATERIAL_PLAN, PM_code));
+      PLAN_MAT_DESC = PLAN_MAT_DESC|'.';
+	End; 
+    
+    Attr_PM = AttrS(D_MATERIAL_PLAN, PM_code,'Caption');
+    If(Attr_PM @<> PLAN_MAT_DESC);
+		AttrPutS(PLAN_MAT_DESC, D_MATERIAL_PLAN, PM_code, 'Caption' );
+    EndIf;
+    
+     while(DIMIX(D_MATERIAL, PLAN_MAT_DESC) <> 0 & DIMIX(D_MATERIAL, PLAN_MAT_DESC) <> DIMIX(D_MATERIAL, PM_code));
+      PLAN_MAT_DESC = PLAN_MAT_DESC|'.';
+	End; 
+    
+    Attr_Mat = AttrS(D_MATERIAL, PM_code,'Caption');
+    If(Attr_Mat @<> PLAN_MAT_DESC);
+		AttrPutS(PLAN_MAT_DESC, D_MATERIAL, PM_code, 'Caption' );
+    EndIf;
+    
+    #Status de l'article
+	AttrPutS(Status_code, D_MATERIAL_PLAN, PM_Code, 'Status');
+	AttrPutS(Status_desc, D_MATERIAL_PLAN, PM_Code, 'Status Name');
+    AttrPutS(Status_code, D_MATERIAL, PM_Code, 'Status');
+	AttrPutS(Status_desc, D_MATERIAL, PM_Code, 'Status Name');
+
+	#Attributs Group Material 
+	AttrPutS(Group_Material_code, D_MATERIAL_PLAN, PM_code, 'Group material' );
+	AttrPutS(Group_Material_desc, D_MATERIAL_PLAN, PM_code, 'Group material name' );
+
+#####    Modif VRT : Modification de attributs    #####
+# Même source mais cible différente
+
+	#Attributs PH1 à PH6
+	#AttrPutS(PH1_code, D_MATERIAL_PLAN, PM_code, 'PH1 Type' );
+	#AttrPutS(PH1_desc, D_MATERIAL_PLAN, PM_code, 'PH1 Type Name' );
+            # Dimo le 09/12/2020 isilog 235 838 prise en compte de l'attribut PH2 segment pour génération de hierarchies virtuelles (élément existant déjà)        
+                    #IF ( PH2_code @= 'VIN' ) ;
+                     #PH2_code = PH2_code  | '..' ;
+                  #ELSE ;
+                   #PH2_code  = PH2_code  ;
+                  #ENDIF ;
+                   #AttrPutS(PH2_code, D_MATERIAL_PLAN, PM_code, 'PH2 Segment' );
+                  #AttrPutS(PH2_desc, D_MATERIAL_PLAN, PM_code, 'PH2 Segment Name' );
+            # Dimo le 09/12/2020 isilog 235 838  prise en compte de l'attribut PH3 Range pour génération de hierarchies virtuelles (élément existant déjà)     
+                    #IF ( PH3_code @= 'MEK' ) ;
+                     #PH3_code = PH3_code  | '.' ;
+                  #ELSE ;
+                   #PH3_code  = PH3_code  ;
+                  #ENDIF ;
+			# CU le 03/08/2021  prise en compte
+                  #IF ( PH3_code @= 'VIN' ) ;
+                     #PH3_code = PH3_code  | '...' ;
+                  #ELSE ;
+                   #PH3_code  = PH3_code  ;
+                  #ENDIF ;                     
+	#AttrPutS(PH3_code, D_MATERIAL_PLAN, PM_code, 'PH3 Range' );
+	#AttrPutS(PH3_desc, D_MATERIAL_PLAN, PM_code, 'PH3 Range Name' );
+	#AttrPutS(PH4_code, D_MATERIAL_PLAN, PM_code, 'PH4 Family' );
+	#AttrPutS(PH4_desc, D_MATERIAL_PLAN, PM_code, 'PH4 Family Name' );
+	#AttrPutS(PH5_code, D_MATERIAL_PLAN, PM_code, 'PH5 Sub Family' );
+	#AttrPutS(PH5_desc, D_MATERIAL_PLAN, PM_code, 'PH5 Sub Family Name' );
+           # Dimo le 09/12/2020 isilog 235 838 prise en compte de l'attribut PH6 Trade Unit pour génération de hierarchies virtuelles (élément existant déjà)     
+                    #IF ( PH6_code @= '250' ) ;
+                     #PH6_code = PH6_code  | '.' ;
+                  #ELSE ;
+                   #PH6_code  = PH6_code  ;
+                  #ENDIF ;
+	#AttrPutS(PH6_code, D_MATERIAL_PLAN, PM_code, 'PH6 Trade Unit' );
+	#AttrPutS(PH6_desc, D_MATERIAL_PLAN, PM_code, 'PH6 Trade Unit Name' );
+
+
+	#Attributs PH1 à PH5
+	AttrPutS(PH1_code, D_MATERIAL_PLAN, PM_code, 'PH1-Raw material' );
+	AttrPutS(PH1_desc, D_MATERIAL_PLAN, PM_code, 'PH1-Raw material Name' );
+            # Dimo le 09/12/2020 isilog 235 838 prise en compte de l'attribut PH2 segment pour génération de hierarchies virtuelles (élément existant déjà)        
+                    IF ( PH2_code @= 'VIN' ) ;
+                     PH2_code = PH2_code  | '..' ;
+                  ELSE ;
+                   PH2_code  = PH2_code  ;
+                  ENDIF ;
+					AttrPutS(PH2_code, D_MATERIAL_PLAN, PM_code, 'PH2-Product family' );
+					AttrPutS(PH2_desc, D_MATERIAL_PLAN, PM_code, 'PH2-Product family Name' );
+            # Dimo le 09/12/2020 isilog 235 838  prise en compte de l'attribut PH3 Range pour génération de hierarchies virtuelles (élément existant déjà)     
+                    IF ( PH3_code @= 'MEK' ) ;
+                     PH3_code = PH3_code  | '.' ;
+                  ELSE ;
+                   PH3_code  = PH3_code  ;
+                  ENDIF ;
+			# CU le 03/08/2021  prise en compte
+                  IF ( PH3_code @= 'VIN' ) ;
+                     PH3_code = PH3_code  | '...' ;
+                  ELSE ;
+                   PH3_code  = PH3_code  ;
+                  ENDIF ;       
+
+IF ( PH3_code @<> '' ) ;
+	AttrPutS(PH3_code | '.' , D_MATERIAL_PLAN, PM_code, 'PH3-Calib_TAV_Charac' );
+ENDIF ;
+	AttrPutS(PH3_desc, D_MATERIAL_PLAN, PM_code, 'PH3-Calib_TAV_Charac Name' );
+	AttrPutS(PH4_code, D_MATERIAL_PLAN, PM_code, 'PH4-Packag. Format' );
+	AttrPutS(PH4_desc, D_MATERIAL_PLAN, PM_code, 'PH4-Packag. Format Name' );
+	AttrPutS(PH5_code, D_MATERIAL_PLAN, PM_code, 'PH5-Sales Unit' );
+	AttrPutS(PH5_desc, D_MATERIAL_PLAN, PM_code, 'PH5-Sales Unit Name' );
+	
+
+#####                  Fin Modif VRT                    #####
+
+	#Attribut Base Unit
+	AttrPutS(Base_Unit, D_MATERIAL_PLAN, PM_code, 'Base Unit');
+
+	#Attribut Material Pricing Group
+	AttrPutS(Mat_Pricing_Group_code, D_MATERIAL_PLAN, PM_code, 'Material Pricing Group' );
+	AttrPutS(Mat_Pricing_Group_desc, D_MATERIAL_PLAN, PM_code, 'Material Pricing Group Name' );
+
+
+#####    Modif VRT : Modification de attributs    #####
+# Même source mais cible différente
+
+
+	#Attribut Material Group 1 à 5
+	#AttrPutS(Mat_Group_1_code, D_MATERIAL_PLAN, PM_code, 'Material Group 1' );
+	#AttrPutS(Mat_Group_1_desc, D_MATERIAL_PLAN, PM_code, 'Material Group 1 Name' );
+           # Dimo le 09/12/2020 isilog 235 838  prise en compte de l'attribut Material Group 2 pour génération de hierarchies virtuelles (élément existant déjà)     
+                    #IF ( Mat_Group_2_code @= 'XX' ) ;
+                     #Mat_Group_2_code = Mat_Group_2_code  | '.' ;
+                  #ELSE ;
+                   #Mat_Group_2_code  = Mat_Group_2_code  ;
+                  #ENDIF ;
+	#AttrPutS(Mat_Group_2_code, D_MATERIAL_PLAN, PM_code, 'Material Group 2' );
+	#AttrPutS(Mat_Group_2_desc, D_MATERIAL_PLAN, PM_code, 'Material Group 2 Name' );
+	#AttrPutS(Mat_Group_3_code, D_MATERIAL_PLAN, PM_code, 'Material Group 3' );
+	#AttrPutS(Mat_Group_3_desc, D_MATERIAL_PLAN, PM_code, 'Material Group 3 Name' );
+	#AttrPutS(Mat_Group_4_code, D_MATERIAL_PLAN, PM_code, 'Material Group 4' );
+	#AttrPutS(Mat_Group_4_desc, D_MATERIAL_PLAN, PM_code, 'Material Group 4 Name' );
+	#AttrPutS(Mat_Group_5_code, D_MATERIAL_PLAN, PM_code, 'Material Group 5' );
+	#AttrPutS(Mat_Group_5_desc, D_MATERIAL_PLAN, PM_code, 'Material Group 5 Name' );
+	
+	
+	AttrPutS(Mat_Group_1_code, D_MATERIAL_PLAN, PM_code, 'MG1-Market solution' );
+	AttrPutS(Mat_Group_1_desc, D_MATERIAL_PLAN, PM_code, 'MG1-Market solution Name' );
+	AttrPutS(Mat_Group_2_code, D_MATERIAL_PLAN, PM_code, 'MG2-Brand' );
+	AttrPutS(Mat_Group_2_desc, D_MATERIAL_PLAN, PM_code, 'MG2-Brand Name' );
+	AttrPutS(Mat_Group_3_code, D_MATERIAL_PLAN, PM_code, 'MG3-Sourcing' );
+	AttrPutS(Mat_Group_3_desc, D_MATERIAL_PLAN, PM_code, 'MG3-Sourcing Name' );
+	AttrPutS(Mat_Group_4_code, D_MATERIAL_PLAN, PM_code, 'MG4-Color_Und-Denat' );
+	AttrPutS(Mat_Group_4_desc, D_MATERIAL_PLAN, PM_code, 'MG4-Color_Und-Denat Name' );
+	AttrPutS(Mat_Group_5_code, D_MATERIAL_PLAN, PM_code, 'MG5-Formulation' );
+	AttrPutS(Mat_Group_5_desc, D_MATERIAL_PLAN, PM_code, 'MG5-Formulation Name' );
+	
+	
+	### Modif VRT : Alimentation des nouveaux attributs   ####
+
+	AttrPutS( C_CERTIFICATIONS , D_MATERIAL_PLAN, PM_code, 'C-Certificates' );
+	AttrPutS( C_CERTIFICATIONS_NAME , D_MATERIAL_PLAN, PM_code, 'C-Certificates Name' );
+	AttrPutS( C_PACKAGING_TYPE , D_MATERIAL_PLAN, PM_code, 'C-Packaging type' );
+	AttrPutS( C_PACKAGING_TYPE_NAME , D_MATERIAL_PLAN, PM_code, 'C-Packaging type Name' );
+	AttrPutS( C_PALLET_TYPE , D_MATERIAL_PLAN, PM_code, 'C-Pallet type' );
+	AttrPutS( C_PALLET_TYPE_NAME , D_MATERIAL_PLAN, PM_code, 'C-Pallet type Name' );
+	AttrPutS( C_SPECIFIC_MARKS , D_MATERIAL_PLAN, PM_code, 'C-Specific marks' );
+	AttrPutS( C_SPECIFIC_MARKS_NAME , D_MATERIAL_PLAN, PM_code, 'C-Specific marks Name' );
+	AttrPutS( C_BUNDLE_UNIT , D_MATERIAL_PLAN, PM_code, 'C-Bundle unit' );
+
+	
+	
+#####                  Fin Modif VRT                    #####
+
+	
+	#Attribut Lab/Office
+	AttrPutS(Lab_code, D_MATERIAL_PLAN, PM_code, 'Lab' );
+
+	#Attribut External Material Group
+	AttrPutS(Ext_Mat_Group, D_MATERIAL_PLAN, PM_code, 'Ext. Matl Group' );
+	AttrPutS(Ext_Mat_Group_desc , D_MATERIAL_PLAN, PM_code, 'Ext. Matl Group Name' );
+
+	#Attribut Material Type
+	AttrPutS(Mat_Type_code, D_MATERIAL_PLAN, PM_code, 'Material Type' );
+	AttrPutS(Mat_Type_desc, D_MATERIAL_PLAN, PM_code, 'Material Type Name' );
+
+	#Attribut Tamisage
+	AttrPutS(Tamisage, D_MATERIAL_PLAN, PM_code, 'Tamisage' );
+
+	#Attribut Imputation Group Material
+	AttrPutS(Imputation_Group_Mat_code, D_MATERIAL_PLAN, PM_code, 'Imputation Group Mat' );
+
+	#Attribut Material Price
+	AttrPutS(Mat_Price_code, D_MATERIAL_PLAN, PM_code, 'Material Price' );
+
+	#Attribut Material Group Pack
+	AttrPutS(Mat_Group_Pack_code, D_MATERIAL_PLAN, PM_code, 'Mat Group Pack' );
+	AttrPutS(Mat_Group_Pack_desc, D_MATERIAL_PLAN, PM_code, 'Mat Group Pack Name' );
+
+	#Attribut EAN/UPC
+	AttrPutS(EAN, D_MATERIAL_PLAN, PM_code, 'EAN/UPC' );
+
+	#Attributs à ajouter
+	AttrPutS('', D_MATERIAL_PLAN, PM_code, 'Production Plant' );
+	AttrPutS('', D_MATERIAL_PLAN, PM_code, 'Type d appro' );
+	AttrPutS('', D_MATERIAL_PLAN, PM_code, 'Clé d appro' );
+
+EndIf;
+
+
+######################################## ATTRIBUTS DE PLANNING MATERIAL DANS LA DIM SLS_MATERIAL_PLAN_PRICE ######################################
+
+#Les attributs du Planning Material sont uniques seulement si Planning Material égal au Material
+If( PM_code @= Mat_code);
+
+	#Attributs de Planning Material dans la dimension SLS_MATERIAL_PLAN
+	#alias non unique donc concaténation
+	AttrPutS(PM_code|' - '|PLAN_MAT_DESC, D_MATERIAL_PRICE, PM_code, 'Code - Caption' );
+
+	#Description, non alias car non unique
+	AttrPutS(PLAN_MAT_DESC, D_MATERIAL_PRICE, PM_code, 'Description' );
+	
+    While(DIMIX(D_MATERIAL_PRICE, PLAN_MAT_DESC) <> 0 & DIMIX(D_MATERIAL_PRICE, PLAN_MAT_DESC) <> DIMIX(D_MATERIAL_PRICE, PM_code));
+      PLAN_MAT_DESC = PLAN_MAT_DESC|'.';
+	End; 
+    
+	AttrPutS(PLAN_MAT_DESC, D_MATERIAL_PRICE, PM_code, 'Caption' );
+
+	
+	#Attribut Division
+	#car n'est plus dans la hiérarchie de Material_Plan_Price
+	AttrPutS(Division_desc, D_MATERIAL_PRICE, PM_code, 'Division');
+
+	#Status de l'article
+	AttrPutS(Status_code, D_MATERIAL_PRICE, PM_Code, 'Status');
+	AttrPutS(Status_desc, D_MATERIAL_PRICE, PM_Code, 'Status_label');
+
+	#Attributs Group Material 
+	AttrPutS(Group_Material_code, D_MATERIAL_PRICE, PM_code, 'Group material' );
+	AttrPutS(Group_Material_desc, D_MATERIAL_PRICE, PM_code, 'Group material name' );
+
+
+#####    Modif VRT : Modification de attributs    #####
+# Même source mais cible différente
+
+	#Attributs PH1 à PH6
+	#AttrPutS(PH1_code, D_MATERIAL_PRICE, PM_code, 'PH1 Type' );
+	#AttrPutS(PH1_desc, D_MATERIAL_PRICE, PM_code, 'PH1 Name' );
+	#AttrPutS(PH2_code, D_MATERIAL_PRICE, PM_code, 'PH2 Segment' );
+	#AttrPutS(PH2_desc, D_MATERIAL_PRICE, PM_code, 'PH2 Name' );
+	#AttrPutS(PH3_code, D_MATERIAL_PRICE, PM_code, 'PH3 Range' );
+	#AttrPutS(PH3_desc, D_MATERIAL_PRICE, PM_code, 'PH3 Name' );
+	#AttrPutS(PH4_code, D_MATERIAL_PRICE, PM_code, 'PH4 Family' );
+	#AttrPutS(PH4_desc, D_MATERIAL_PRICE, PM_code, 'PH4 Name' );
+	#AttrPutS(PH5_code, D_MATERIAL_PRICE, PM_code, 'PH5 Sub Family' );
+	#AttrPutS(PH5_desc, D_MATERIAL_PRICE, PM_code, 'PH5 Name' );
+	#AttrPutS(PH6_code, D_MATERIAL_PRICE, PM_code, 'PH6 Trade Unit' );
+	#AttrPutS(PH6_desc, D_MATERIAL_PRICE, PM_code, 'PH6 Name' );
+	
+	
+	#Attributs PH1 à PH6
+	AttrPutS(PH1_code, D_MATERIAL_PRICE, PM_code, 'PH1-Raw material' );
+	AttrPutS(PH1_desc, D_MATERIAL_PRICE, PM_code, 'PH1-Raw material Name' );
+	AttrPutS(PH2_code, D_MATERIAL_PRICE, PM_code, 'PH2-Product family' );
+	AttrPutS(PH2_desc, D_MATERIAL_PRICE, PM_code, 'PH2-Product family Name' );
+	AttrPutS(PH3_code, D_MATERIAL_PRICE, PM_code, 'PH3-Calib_TAV_Charac' );
+	AttrPutS(PH3_desc, D_MATERIAL_PRICE, PM_code, 'PH3-Calib_TAV_Charac Name' );
+	AttrPutS(PH4_code, D_MATERIAL_PRICE, PM_code, 'PH4-Packag. Format' );
+	AttrPutS(PH4_desc, D_MATERIAL_PRICE, PM_code, 'PH4-Packag. Format Name' );
+	AttrPutS(PH5_code, D_MATERIAL_PRICE, PM_code, 'PH5-Sales Unit' );
+	AttrPutS(PH5_desc, D_MATERIAL_PRICE, PM_code, 'PH5-Sales Unit Name' );
+	
+	
+#####                  Fin Modif VRT                    #####
+
+	
+
+	#Attribut Base Unit
+	AttrPutS(Base_Unit, D_MATERIAL_PRICE, PM_code, 'Base Unit');
+
+	#Attribut Material Pricing Group
+	AttrPutS(Mat_Pricing_Group_code, D_MATERIAL_PRICE, PM_code, 'Material Pricing Group' );
+	AttrPutS(Mat_Pricing_Group_desc, D_MATERIAL_PRICE, PM_code, 'Material Pricing Group Name' );
+	
+
+#####    Modif VRT : Modification de attributs    #####
+# Même source mais cible différente
+
+	#Attribut Material Group 1 à 5
+	#AttrPutS(Mat_Group_1_code, D_MATERIAL_PRICE, PM_code, 'Material Group 1' );
+	#AttrPutS(Mat_Group_1_desc, D_MATERIAL_PRICE, PM_code, 'Material Group 1 Name' );
+	#AttrPutS(Mat_Group_2_code, D_MATERIAL_PRICE, PM_code, 'Material Group 2' );
+	#AttrPutS(Mat_Group_2_desc, D_MATERIAL_PRICE, PM_code, 'Material Group 2 Name' );
+	#AttrPutS(Mat_Group_3_code, D_MATERIAL_PRICE, PM_code, 'Material Group 3' );
+	#AttrPutS(Mat_Group_3_desc, D_MATERIAL_PRICE, PM_code, 'Material Group 3 Name' );
+	#AttrPutS(Mat_Group_4_code, D_MATERIAL_PRICE, PM_code, 'Material Group 4' );
+	#AttrPutS(Mat_Group_4_desc, D_MATERIAL_PRICE, PM_code, 'Material Group 4 Name' );
+	#AttrPutS(Mat_Group_5_code, D_MATERIAL_PRICE, PM_code, 'Material Group 5' );
+	#AttrPutS(Mat_Group_5_desc, D_MATERIAL_PRICE, PM_code, 'Material Group 5 Name' );
+	
+	
+		#Attribut Material Group 1 à 5
+	AttrPutS(Mat_Group_1_code, D_MATERIAL_PRICE, PM_code, 'MG1-Market solution' );
+	AttrPutS(Mat_Group_1_desc, D_MATERIAL_PRICE, PM_code, 'MG1-Market solution Name' );
+	AttrPutS(Mat_Group_2_code, D_MATERIAL_PRICE, PM_code, 'MG2-Brand' );
+	AttrPutS(Mat_Group_2_desc, D_MATERIAL_PRICE, PM_code, 'MG2-Brand Name' );
+	AttrPutS(Mat_Group_3_code, D_MATERIAL_PRICE, PM_code, 'MG3-Sourcing' );
+	AttrPutS(Mat_Group_3_desc, D_MATERIAL_PRICE, PM_code, 'MG3-Sourcing Name' );
+	AttrPutS(Mat_Group_4_code, D_MATERIAL_PRICE, PM_code, 'MG4-Color_Und-Denat' );
+	AttrPutS(Mat_Group_4_desc, D_MATERIAL_PRICE, PM_code, 'MG4-Color_Und-Denat Name' );
+	AttrPutS(Mat_Group_5_code, D_MATERIAL_PRICE, PM_code, 'MG5-Formulation' );
+	AttrPutS(Mat_Group_5_desc, D_MATERIAL_PRICE, PM_code, 'MG5-Formulation Name' );
+	
+	
+	### Modif VRT : Alimentation des nouveaux attributs   ####
+
+	AttrPutS( C_CERTIFICATIONS , D_MATERIAL_PRICE, PM_code, 'C-Certificates' );
+	AttrPutS( C_CERTIFICATIONS_NAME , D_MATERIAL_PRICE, PM_code, 'C-Certificates Name' );
+	AttrPutS( C_PACKAGING_TYPE , D_MATERIAL_PRICE, PM_code, 'C-Packaging type' );
+	AttrPutS( C_PACKAGING_TYPE_NAME , D_MATERIAL_PRICE, PM_code, 'C-Packaging type Name' );
+	AttrPutS( C_PALLET_TYPE , D_MATERIAL_PRICE, PM_code, 'C-Pallet type' );
+	AttrPutS( C_PALLET_TYPE_NAME , D_MATERIAL_PRICE, PM_code, 'C-Pallet type Name' );
+	AttrPutS( C_SPECIFIC_MARKS , D_MATERIAL_PRICE, PM_code, 'C-Specific marks' );
+	AttrPutS( C_SPECIFIC_MARKS_NAME , D_MATERIAL_PRICE, PM_code, 'C-Specific marks Name' );
+	AttrPutS( C_BUNDLE_UNIT , D_MATERIAL_PRICE, PM_code, 'C-Bundle unit' );
+
+	
+	
+#####                  Fin Modif VRT                    #####
+	
+	#Attribut Lab/Office
+	AttrPutS(Lab_code, D_MATERIAL_PRICE, PM_code, 'Lab' );
+
+	#Attribut External Material Group
+	AttrPutS(Ext_Mat_Group, D_MATERIAL_PRICE, PM_code, 'Ext. Matl Group' );
+	#AttrPutS( , D_MATERIAL_PRICE, PM_code, 'Ext. Matl Group Name' );
+
+	#Attribut Material Type
+	AttrPutS(Mat_Type_code, D_MATERIAL_PRICE, PM_code, 'Material Type' );
+	AttrPutS(Mat_Type_desc, D_MATERIAL_PRICE, PM_code, 'Material Type Name' );
+
+	#Attribut Tamisage
+	AttrPutS(Tamisage, D_MATERIAL_PRICE, PM_code, 'Tamisage' );
+
+	#Attribut Imputation Group Material
+	AttrPutS(Imputation_Group_Mat_code, D_MATERIAL_PRICE, PM_code, 'Imputation Group Mat' );
+
+	#Attribut Material Price
+	AttrPutS(Mat_Price_code, D_MATERIAL_PRICE, PM_code, 'Material Price' );
+
+	#Attribut Material Group Pack
+	AttrPutS(Mat_Group_Pack_code, D_MATERIAL_PRICE, PM_code, 'Mat Group Pack' );
+	AttrPutS(Mat_Group_Pack_desc, D_MATERIAL_PRICE, PM_code, 'Mat Group Pack Name' );
+
+	#Attribut EAN/UPC
+	AttrPutS(EAN, D_MATERIAL_PRICE, PM_code, 'EAN/UPC' );
+
+	#Attributs à ajouter
+	AttrPutS('', D_MATERIAL_PRICE, PM_code, 'Production Plant' );
+	AttrPutS('', D_MATERIAL_PRICE, PM_code, 'Type d appro' );
+	AttrPutS('', D_MATERIAL_PRICE, PM_code, 'Clé d appro' );
+
+EndIf;
+
+
+
+
+
+#Attributs de External Material Group dans la dimension SLS_MATERIAL_EXT
+
+
+#Alias & Attribut Division
+If(Ext_Mat_Group @<> '');
+	AttrPutS(Ext_Mat_Group_desc, D_MATERIAL_EXT, Ext_Mat_Group, 'Caption' );
+	AttrPutS(Division, D_MATERIAL_EXT, Ext_Mat_Group, 'Division' );
+	AttrPutS(Div_desc, D_MATERIAL_EXT, Ext_Mat_Group, 'Division_desc' );
+    
+EndIf;
+
+
+######################################## CHARGEMENT DU CUBE SLS_VOL_CONVERT################################
+
+#Chargement des taux de conversion par Planning Material
+#Les attributs du Planning Material sont uniques seulement si Planning Material égal au Material
+If( PM_code @= Mat_code);
+
+	If(Base_Unit @='HLP');
+		Base_Unit = 'HLAP';
+	EndIf; 
+
+	#On ne gère pas les "unités par défaut" non spécifiée
+	If(DIMIX(D_VOL_UNIT, Base_Unit) = 0);
+        #ajout rv 03/08/22
+		ASCIIOUTPUT ( '..\Rejects\reject_material_PM_code_unite.csv' , Mat_code , PM_code , Sales_Org , Base_Unit , numbertostringex(RATIO_TO,'#0.###' ,'.',''), numbertostringex(RATIO_TSP,'#0.###' ,'.',''), numbertostringex(RATIO_HL,'#0.###' ,'.',''), 
+                 numbertostringex(RATIO_HL2,'#0.###' ,'.','') , numbertostringex(RATIO_HLP,'#0.###' ,'.',''), numbertostringex(RATIO_UC,'#0.###' ,'.','') ) ;
+    #fin ajout rv 03/08/22) ;
+        #fin ajout rv 03/08/22
+        itemskip;
+	EndIf; 
+
+       
+
+
+	#Taux reçus dans le référentiel
+	If(Base_Unit @= 'TO');
+		CellPutN(1, C_Vol_Convert, PM_code, 'TO', Base_Unit);	
+	Else;
+   		CellPutN(1\RATIO_TO, C_Vol_Convert, PM_code, 'TO', Base_Unit);
+	EndIf;
+
+	If(Base_Unit @= 'TSP');
+		CellPutN(1, C_Vol_Convert, PM_code, 'TSP', Base_Unit);
+	Else; 
+		CellPutN(1\RATIO_TSP, C_Vol_Convert, PM_code, 'TSP', Base_Unit);
+	EndIf; 
+
+	If(Base_Unit @= 'HL');
+		CellPutN(1, C_Vol_Convert, PM_code, 'HL', Base_Unit);
+	Else; 
+		CellPutN(1\RATIO_HL, C_Vol_Convert, PM_code, 'HL', Base_Unit);
+	EndIf; 
+
+	If(Base_Unit @= 'HL2');
+		CellPutN(1, C_Vol_Convert, PM_code, 'HL2', Base_Unit);
+	Else; 
+		CellPutN(1\RATIO_HL2, C_Vol_Convert, PM_code, 'HL2', Base_Unit);
+	EndIf; 
+
+	If(Base_Unit @= 'HLAP');
+		CellPutN(1, C_Vol_Convert, PM_code, 'HLAP', 'HLAP');
+	Else; 
+		CellPutN(1\RATIO_HLP, C_Vol_Convert, PM_code, 'HLAP', Base_Unit);
+	EndIf; 
+
+	If(Base_Unit @= 'UC');
+		CellPutN(1, C_Vol_Convert, PM_code, 'UC', Base_Unit);
+	ElseIf(Division @= '10'); 
+		CellPutN(1\RATIO_UC, C_Vol_Convert, PM_code, 'UC', Base_Unit);
+	EndIf; 
+    
+    If(Base_Unit @= 'PC');
+		CellPutN(1, C_Vol_Convert, PM_code, 'PC', Base_Unit);
+    #Pour toutes divisions hors Sucre, le taux reçu dans la colonne RATION_UC est en fait le taux RATION_PC
+	ElseIf(Division @<> '10'); 
+		CellPutN(1\RATIO_UC, C_Vol_Convert, PM_code, 'PC', Base_Unit);
+	EndIf;
+	
+
+	#Taux calculés
+	RATIO_KG = RATIO_TO*1000;
+	CellPutN(1\RATIO_KG, C_Vol_Convert, PM_code, 'KG', Base_Unit);
+
+	RATIO_KSP = RATIO_TSP*1000;
+	CellPutN(1\RATIO_KSP, C_Vol_Convert, PM_code, 'KSP', Base_Unit);
+
+	RATIO_LAP = RATIO_HLP*100;
+	CellPutN(1\RATIO_LAP, C_Vol_Convert, PM_code, 'LAP', Base_Unit);
+
+	RATIO_L = RATIO_HL*100;
+	CellPutN(1\RATIO_L, C_Vol_Convert, PM_code, 'L', Base_Unit);
+
+	RATIO_L20 = RATIO_HL2*100;
+	CellPutN(1\RATIO_L20, C_Vol_Convert, PM_code, 'L20', Base_Unit);
+
+    #ajout rv 03/08/22
+    ASCIIOUTPUT ( '..\Rejects\traite_material_PM_code_unite.csv' , Mat_code , PM_code , Sales_Org ,Base_Unit,numbertostringex(RATIO_TO,'#0.###' ,'.',''), numbertostringex(RATIO_TSP,'#0.###' ,'.',''), numbertostringex(RATIO_HL,'#0.###' ,'.',''), 
+                 numbertostringex(RATIO_HL2,'#0.###' ,'.','') , numbertostringex(RATIO_HLP,'#0.###' ,'.',''), numbertostringex(RATIO_UC,'#0.###' ,'.','') , numbertostringex(RATIO_KG,'#0.###' ,'.',''), 
+                 numbertostringex(RATIO_LAP,'#0.###' ,'.',''), numbertostringex(RATIO_L,'#0.###' ,'.',''), numbertostringex(RATIO_L20,'#0.###' ,'.','') ) ;
+    #fin ajout rv 03/08/22
+EndIf;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+AttrPutS('Total Material', D_MATERIAL, TOT_MAT, 'Caption');
+AttrPutS('Total Planning Material', D_MATERIAL_PLAN, TOT_PM, 'Caption');
+AttrPutS('All Divisions', D_MATERIAL_PLAN, TOT_PM, 'Code - Caption');
+AttrPutN(2, D_MATERIAL, TOT_MAT, 'Flag_Niveau');
+
+#Alias N/A Material
+AttrPutS('N/A Material', D_MATERIAL, 'N/A_MATERIAL', 'Caption');
+AttrPutS('NA Material', D_MATERIAL, 'N/A_MATERIAL', 'Code - Caption');
+
+#Alias N/A Planning Material
+AttrPutS('N/A Material Plan', D_MATERIAL_PLAN, 'N/A_PLANNING_MATERIAL', 'Caption');
+AttrPutS('NA Planning Material', D_MATERIAL_PLAN, 'N/A_PLANNING_MATERIAL', 'Code - Caption');
+AttrPutS('N/A Material Plan', D_MATERIAL_PRICE, 'N/A_PLANNING_MATERIAL', 'Caption');
+AttrPutS('NA Planning Material', D_MATERIAL_PRICE, 'N/A_PLANNING_MATERIAL', 'Code - Caption');
+
+#Alias N/A Material Ext
+AttrPutS('N/A External Material Group', D_MATERIAL_EXT, 'N/A_MATERIAL_EXT', 'Caption');
+AttrPutS('NA Material Ext', D_MATERIAL_EXT, 'N/A_MATERIAL_EXT', 'Code - Caption');
+
+
+#endregion

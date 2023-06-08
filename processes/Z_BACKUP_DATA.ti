@@ -1,0 +1,75 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------#
+# PROCESSUS DESCRIPTION
+#
+# Date :   23/10/2018
+# Auteur:  Pascal MADELAIGUE
+#
+# Action : Processus qui sauvegarde le dossier contenant la base de données DATA
+# l'ensemble des chemin sont définit en Relatif par rapport à l'instance ou il s'exécute
+# 
+# Step 0 
+#
+# Récupérer les Chemins depuis le cube de paramétrages
+# Chemin du dossier DATA de l'instance
+# Chemin du dossier Cible des Backups
+# Le nomduchier de BAckup
+# 
+# Step 1
+# Lancer un processus de SaveDataALL avant d'effectuer le Backup du dossier DATA
+#
+#Step 2
+#Définir le Nom du ZIP lié à l'archive (Ajouter un TimeStamp au nom du dossier archivé sous le forme AAAAMMJJ
+# 
+# Step3 
+# Appeler la ligne de commande  
+#---------------------------------------------------------------------------------------------------------------------------------------------------#
+#
+#
+#
+# Step 0 : Initialisation des Paths et des variables 
+#
+# Contexte
+sTOD =  TIMST( NOW(), '\Y\m\d\h\i',1);
+
+
+sProcessName = GetProcessName();
+sLogFile = GetProcessErrorFileDirectory() | TIMST( NOW(), '\Y\m-' | sProcessName | '.log');
+
+# Exécutable et arguments correspondants
+sExec =CellGetS('ZPARAM','PATH_ZIP_EXE','Value');
+sArgs = ' a -tzip ';
+
+# Dossier de sauvegarde
+sBackupDir=CellGetS('ZPARAM','PATH_BKP','Value');
+# Dossier a Sauvegarder
+sSrcDir=CellGetS('ZPARAM','PATH_SRC_DATA','Value');
+#Nom de l'archive
+sFileBckp=CellGetS('ZPARAM','NameFileBackup','Value');
+sFileName = sFileBckp | '_'| TIMST(NOW(), '\Y\m\d \h.\i', 1) | '.zip';
+
+sCommand = sExec | sArgs | '"' | sBackupDir | sFileName | '" "' | sSrcDir | '*"' | ' "-x!_Backup"';
+sCmd =  'CMD /C Echo ' | sTOD  | '   ====>    ' |  sCommand | ' >> ' | sLogFile ;
+
+#asciioutput('..\Test\test_bckup.csv', sCommand, sCmd);
+# Exemple ligne de commande : Z:\Prod\tm1\Script\7-Zip64\7z.exe a -tzip "Z:\prod\tm1\Backup\test.zip"  "Z:\prod\tm1\data\*"  "-x!_Backup"
+
+#- Step1 : Sauvegarde des données du serveur sur disque
+ExecuteProcess('Z_Savedata');
+
+#ItemReject(sCommand);
+
+# - Step 2 : Appel de la ligne de commande ZIP
+# Attendre la fin du ZIP avant de rendre la main au processus
+
+EXECUTECOMMAND(sCommand, 1);
+
+EXECUTECOMMAND(sCmd, 1);
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

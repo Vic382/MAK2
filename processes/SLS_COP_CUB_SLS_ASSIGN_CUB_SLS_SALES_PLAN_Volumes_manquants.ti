@@ -1,0 +1,343 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   17/04/2019                                                        #
+#                                                                            #
+# Fait par :    JMB 		                                                 #
+#                                                                            #
+# Action : Processus de copie des combinaisons commerciales prévisionnelles	 #
+#           vers les combinaisons logistiques 								 #
+#																			 #
+##############################################################################
+
+#===============================#
+#	Déclaration des variables	#
+#===============================#
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_SALES_PLAN';
+C_Cube_Cible = 'SLS_ASSIGN';
+C_Cube_Init = 'SLS_INIT';
+C_zPROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+C_zPARAM = 'zPARAM';
+C_CURRENCY_RATE = 'SLS_CURRENCY_RATE';
+C_zSelect = 'zSELECT';
+
+#--------------------Dimensions--------------------#
+D_CURRENT_PHASE = '1_G_CURRENT_PHASE';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_CURRENCY = '1_G_CURRENCY';
+D_VOLUME_UNIT = '1_G_VOLUME_UNIT';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_SALES_IND = 'SLS_SALES_PLAN_IND';
+D_VERSION = 'SLS_VERSION';
+D_LINE = '1_G_LINE';
+D_ASSIGN_IND = 'SLS_ASSIGN_IND';
+D_SHIP_POINT = 'SLS_SHIP_POINT';
+D_SHIP_PLANT = 'SLS_SHIP_PLANT';
+D_PROD_PLANT = 'SLS_PROD_PLANT';
+D_VENDOR = 'SLS_VENDOR';
+D_INIT_IND = 'SLS_INIT_IND';
+
+#--------------------Elements--------------------#
+vElem_Volume_Sales = 'Sales Volume';
+vElem_Volume_Assigned = 'ASSIGN_VOL';
+vElem_Ship_Point = 'Shipping Point';
+vElem_Ship_Plant = 'Shipping Plant';
+vElem_Prod_Plant = 'Production Plant';
+vElem_Vendor = 'Vendor';
+vElem_Tot_Ship_Point = 'TOTAL_SHIP_POINT';
+vElem_Tot_Ship_Plant = 'TOTAL_SHIP_PLANT';
+vElem_Tot_Prod_Plant = 'TOTAL_PROD_PLANT';
+vElem_Tot_Vendor = 'TOTAL_VENDOR';
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+vUser_Name = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vUSER = SUBST(vUser_Name, SCAN('/',vUser_Name)+1, 100);
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+If(DIMIX('}Clients',vClient)=0);
+	vClient = 'Admin';
+EndIf;
+
+#--------------------Vues--------------------#
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+
+#===============================#
+#	Vérification des paramètres	#
+#===============================#
+
+# Initialisation du message d'erreur
+e_Message_Prolog = '';
+
+# Récupération de la phase en cours et des paramètres de cette phase
+P_Phase = CellGetS(C_zSelect, vClient ,'Current Phase');
+v_FirstSim = ATTRS(D_CURRENT_PHASE,P_phase, 'First Simulation month');
+v_FirstSimInd = ATTRS(D_PERIOD,v_FirstSim, 'Index');
+P_Phase_Cap = ATTRS(D_CURRENT_PHASE, P_Phase, 'Caption');
+vElem_Tot_Period = 'subset_cal_fisc_camp_' | P_Phase_Cap;
+P_MATERIAL_PLAN = 'Total Planning Material';
+P_CUSTOMER = 'Total Customer';
+
+# Récupération de la sales org sélectionnée
+P_SALES_ORG = CellGetS(C_zSelect,vClient, 'Sales Organisation');
+If(P_SALES_ORG @= '');
+	P_SALES_ORG = 'TOTAL SALES ORG';
+EndIf;
+
+# Récupération de la distrib channel sélectionnée
+P_DISTRIB_CHANNEL = CellGetS(C_zSelect,vClient, 'Distrib Channel');
+If(P_DISTRIB_CHANNEL @= '');
+	P_DISTRIB_CHANNEL = 'Total Distribution Channel';
+EndIf;
+
+# Récupération du Sales Group sélectionné
+P_SALES_GROUP = CellGetS(C_zSelect,vClient, 'Sales Group');
+If(P_SALES_GROUP @= '');
+	P_SALES_GROUP = 'TOTAL_SALES_GROUP';
+EndIf;
+
+
+
+#=======================================#
+#	Désactivation de la consignation	#
+#=======================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 0);
+
+
+#===========================#
+#	Calcul des variables	#
+#===========================#
+
+#--------------------Requêtes MDX--------------------#
+# Périodes prévisionnelles
+vMDX_PERIOD = '{{[' | D_PERIOD | '].[Campaign]},{TM1SubsetToSet([' | D_PERIOD | '] , "' | P_Phase_Cap | ' Periods")}}';
+# Sales org
+IF(P_SALES_ORG @= ''); P_SALES_ORG = 'TOTAL SALES ORG'; ENDIF;
+vMDX_SALES_ORG = '{{[' | D_SALES_ORG | '].[TOTAL SALES ORG]},{TM1FILTERBYLEVEL({DESCENDANTS([' | D_SALES_ORG | '].[' | P_SALES_ORG | '])},0)}}';
+# Distrib channel
+IF(P_DISTRIB_CHANNEL @= ''); P_DISTRIB_CHANNEL = 'Total Distribution Channel'; ENDIF;
+vMDX_DISTRIB_CHANNEL = '{{[' | D_DISTRIB_CHANNEL | '].[Total Distribution Channel]},{TM1FILTERBYLEVEL({DESCENDANTS([' | D_DISTRIB_CHANNEL | '].[' | P_DISTRIB_CHANNEL | '])},0)}}';
+# Material plan
+vMDX_MATERIAL_PLAN = '{{[' | D_MATERIAL_PLAN | '].[TOTAL_PLANNING_MATERIAL]},{TM1FILTERBYLEVEL({DESCENDANTS([' | D_MATERIAL_PLAN | '].[' | P_MATERIAL_PLAN | '])},0)}}';
+# Customer
+#modif EMO le 11/12/2019 : on se base uniquement sur l'attribut sales group (vue source ET vue cible)
+IF(P_SALES_GROUP @= 'TOTAL_SALES_GROUP');
+	vMDX_CUSTOMER = '{{[' | D_CUSTOMER | '].[TOTAL_CUSTOMER]},{TM1FILTERBYLEVEL({DESCENDANTS([' | D_CUSTOMER | '].[TOTAL_CUSTOMER])},0)}}';
+ELSE;
+	vMDX_CUSTOMER = '{{[' | D_CUSTOMER | '].[TOTAL_CUSTOMER]},{FILTER(TM1FILTERBYLEVEL({DESCENDANTS([' | D_CUSTOMER | '].[TOTAL_CUSTOMER])},0), [SLS_CUSTOMER].[Sales Group Name] = "' | P_SALES_GROUP | '"")}}';
+ENDIF;
+# Sales Group
+# IF(P_SALES_GROUP @= ''); P_SALES_GROUP = 'TOTAL_SALES_GROUP'; ENDIF;
+# vMDX_SALES_GROUP = '{{[' | D_SALES_GROUP | '].[TOTAL_SALES_GROUP]},{TM1FILTERBYLEVEL({DESCENDANTS([' | D_SALES_GROUP | '].[' | P_SALES_GROUP | '])},0)}}';
+
+
+#===================================================#
+#	Initialisation de la vue à copier/vue source	#
+#===================================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy(D_CURRENT_PHASE, subset_copy);
+SubsetDestroy(D_PERIOD, subset_copy);
+SubsetDestroy(D_SALES_ORG, subset_copy);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_copy);
+SubsetDestroy( D_VOLUME_UNIT, subset_copy );
+SubsetDestroy(D_CURRENCY, subset_copy);
+SubsetDestroy(D_CUSTOMER, subset_copy);
+SubsetDestroy(D_MATERIAL_PLAN, subset_copy);
+#SubsetDestroy(D_SALES_GROUP, subset_copy);
+SubsetDestroy(D_SALES_IND, subset_copy);
+ 
+#--------------------Création des objets--------------------#
+ViewCreate(C_Cube_Source,view_copy);
+# 1_G_CURRENT_PHASE
+subsetcreate(D_CURRENT_PHASE,subset_copy);
+SubsetElementInsert(D_CURRENT_PHASE, subset_copy, P_Phase, 1);
+# 1_G_PERIOD
+subsetcreateByMdx(subset_copy,vMDX_PERIOD);
+SubsetElementDelete(D_PERIOD, subset_copy, 1);
+# 1_G_SALES_ORG
+subsetcreateByMdx(subset_copy,vMDX_SALES_ORG);
+SubsetElementDelete(D_SALES_ORG, subset_copy, 1);
+# 1_G_DISTRIB_CHANNEL
+subsetcreateByMdx(subset_copy,vMDX_DISTRIB_CHANNEL);
+SubsetElementDelete(D_DISTRIB_CHANNEL, subset_copy, 1);
+#1_G_CURRENCY
+SubsetCreate( D_CURRENCY, subset_copy );
+SubsetElementInsert( D_CURRENCY, subset_copy, 'EUR', 1 );
+SubsetElementInsert( D_CURRENCY, subset_copy, 'USD', 2 );
+#1_G_VOLUME_UNIT
+SubsetCreate( D_VOLUME_UNIT, subset_copy );
+SubsetElementInsert( D_VOLUME_UNIT, subset_copy, 'TO', 1 );
+SubsetElementInsert( D_VOLUME_UNIT, subset_copy, 'TSP', 1 );
+SubsetElementInsert( D_VOLUME_UNIT, subset_copy, 'HLAP', 2 );
+# SLS_CUSTOMER
+subsetcreateByMdx(subset_copy,vMDX_CUSTOMER);
+SubsetElementDelete(D_CUSTOMER, subset_copy, 1);
+# SLS_MATERIAL_PLAN
+subsetcreateByMdx(subset_copy,vMDX_MATERIAL_PLAN);
+SubsetElementDelete(D_MATERIAL_PLAN, subset_copy, 1);
+# SLS_SALES_GROUP
+# subsetcreateByMdx(subset_copy,vMDX_SALES_GROUP);
+# SubsetElementDelete(D_SALES_GROUP, subset_copy, 1);
+# SLS_SALES_PLAN_IND
+SubsetCreate(D_SALES_IND, subset_copy);
+SubsetElementInsert(D_SALES_IND, subset_copy, vElem_Volume_Sales, 1);
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CURRENT_PHASE,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PERIOD,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_ORG,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_DISTRIB_CHANNEL,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CURRENCY,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_VOLUME_UNIT,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CUSTOMER,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_MATERIAL_PLAN,subset_copy);
+#ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_GROUP,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_IND,subset_copy);
+ 
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 0);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+#--------------------Déclaration de la vue source--------------------#
+DataSourceNameForServer=C_Cube_Source;
+DatasourceCubeview=view_copy;
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+#mis en commentaire par EMO le 11/12/2019 : suite décision COPRO du 12/11/2019
+#On restraint au sales group en cours (la vue est basée sur CAMP YEAR et certains sales group n'interviennent surement pas sur Current Phase Periods)
+# If(AttrS(D_CUSTOMER, vCustomer, 'Sales Group') @<> vSALES_GROUP);
+# 	ItemSkip;
+# EndIf;
+
+# VRT : Mise en place contrat indexé
+# Controle de l'indicateur si préfixé de I_ alors éléments INDEXE dans la dimension SLS_Q_HQ
+# Sinon élément standard dans cette même dimension
+IF ( SUBST ( vSALES_PLAN_IND , 1 , 2 ) @= 'I_') ;
+  v_Q_HQ = 'INDEXE' ;
+ELSE ;
+  v_Q_HQ = 'QUOTA_STAND' ;
+ENDIF ;
+# Fin VRT 
+
+#On parcourt seulement l'unité par défaut
+Division = ELPAR( D_MATERIAL_PLAN, vMATERIAL_PLAN, 1);
+Default_Unit = ATTRS('1_G_MATERIAL', Division, 'Volume_Unit');
+If(vVOLUME_UNIT @<> Default_Unit);
+	itemskip;
+EndIf;
+
+#Currency = USD si Export Sucre
+If(vDISTRIB_CHANNEL @= '40' & Division @= 'D_10');
+	If(vCURRENCY @<> 'USD');
+    	itemskip;
+    EndIf;
+Else; 
+	If(vCURRENCY @<> 'EUR');
+    	itemskip;
+    EndIf;
+EndIf;
+
+#On récupère le volume sur le mois associé dans INIT - Itemskip si non vide
+vVolume_Init = CellGetN( 'SLS_INIT', vCURRENT_PHASE, vPERIOD, vSALES_ORG, vDISTRIB_CHANNEL, vVOLUME_UNIT, vMATERIAL_PLAN, vCUSTOMER, vElem_Tot_Ship_Point, vElem_Tot_Ship_Plant, vElem_Tot_Prod_Plant, vElem_Tot_Vendor, vElem_Volume_Sales );
+
+If(vVolume_Init <> 0);
+	itemskip;
+EndIf;
+
+#On récupère la combinaison logistique qui a le max de volume sur le total des périodes
+vShip_Point_Max = DimensionElementPrincipalName(D_SHIP_POINT ,CellGetS( 'zATTR_COMBI_COMM', vCUSTOMER, vMATERIAL_PLAN, 'Ship Point Max SLS_INIT' ));
+vShip_Plant_Max = DimensionElementPrincipalName(D_SHIP_PLANT ,CellGetS( 'zATTR_COMBI_COMM', vCUSTOMER, vMATERIAL_PLAN, 'Ship Plant Max SLS_INIT' ));
+vProd_Plant_Max = DimensionElementPrincipalName(D_PROD_PLANT ,CellGetS( 'zATTR_COMBI_COMM', vCUSTOMER, vMATERIAL_PLAN, 'Prod Plant Max SLS_INIT' ));
+vVendor_Max = DimensionElementPrincipalName(D_VENDOR, CellGetS( 'zATTR_COMBI_COMM', vCUSTOMER, vMATERIAL_PLAN, 'Vendor Max SLS_INIT' ));
+If( vShip_Point_Max @= '' & vShip_Plant_Max @= '' & vProd_Plant_Max @= '' & vVendor_Max @= '' );
+	vShip_Point_Max = 'N/A_SHIP_POINT';
+    vShip_Plant_Max = 'N/A_SHIP_PLANT';
+    vProd_Plant_Max = 'N/A_PROD_PLANT';
+    vVendor_Max = 'N/A_VENDOR';
+EndIf;
+
+#Calcul de la ligne sur laquelle copier le volume
+iCombi_Log = 1;
+vRes=0;
+WHILE(iCombi_Log <= 500 & vRes = 0);
+	sElmt = numberToString(iCombi_Log);
+    vTarget_Ship_Point = DimensionElementPrincipalName(D_SHIP_POINT ,CellGetS( 'SLS_ASSIGN', vCURRENT_PHASE, 'Final Version', v_Q_HQ , 'N/A PERIOD', vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, sElmt  , 'Shipping Point'));
+    vTarget_Ship_Plant = DimensionElementPrincipalName(D_SHIP_PLANT ,CellGetS( 'SLS_ASSIGN', vCURRENT_PHASE, 'Final Version', v_Q_HQ , 'N/A PERIOD', vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, sElmt  , 'Shipping Plant'));
+    vTarget_Prod_Plant = DimensionElementPrincipalName(D_PROD_PLANT ,CellGetS( 'SLS_ASSIGN', vCURRENT_PHASE, 'Final Version', v_Q_HQ , 'N/A PERIOD', vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, sElmt  , 'Production Plant'));
+    vTarget_Vendor = DimensionElementPrincipalName(D_VENDOR,CellGetS( 'SLS_ASSIGN', vCURRENT_PHASE, 'Final Version', v_Q_HQ , 'N/A PERIOD', vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, sElmt  , 'Vendor'));
+	IF(vTarget_Ship_Point @= vShip_Point_Max & vTarget_Ship_Plant @= vShip_Plant_Max & vTarget_Prod_Plant @= vProd_Plant_Max & vTarget_Vendor @= vVendor_Max );
+    	vRes = 1;
+	ELSEIF(vTarget_Ship_Point @= '');
+    	vRes = 2;
+    ELSE;
+		iCombi_Log = iCombi_Log+1;
+	ENDIF;
+END;
+
+
+If(vRes = 1);
+    vVol_Comb_Comm_Period = CellGetN(C_Cube_Cible, vCURRENT_PHASE, 'Final Version', v_Q_HQ , vPERIOD, vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, 'Total Line', 'Assign_vol');
+    If(vVol_Comb_Comm_Period = 0);
+        # ELH - EVO Commerciaux : Volume arrondi à 3 décimales
+        nVolumeAssign = ROUNDP ( vValue , 3 ) ;
+        CellPutN( nVolumeAssign , C_Cube_Cible, vCURRENT_PHASE, 'Final Version', v_Q_HQ , vPERIOD, vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, NumberToString(iCombi_Log), 'Assign_vol' );
+    EndIf;
+
+    #Ecriture du volume sur la ligne(combi log) sur laquelle il y a le plus de volume - ELH - EVO Commerciaux : mais arrondi à 3 décimales
+    nVolumeAssign = ROUNDP ( vValue , 3 ) ;
+    CellPutN( nVolumeAssign, C_Cube_Cible, vCURRENT_PHASE, 'Actual Version', v_Q_HQ , vPERIOD, vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, NumberToString(iCombi_Log), 'Assign_vol' );
+Endif;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#=======================================#
+#	Destruction des objets temporaires	#
+#=======================================#
+
+#--------------------Vue source--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy(D_CURRENT_PHASE, subset_copy);
+SubsetDestroy(D_PERIOD, subset_copy);
+SubsetDestroy(D_SALES_ORG, subset_copy);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_copy);
+SubsetDestroy(D_CURRENCY, subset_copy);
+SubsetDestroy(D_VOLUME_UNIT, subset_copy);
+SubsetDestroy(D_CUSTOMER, subset_copy);
+SubsetDestroy(D_MATERIAL_PLAN, subset_copy);
+#SubsetDestroy(D_SALES_GROUP, subset_copy);
+SubsetDestroy(D_SALES_IND, subset_copy);
+#endregion

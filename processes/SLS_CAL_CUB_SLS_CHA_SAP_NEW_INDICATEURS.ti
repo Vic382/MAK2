@@ -1,0 +1,504 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   01/05/2022                                                       #
+#                                                                            #
+# Fait par :    VRT                                           #
+#                                                                            #
+# Action : Processus de calcul des indicateurs margin					 #																 #
+##############################################################################
+
+#process incrémentant le volume
+#appelé en premier dans le master
+
+
+#===========================================#
+#             Déclaration des variables     #
+#===========================================#
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_CHA_SAP';
+C_Cube_Cible = 'SLS_CHA_SAP';
+C_Convert = 'SLS_VOL_CONVERT';
+
+#--------------------Dimensions--------------------#
+D_PHASE = '1_G_PHASE';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_VOLUME_UNIT = '1_G_VOLUME_UNIT';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_MATERIAL = '1_G_MATERIAL';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_CHA_SAP_IND = 'SLS_CHA_SAP_IND';
+
+D_PHASE_REP = '1_G_PHASE_REP';
+D_PAYER = 'SLS_PAYER';
+D_SOLD_TO = 'SLS_SOLD_TO';
+D_MAT_FR_GROUP = 'SLS_MAT_FREIGHT_GROUP';
+D_INCOTERM = 'SLS_INCOTERM';
+D_QUOTA = 'SLS_Q_HQ';
+D_REPORTING_IND = 'SLS_REPORTING_IND';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_VENDOR = 'SLS_VENDOR';
+D_PROD_PLANT ='SLS_PROD_PLANT';
+D_SHIP_PLANT = 'SLS_SHIP_PLANT';
+D_SHIP_POINT = 'SLS_SHIP_POINT';
+
+#D_VOLUME_UNIT_IND = 'SLS_VOL_CONVERT_IND';
+
+#--------------------Elements--------------------#
+e_Message_Prolog = '';
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#permet de réutiliser le subset des périodes qui viennent d'être chargées dans CHA_SAP
+IF ( P_PHASE @= 'ACT' ) ;
+  process_master = 'SLS_CHA_CUB_SLS_CHA_SAP_NEW_INDICATEURS';
+  subset_erase_master = 'z_erase_master_' | vUSER |'_' | process_master;
+ELSE ; 
+  process_master = 'SLS_CHA_CUB_SLS_CHA_SAP_NEW_INDICATEURS_AVEC_PARAMETRES';
+  subset_erase_master = 'z_erase_' | vUSER |'_' | process_master;
+ENDIF ;
+
+Subsetdestroy(D_PERIOD,subset_erase);
+
+#######ON IMPOSE CHARGEMENT 18 MOIS : PROVISOIRE############
+#Date_Jour = '01';
+###########FIN A SUPPR ######################""
+
+
+subsetall = 'All';
+
+SubSize = SubsetGetSize( D_PERIOD, subsetall);
+cpt = SubSize;
+
+#format YYYY-MM-DD
+Date = Today(1);
+Date_Jour = SUBST( Date, 9, 2 );
+Date_Annee = SUBST(Date,1 , 4);
+Date_Mois = SUBST(Date, 6, 2);
+M1 = Date_Annee | '.' | Date_Mois;
+Index_M1_Num = StringToNumber(ATTRS(D_PERIOD, M1, 'Index'));
+
+If(Date_Jour @<> '01');
+
+  #mois en cours
+
+  ####    Modification VRT   ####
+
+  #Last_Index = Index_M1_Num - 2 ;
+
+  # Modification du nombre de mois à importer selon zParam
+  # Si les 2 sont vides, on charge 3 mois
+  # Si l'un est vide, ProcessBreak
+
+  sCubeParam = 'zPARAM' ;
+  sFirstMonth = CellGetS ( sCubeParam , 'First_Month_Actual_New_Ind' , 'Value' ) ;
+  nFisrtMonthIndex = Dimix ( D_PERIOD , sFirstMonth ) ;
+  sLastMonth = CellGetS ( sCubeParam , 'Last_Month_Actual_New_Ind' , 'Value' ) ;
+  nLastMonthIndex = Dimix ( D_PERIOD , sLastMonth ) ;
+
+  # Controle Si 1 seul des paramètres est vide
+  IF ( sFirstMonth @= '' & sLastMonth @<> '' ) ;
+    ProcessError ;
+  ELSEIF ( sFirstMonth @<> '' & sLastMonth @= '' ) ;
+    ProcessError ;
+  ENDIF ;
+
+  IF ( sFirstMonth @= '' & sLastMonth @= '' ) ;
+
+    nJour = 2 ;
+    Last_Index = Index_M1_Num - nJour ;
+
+    subsetcreate( D_PERIOD, subset_erase);
+
+    #On parcourt tous les niveaux 0
+    While( cpt > 0);
+      #On récupère l'élément et son index
+      Elem = SubsetGetElementName( D_PERIOD, subsetall, cpt);
+      Index = StringToNumber(AttrS(D_PERIOD, Elem, 'Index'));
+      If( Index >= Last_Index & Index <= Index_M1_Num);
+        SubsetElementInsert( D_PERIOD, subset_erase, Elem, 1 );
+      EndIf;
+    
+      #Incrémentation du compteur while sur subsetall
+      cpt = cpt - 1;
+    End;
+
+  ELSE ;
+
+    # Boucle pour insérer tous les mois dans la plage sélectionné
+
+    subsetcreate( D_PERIOD, subset_erase);
+
+    #On parcourt tous les niveaux 0
+    nDebutBoucle = DIMIX ( D_PERIOD , sFirstMonth ) ;
+    nFinBoucle = DIMIX ( D_PERIOD , sLastMonth ) ;
+
+    While( nDebutBoucle <= nFinBoucle );
+
+      #On récupère l'élément et son index
+      Elem = DimNm ( D_PERIOD , nDebutBoucle );
+      IF ( ELLEV ( D_PERIOD , Elem ) <> 0 ) ;
+        #nFinBoucle = nFinBoucle + 1 ;
+      ELSE ;
+        SubsetElementInsert( D_PERIOD, subset_erase, Elem, 1 );
+      ENDIF ;
+    
+      #Incrémentation du compteur while sur subsetall
+      nDebutBoucle = nDebutBoucle + 1;
+
+    End;
+
+  ENDIF ;
+
+Else; 
+
+  #18 derniers mois
+  #Last_Index = Index_M1_Num - 18 ;
+
+
+    nJour = 18 ;
+    Last_Index = Index_M1_Num - nJour ;
+
+    subsetcreate( D_PERIOD, subset_erase);
+
+    #On parcourt tous les niveaux 0
+
+    While( cpt > 0);
+      #On récupère l'élément et son index
+      Elem = SubsetGetElementName( D_PERIOD, subsetall, cpt);
+      Index = StringToNumber(AttrS(D_PERIOD, Elem, 'Index'));
+      If( Index >= Last_Index & Index <= Index_M1_Num);
+        SubsetElementInsert( D_PERIOD, subset_erase , Elem, 1 );
+      EndIf;
+    
+      #Incrémentation du compteur while sur subsetall
+      cpt = cpt - 1;
+    End;
+
+EndIf;
+
+
+
+####   FIN VRT     ####
+
+
+subset_volume_unit = 'subset volume unit' | vUSER |'_' | vPRO_NAME;
+Subsetdestroy(D_VOLUME_UNIT, subset_volume_unit);
+
+#------------Création d'un subset contenant tous les éléments fins----------
+MDX = '{{[1_G_VOLUME_UNIT].[TO]},{TM1FILTERBYLEVEL( {TM1SUBSETALL( [1_G_VOLUME_UNIT] )}, 0)}}';
+SubsetCreatebyMDX(subset_volume_unit, MDX);
+SubsetElementDelete(D_VOLUME_UNIT,subset_volume_unit, 1);
+
+subset_volume_unit_size = SubsetGetsize(D_VOLUME_UNIT, subset_volume_unit );
+
+
+DatasourceASCIIDecimalSeparator='.';
+DatasourceASCIIThousandSeparator='';
+
+#====================================#
+#     Désactivation de la consignation#
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 0);
+
+
+#============================================#
+#        Initialisation de la vue à supprimer#
+#============================================#
+
+#--------------------Destruction des objets--------------------#
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Cible,view_erase);
+Subsetdestroy( D_PHASE ,subset_erase);
+#Subsetdestroy(D_MAT_FR_GROUP,subset_erase);
+Subsetdestroy( D_CHA_SAP_IND ,subset_erase);
+
+#--------------------Création des objets--------------------#
+ViewCreate(C_Cube_Cible,view_erase);
+
+#D_PHASE
+subsetcreate( D_PHASE ,subset_erase);
+SubsetElementInsert( D_PHASE , subset_erase, P_PHASE, 1);
+
+
+####   VRT : RAZ des nouveaux indicateurs seulement   ####
+
+# D_REPORTING_IND
+IF( SubsetExists( D_CHA_SAP_IND , subset_erase ) = 1 );
+  SubsetDestroy( D_CHA_SAP_IND , subset_erase );
+ENDIF;
+SubsetCreate ( D_CHA_SAP_IND , subset_erase ) ; 
+SubsetElementInsert ( D_CHA_SAP_IND , subset_erase , 'EBVD' , 1 ) ;
+SubsetElementInsert ( D_CHA_SAP_IND , subset_erase , 'VAR_COST_MAR'  , 1 ) ;
+SubsetElementInsert ( D_CHA_SAP_IND , subset_erase , 'TRF_COST_MAR' , 1 ) ;
+SubsetElementInsert ( D_CHA_SAP_IND , subset_erase , 'FULL_COST_MAR' , 1 ) ;
+ViewSubsetAssign ( C_Cube_Cible , view_erase , D_CHA_SAP_IND , subset_erase ) ; 
+
+####    FIN VRT    #####
+
+
+
+#Modif EMO le 19/11/2019 : ce process sert également à copier le réel de Current Phase
+MDX_PERIOD = '{{[1_G_PERIOD].[N/A PERIOD]},{TM1FILTERBYLEVEL(DESCENDANTS([1_G_PERIOD].[subset_act_cal_fisc_camp]) , 0)}}';
+#SubsetCreatebyMDX( subset_erase, MDX_PERIOD);
+#SubsetElementDelete( D_PERIOD, subset_erase, 1);
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_PHASE,subset_erase);
+#On copie le réel sur la période qui vient d'être chargée
+#On copie le réel sur la période qui vient d'être chargée
+#If( DimensionElementPrincipalName(D_PHASE, P_PHASE) @= 'ACT');
+	ViewSubsetAssign(C_Cube_Cible,view_erase, D_PERIOD, subset_erase );
+#Else; 
+#	ViewSubsetAssign(C_Cube_Cible,view_erase, D_PERIOD, subset_erase);
+#EndIf;
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_CHA_SAP_IND ,subset_erase);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Cible,view_erase,1);
+ViewSetSkipCalcs(C_Cube_Cible,view_erase, 1);
+ViewSetSkipZeroes(C_Cube_Cible,view_erase, 1);
+
+#--------------------Suppression des données--------------------#
+ViewZeroOut(C_Cube_Cible,view_erase);
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Cible,view_erase);
+Subsetdestroy(D_PHASE,subset_erase);
+Subsetdestroy( D_CHA_SAP_IND ,subset_erase);
+#Subsetdestroy(D_PERIOD,subset_erase);
+
+#=========================================#
+#     Initialisation de la vue à copier/vue source           #
+#=========================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy( D_PHASE, subset_copy );
+SubsetDestroy( D_CHA_SAP_IND, subset_copy );
+SubsetDestroy( D_PERIOD, subset_copy );
+
+
+Subsetdestroy( D_SALES_ORG , subset_copy );
+Subsetdestroy( D_DISTRIB_CHANNEL , subset_copy );
+Subsetdestroy( D_VOLUME_UNIT , subset_copy );
+Subsetdestroy( D_CUSTOMER , subset_copy );
+Subsetdestroy( D_MATERIAL , subset_copy );
+Subsetdestroy( D_SALES_GROUP , subset_copy );
+Subsetdestroy( D_SHIP_POINT , subset_copy );
+Subsetdestroy( D_SHIP_PLANT , subset_copy );
+Subsetdestroy( D_PROD_PLANT , subset_copy );
+Subsetdestroy( D_VENDOR , subset_copy );
+Subsetdestroy( D_PAYER , subset_copy );
+Subsetdestroy( D_SOLD_TO , subset_copy );
+Subsetdestroy( D_INCOTERM , subset_copy );
+Subsetdestroy( D_QUOTA , subset_copy );
+
+#--------------------Création des objets--------------------#
+
+ViewCreate(C_Cube_Source,view_copy);
+
+#D_PHASE
+subsetcreate(D_PHASE,subset_copy);
+SubsetElementInsert(D_PHASE, subset_copy, P_PHASE , 1);
+
+# D_SALES_ORG
+sMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [1_G_SALES_ORG] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , sMDX ) ; 
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_SALES_ORG , subset_copy ) ;
+
+# D_DISTRIB_CHANNEL 
+sMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [1_G_DISTRIB_CHANNEL] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , sMDX ) ; 
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_DISTRIB_CHANNEL , subset_copy ) ;
+
+# D_VOLUME_UNIT 
+sMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [1_G_VOLUME_UNIT] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , sMDX ) ; 
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_VOLUME_UNIT , subset_copy ) ;
+
+# D_CUSTOMER 
+sMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_CUSTOMER] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , sMDX ) ; 
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_CUSTOMER , subset_copy ) ;
+
+# D_MATERIAL 
+sMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [1_G_MATERIAL] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , sMDX ) ; 
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_MATERIAL , subset_copy ) ;
+
+# D_SALES_GROUP 
+sMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_SALES_GROUP] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , sMDX ) ; 
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_SALES_GROUP , subset_copy ) ;
+
+# D_SHIP_POINT 
+sMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_SHIP_POINT] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , sMDX ) ; 
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_SHIP_POINT , subset_copy ) ;
+
+# D_SHIP_PLANT 
+sMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_SHIP_PLANT] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , sMDX ) ; 
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_SHIP_PLANT , subset_copy ) ;
+
+# D_PROD_PLANT 
+sMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_PROD_PLANT] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , sMDX ) ;
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_PROD_PLANT , subset_copy ) ; 
+
+# D_VENDOR 
+sMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_VENDOR] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , sMDX ) ; 
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_VENDOR , subset_copy ) ; 
+
+# D_PAYER 
+sMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_PAYER] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , sMDX ) ; 
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_PAYER , subset_copy ) ; 
+
+# D_SOLD_TO 
+sMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_SOLD_TO] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , sMDX ) ;
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_SOLD_TO , subset_copy ) ;  
+
+# D_INCOTERM 
+sMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_INCOTERM] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , sMDX ) ;
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_INCOTERM , subset_copy ) ;   
+
+# D_QUOTA 
+sMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_Q_HQ] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , sMDX ) ; 
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_QUOTA , subset_copy ) ;   
+
+# #D_CHA_SAP_IND
+IF( SubsetExists( D_CHA_SAP_IND , subset_copy ) = 1 );
+  SubsetDestroy( D_CHA_SAP_IND , subset_copy );
+ENDIF;
+SubsetCreate ( D_CHA_SAP_IND , subset_copy ) ; 
+SubsetElementInsert ( D_CHA_SAP_IND , subset_copy , 'MP_STD' , 1 ) ;
+SubsetElementInsert ( D_CHA_SAP_IND , subset_copy , 'VAR_COST' , 1 ) ;
+SubsetElementInsert ( D_CHA_SAP_IND , subset_copy , 'TRF_COST' , 1 ) ;
+SubsetElementInsert ( D_CHA_SAP_IND , subset_copy , 'FULL_COST' , 1 ) ;
+SubsetElementInsert ( D_CHA_SAP_IND , subset_copy , '4NET' , 1 ) ;
+ViewSubsetAssign ( C_Cube_Cible , view_copy , D_CHA_SAP_IND , subset_copy ) ; 
+
+
+#Modif EMO le 19/11/2019 : ce process sert également à copier le réel de Current Phase
+MDX_PERIOD = '{{[1_G_PERIOD].[N/A PERIOD]},{TM1FILTERBYLEVEL(DESCENDANTS([1_G_PERIOD].[subset_act_cal_fisc_camp]) , 0)}}';
+SubsetCreatebyMDX( subset_copy , MDX_PERIOD);
+SubsetElementDelete( D_PERIOD, subset_copy, 1);
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PHASE, subset_copy);
+#On copie le réel sur la période qui vient d'être chargée
+#If( DimensionElementPrincipalName(D_PHASE, P_PHASE) @= 'ACT');
+	ViewSubsetAssign(C_Cube_Source,view_copy, D_PERIOD, subset_erase );
+#Else;
+#	ViewSubsetAssign(C_Cube_Source,view_copy, D_PERIOD, subset_copy);
+#EndIf;
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 0);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+# définition de la vue source#
+
+DatasourceCubeview= view_copy ;
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+#Nouveaux indicateurs à charger
+
+nMPSTD = CellGetN ( C_Cube_Cible, P_PHASE, vPeriod, vSales_Org, vDistrib_Channel, vVolume_Unit, vCustomer, vMaterial, vSales_Group, vShip_Point, vShip_Plant, vProd_Plant, vVendor, vPayer ,  vSold_To , vIncoterm,  vQuota, 'MP_STD' ) ;
+nFullCost = CellGetN (  C_Cube_Cible, P_PHASE, vPeriod, vSales_Org, vDistrib_Channel, vVolume_Unit, vCustomer, vMaterial, vSales_Group, vShip_Point, vShip_Plant, vProd_Plant, vVendor, vPayer ,  vSold_To , vIncoterm,  vQuota, 'FULL_COST' ) ;
+nTransformationCost =  CellGetN (  C_Cube_Cible, P_PHASE, vPeriod, vSales_Org, vDistrib_Channel, vVolume_Unit, vCustomer, vMaterial, vSales_Group, vShip_Point, vShip_Plant, vProd_Plant, vVendor, vPayer ,  vSold_To , vIncoterm,  vQuota, 'TRF_COST' ) ;
+nVariableCost = CellGetN ( C_Cube_Cible, P_PHASE, vPeriod, vSales_Org, vDistrib_Channel, vVolume_Unit, vCustomer, vMaterial, vSales_Group, vShip_Point, vShip_Plant, vProd_Plant, vVendor, vPayer ,  vSold_To , vIncoterm,  vQuota, 'VAR_COST' ) ;
+n4NET = CellGetN (  C_Cube_Cible, P_PHASE, vPeriod, vSales_Org, vDistrib_Channel, vVolume_Unit, vCustomer, vMaterial, vSales_Group, vShip_Point, vShip_Plant, vProd_Plant, vVendor, vPayer ,  vSold_To , vIncoterm,  vQuota, '4NET' ) ;
+
+nEBVD = n4NET - nTransformationCost ;
+nVariableCostMargin = n4NET - nVariableCost - nMPSTD ;
+nTransformationCostMargin = n4NET - nTransformationCost - nMPSTD ;
+nFullCostmargin = n4NET - nFullCost - nMPSTD ;
+
+
+####  Modif VRT : Changement CellIncrement en CellPut car sinon on increment 12 fois ####
+CellPutN ( nEBVD  ,  C_Cube_Cible, P_PHASE, vPeriod, vSales_Org, vDistrib_Channel, vVolume_Unit, vCustomer, vMaterial, vSales_Group, vShip_Point, vShip_Plant, vProd_Plant, vVendor, vPayer ,  vSold_To , vIncoterm,  vQuota, 'EBVD' ) ;
+CellPutN ( nVariableCostMargin ,  C_Cube_Cible, P_PHASE, vPeriod, vSales_Org, vDistrib_Channel, vVolume_Unit, vCustomer, vMaterial, vSales_Group, vShip_Point, vShip_Plant, vProd_Plant, vVendor, vPayer ,  vSold_To , vIncoterm,  vQuota, 'VAR_COST_MAR') ;
+CellPutN ( nTransformationCostMargin , C_Cube_Cible, P_PHASE, vPeriod, vSales_Org, vDistrib_Channel, vVolume_Unit, vCustomer, vMaterial, vSales_Group, vShip_Point, vShip_Plant, vProd_Plant, vVendor, vPayer ,  vSold_To , vIncoterm,  vQuota, 'TRF_COST_MAR' ) ;
+CellPutN ( nFullCostmargin ,  C_Cube_Cible, P_PHASE, vPeriod, vSales_Org, vDistrib_Channel, vVolume_Unit, vCustomer, vMaterial, vSales_Group, vShip_Point, vShip_Plant, vProd_Plant, vVendor, vPayer ,  vSold_To , vIncoterm,  vQuota,'FULL_COST_MAR' ) ;
+####  FIN Modif VRT   ####
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+Subsetdestroy(D_VOLUME_UNIT, subset_volume_unit);
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy( D_PHASE, subset_copy );
+SubsetDestroy( D_CHA_SAP_IND, subset_copy );
+SubsetDestroy( D_PERIOD, subset_copy );
+Subsetdestroy(D_PERIOD,subset_erase);
+
+#====================================#
+#        Activation de la consignation#
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 1);
+
+#endregion

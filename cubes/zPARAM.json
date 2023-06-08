@@ -1,0 +1,18 @@
+{
+	"@type":"Cube",
+	"Name":"zPARAM",
+	"Rules@Code.link":"zPARAM.rules",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('zPARAM_IND')"
+		},
+		{
+			"@id":"Dimensions('1_G_VALUE')"
+		}
+	],
+	"Views@Code.links":
+	[
+		"zPARAM.views/All.json"
+	]
+}

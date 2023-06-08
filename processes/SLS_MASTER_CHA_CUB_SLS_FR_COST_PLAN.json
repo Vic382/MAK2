@@ -1,0 +1,13 @@
+{
+	"@type":"Process",
+	"Name":"SLS_MASTER_CHA_CUB_SLS_FR_COST_PLAN",
+	"HasSecurityAccess":false,
+	"Code@Code.link":"SLS_MASTER_CHA_CUB_SLS_FR_COST_PLAN.ti",
+	"UIData":"_ParameterConstraints=e30=€",
+	"DataSource":
+	{
+		"Type":"None"
+	},
+	"Parameters":[],
+	"Variables":[]
+}

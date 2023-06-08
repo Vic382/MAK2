@@ -1,0 +1,225 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+################################################################
+#                                               DESCRIPTION DU PROCESSUS                                             
+#                                                                                                                                                  
+# Date :   02/02//2020                                                                                                                
+#                                                                                                                                                  
+# Fait par :    Clémence COMBRE                                                                                               
+#                                                                                                                                                  
+# Action : RAZ de la phase RFC_SALES du cube SLS_REPORTING                                                                                     
+#################################################################
+
+# Cube paramètre utilisateur
+sCubeUser = 'zSELECT' ;
+# Utilisateur lancant le processus
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+#Cube administration
+sCubePROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+
+# Information sur le process
+Z_STATUS = 'KO' ;
+CellPutS ( Z_STATUS , sCubeUser , vClient , 'ExecuteProcess' ) ;
+
+#--------------------Paramètres utilisateurs--------------------#
+# SALES_ORG
+p_Sales_Org = CellGetS ( sCubeUser , vClient , 'Sales Organisation' ) ;
+# DISTRIB_CHANNEL
+p_Distrib_Channel = CellGetS ( sCubeUser , vClient , 'Distribution Channel' ) ;
+# PHASE CURRENT PHASE
+P_PHASE = CellGetS ( sCubeUser , vClient, 'Current Phase' );
+#SALES GROUP
+P_SALES_GROUP = CellGetS( sCubeUser , vClient , 'Sales Group' );
+#--------------------Cubes--------------------#
+
+sCubeCible = 'SLS_REPORTING' ;
+sVueCible = 'Cible_vue_' | Today (0) | '_' | GetProcessName () ; 
+sSubsetCible = 'Cible_Subset_' | Today (0) | '_' | GetProcessName () ; 
+
+###########################################
+## Creation vue cible
+###########################################
+
+# Destruction pour recréation de la vue
+ViewDestroy ( sCubeCible , sVueCible ) ;
+ViewCreate ( sCubeCible , sVueCible ) ; 
+
+# Création des sous-ensembles des dimensions du cube
+
+#--------------------Dimensions-----------#
+sDimPHASE = '1_G_PHASE_REP';
+sDimPERIOD = '1_G_PERIOD';
+sDimSALESORG = '1_G_SALES_ORG';
+sDimCHANNEL = '1_G_DISTRIB_CHANNEL';
+sDimVOLUME_UNIT = '1_G_VOLUME_UNIT';
+sDimSALES_GROUP = 'SLS_SALES_GROUP';
+sDimCUSTOMER = 'SLS_CUSTOMER';
+sDimMATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+sDimPAYER = 'SLS_PAYER' ;
+sDimSOLD = 'SLS_SOLD_TO' ;
+sDimSHIPPOINT = 'SLS_SHIP_POINT';
+sDimSHIPPLANT = 'SLS_SHIP_PLANT' ;
+sDimPRODPLANT = 'SLS_PROD_PLANT' ;
+sDimVENDOR = 'SLS_VENDOR' ;
+sDimMATFREIGHT = 'SLS_MAT_FREIGHT_GROUP' ;
+sDimINCOTERM = 'SLS_INCOTERM' ;
+sDimQHQ = 'SLS_Q_HQ' ;
+sDimMesure = 'SLS_REPORTING_IND' ;
+
+# sDimPHASE
+sRFCSales = 'RFC_Sales' ;
+SubsetDestroy ( sDimPHASE , sSubsetCible ) ;
+SubsetCreate ( sDimPHASE , sSubsetCible  ) ; 
+SubsetElementInsert ( sDimPHASE , sSubsetCible , sRFCSales , 1 ) ;
+ViewSubsetAssign ( sCubeCible , sVueCible , sDimPHASE , sSubsetCible ) ; 
+
+# sDimPERIOD
+SubsetDestroy ( sDimPERIOD , sSubsetCible ) ;
+SubsetCreatebyMDX(  sSubsetCible , '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimPERIOD|'] )}, 0)}' );
+ViewSubsetAssign ( sCubeCible , sVueCible , sDimPERIOD , sSubsetCible ) ; 
+
+# sDimSALESORG
+SubsetDestroy ( sDimSALESORG , sSubsetCible ) ;
+SubsetCreatebyMDX( sSubsetCible , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimSALESORG |'] )}, 0)}') ;
+ViewSubsetAssign ( sCubeCible , sVueCible , sDimSALESORG , sSubsetCible ) ; 
+
+# sDimCHANNEL
+SubsetDestroy ( sDimCHANNEL , sSubsetCible ) ;
+SubsetCreatebyMDX( sSubsetCible , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimCHANNEL |'] )}, 0)}') ;
+ViewSubsetAssign ( sCubeCible , sVueCible , sDimCHANNEL , sSubsetCible ) ; 
+ 
+# sDimVOLUME_UNIT
+SubsetDestroy ( sDimVOLUME_UNIT , sSubsetCible ) ;
+SubsetCreatebyMDX(  sSubsetCible , '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimVOLUME_UNIT|'] )}, 0)}' );
+ViewSubsetAssign ( sCubeCible , sVueCible , sDimVOLUME_UNIT , sSubsetCible ) ; 
+
+# sDimSALES_GROUP
+SubsetDestroy ( sDimSALES_GROUP , sSubsetCible ) ;
+IF (P_SALES_GROUP @= '');
+ SubsetCreatebyMDX(  sSubsetCible , '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['| sDimSALES_GROUP |'] )}, 0)}'  );
+ELSE;
+ SubsetCreate ( sDimSALES_GROUP , sSubsetCible ) ; 
+ SubsetElementInsert ( sDimSALES_GROUP , sSubsetCible , P_SALES_GROUP , 1) ;
+ENDIF;
+ViewSubsetAssign ( sCubeCible , sVueCible , sDimSALES_GROUP , sSubsetCible ) ; 
+
+# sDimCUSTOMER
+SubsetDestroy (  sDimCUSTOMER , sSubsetCible ) ;
+SubsetCreatebyMDX(  sSubsetCible , '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimCUSTOMER|'] )}, 0)}' );
+ViewSubsetAssign ( sCubeCible , sVueCible ,  sDimCUSTOMER , sSubsetCible ) ; 
+
+# sDimMATERIAL_PLAN
+SubsetDestroy ( sDimMATERIAL_PLAN , sSubsetCible ) ;
+SubsetCreatebyMDX(  sSubsetCible , '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimMATERIAL_PLAN|'] )}, 0)}' );
+ViewSubsetAssign ( sCubeCible , sVueCible ,  sDimMATERIAL_PLAN , sSubsetCible ) ; 
+
+#sDimPAYER 
+SubsetDestroy ( sDimPAYER  , sSubsetCible ) ;
+SubsetCreatebyMDX( sSubsetCible  , '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimPAYER|'] )}, 0)}'  );
+ViewSubsetAssign ( sCubeCible , sVueCible ,  sDimPAYER  , sSubsetCible ) ; 
+
+#sDimSOLD 
+SubsetDestroy ( sDimSOLD , sSubsetCible ) ;
+SubsetCreatebyMDX(  sSubsetCible , '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimSOLD|'] )}, 0)}'  );
+ViewSubsetAssign ( sCubeCible , sVueCible ,  sDimSOLD , sSubsetCible ) ; 
+
+#sDimSHIPPOINT
+sShipPoint = 'N/A_SHIP_POINT' ;
+SubsetDestroy ( sDimSHIPPOINT , sSubsetCible ) ;
+SubsetCreate ( sDimSHIPPOINT , sSubsetCible ) ; 
+SubsetElementInsert ( sDimSHIPPOINT , sSubsetCible , sShipPoint ,1 ) ;
+ViewSubsetAssign ( sCubeCible , sVueCible ,  sDimSHIPPOINT , sSubsetCible ) ; 
+
+#sDimSHIPPLANT 
+sShipPlant = 'N/A_SHIP_PLANT' ;
+SubsetDestroy ( sDimSHIPPLANT  , sSubsetCible ) ;
+SubsetCreate ( sDimSHIPPLANT , sSubsetCible ) ; 
+SubsetElementInsert ( sDimSHIPPLANT , sSubsetCible , sShipPlant , 1 ) ;
+ViewSubsetAssign ( sCubeCible , sVueCible ,  sDimSHIPPLANT  , sSubsetCible ) ; 
+
+#sDimPRODPLANT
+sProdPlant = 'N/A_PROD_PLANT' ; 
+SubsetDestroy ( sDimPRODPLANT , sSubsetCible ) ;
+SubsetCreate ( sDimPRODPLANT , sSubsetCible ) ; 
+SubsetElementInsert ( sDimPRODPLANT, sSubsetCible , sProdPlant , 1) ;
+ViewSubsetAssign ( sCubeCible , sVueCible ,  sDimPRODPLANT , sSubsetCible ) ; 
+
+#sDimVENDOR 
+sVendor = 'N/A_VENDOR' ;
+SubsetDestroy ( sDimVENDOR  , sSubsetCible ) ;
+SubsetCreate ( sDimVENDOR , sSubsetCible  ) ; 
+SubsetElementInsert ( sDimVENDOR , sSubsetCible , sVendor , 1) ;
+ViewSubsetAssign ( sCubeCible , sVueCible , sDimVENDOR  , sSubsetCible ) ; 
+
+#sDimMATFREIGHT 
+sMatFreight = 'N/A_MAT_FR_GROUP' ;
+SubsetDestroy ( sDimMATFREIGHT , sSubsetCible ) ;
+SubsetCreate ( sDimMATFREIGHT  , sSubsetCible ) ; 
+SubsetElementInsert ( sDimMATFREIGHT  , sSubsetCible , sMatFreight , 1) ;
+ViewSubsetAssign ( sCubeCible , sVueCible ,  sDimMATFREIGHT  , sSubsetCible ) ; 
+
+#sDimINCOTERM 
+SubsetDestroy ( sDimINCOTERM  , sSubsetCible ) ;
+SubsetCreatebyMDX(  sSubsetCible , '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimINCOTERM |'] )}, 0)}' );
+ViewSubsetAssign ( sCubeCible , sVueCible ,  sDimINCOTERM , sSubsetCible ) ; 
+
+#sDimQHQ 
+# sQuota = 'QUOTA_STAND' ;
+SubsetDestroy (sDimQHQ , sSubsetCible ) ;
+# SubsetCreate ( sDimQHQ   , sSubsetCible ) ; 
+# SubsetElementInsert ( sDimQHQ  , sSubsetCible , sQuota , 1) ;
+# Modif VRT : Mise en place des contrats indexés
+# SubsetElementInsert ( sDimQHQ  , sSubsetCible , 'INDEXE' , 1) ;
+#Fin VRT
+SubsetCreatebyMDX(  sSubsetCible , '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimQHQ |'] )}, 0)}' );
+ViewSubsetAssign ( sCubeCible , sVueCible ,  sDimQHQ, sSubsetCible ) ; 
+
+# sDimMesure
+SubsetDestroy ( sDimMesure , sSubsetCible ) ;
+SubsetCreatebyMDX(  sSubsetCible , '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimMesure|'] )}, 0)}'  );
+ViewSubsetAssign ( sCubeCible , sVueCible ,  sDimMesure , sSubsetCible ) ; 
+
+
+ViewZeroOut ( sCubeCible , sVueCible ) ;
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+ #-- Supression de la RAZ
+ViewDestroy (  sCubeCible , sVueCible ) ;
+ #-- Suppression des Subsets créés pour le process
+ SubsetDestroy ( sDimPHASE , sSubsetCible ) ;
+ SubsetDestroy ( sDimPERIOD , sSubsetCible ) ;
+ SubsetDestroy ( sDimSALESORG , sSubsetCible ) ;
+ SubsetDestroy ( sDimCHANNEL , sSubsetCible ) ;
+ SubsetDestroy ( sDimVOLUME_UNIT , sSubsetCible ) ;
+ SubsetDestroy ( sDimSALES_GROUP , sSubsetCible ) ;
+ SubsetDestroy ( sDimCUSTOMER , sSubsetCible ) ;
+ SubsetDestroy ( sDimMATERIAL_PLAN , sSubsetCible ) ;
+ SubsetDestroy ( sDimPAYER , sSubsetCible ) ;
+ SubsetDestroy ( sDimSOLD , sSubsetCible ) ;
+ SubsetDestroy ( sDimSHIPPOINT , sSubsetCible ) ;
+SubsetDestroy ( sDimSHIPPLANT , sSubsetCible ) ;
+SubsetDestroy ( sDimPRODPLANT , sSubsetCible ) ;
+SubsetDestroy ( sDimVENDOR , sSubsetCible ) ;
+SubsetDestroy ( sDimMATFREIGHT , sSubsetCible ) ;
+ SubsetDestroy ( sDimINCOTERM , sSubsetCible ) ;
+ SubsetDestroy ( sDimQHQ , sSubsetCible ) ;
+ SubsetDestroy ( sDimMesure , sSubsetCible ) ;
+#endregion

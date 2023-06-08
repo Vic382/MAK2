@@ -1,0 +1,347 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+################################################################
+#                 DESCRIPTION DU PROCESSUS                     #
+#                                                              #
+# Date :   11/04/2019                                          #
+#                                                              #
+# Fait par :   Anne BESNARD                                    #
+#                                                              #
+# Action : Sécurité sur les planning materials			       #
+#															   #
+#                                                              #
+################################################################
+
+#====================================#
+#     Déclaration des variables      #
+#====================================#
+
+#--------------------Cubes--------------------#
+C_ElementSecurity_Material_Plan = '}ElementSecurity_SLS_MATERIAL_PLAN';
+C_ElementSecurity_Material_Plan_Price = '}ElementSecurity_SLS_MATERIAL_PLAN_PRICE';
+
+#--------------------Dimensions--------------------#
+D_Mat_Plan = 'SLS_MATERIAL_PLAN';
+D_Mat_Plan_Price = 'SLS_MATERIAL_PLAN_PRICE';
+D_Attr_MATERIAL = '}ElementAttributes_1_G_MATERIAL';
+D_Groups = '}Groups';
+
+#--------------------Elements--------------------#
+
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+
+#vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+subset_temp = 'z_temp_' | vUSER |'_' | vPRO_NAME;
+
+#=========================================#
+#   Initialisation du subset à supprimer  #
+#=========================================#
+
+#-----------Destruction des objets--------#
+ViewDestroy( C_ElementSecurity_Material_Plan, view_erase );
+ViewDestroy( C_ElementSecurity_Material_Plan_Price, view_erase );
+SubsetDestroy(D_Mat_Plan, subset_erase);
+SubsetDestroy(D_Mat_Plan_Price, subset_erase);
+SubsetDestroy(D_Groups, subset_erase);
+
+#-----------Création des objets-----------#
+#Vue
+ViewCreate( C_ElementSecurity_Material_Plan, view_erase, 1 );
+ViewCreate( C_ElementSecurity_Material_Plan_Price, view_erase, 1 );
+
+
+#D_Material Plan
+MDX = '{{[SLS_MATERIAL_PLAN].[Total Planning Material]},{TM1SUBSETALL([SLS_MATERIAL_PLAN])}}';
+SubsetCreatebyMDX( subset_erase, MDX, 1 );
+SubsetElementDelete( D_Mat_Plan, subset_erase, 1 );
+
+#D_Material Plan Price
+MDX = '{{[SLS_MATERIAL_PLAN_PRICE].[N/A Material Plan]},{TM1SUBSETALL([SLS_MATERIAL_PLAN_PRICE])}}';
+SubsetCreatebyMDX( subset_erase, MDX, 1 );
+SubsetElementDelete( D_Mat_Plan_Price, subset_erase, 1 );
+
+#D_Groups
+MDX = '{
+	{[}Groups].[ADMIN]},
+	{[}Groups].[Functional_Admin_CDG]},
+	{EXCEPT(
+		{TM1SUBSETALL([}Groups])} , 		
+		TM1FILTERBYPATTERN(
+			{TM1SUBSETALL([}Groups])} , 
+			"*ADMIN*"
+			)
+		)
+	}
+}';
+SubsetCreatebyMDX( subset_erase, MDX, 1 );
+SubsetElementDelete( D_Groups, subset_erase, 1 );
+
+#-----Affectation des sous-ensembles à la vue---#
+ViewSubsetAssign(C_ElementSecurity_Material_Plan, view_erase, D_Mat_Plan, subset_erase);
+ViewSubsetAssign(C_ElementSecurity_Material_Plan, view_erase, D_Groups, subset_erase);
+ViewSubsetAssign(C_ElementSecurity_Material_Plan_Price, view_erase, D_Mat_Plan_Price, subset_erase);
+ViewSubsetAssign(C_ElementSecurity_Material_Plan_Price, view_erase, D_Groups, subset_erase);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_ElementSecurity_Material_Plan, view_erase,1);
+ViewSetSkipCalcs(C_ElementSecurity_Material_Plan,view_erase, 0);
+ViewSetSkipZeroes(C_ElementSecurity_Material_Plan,view_erase, 0);
+
+ViewSetSkipRuleValues(C_ElementSecurity_Material_Plan_Price, view_erase,1);
+ViewSetSkipCalcs(C_ElementSecurity_Material_Plan_Price,view_erase, 0);
+ViewSetSkipZeroes(C_ElementSecurity_Material_Plan_Price,view_erase, 0);
+
+#-------définition du subset source-------#
+ViewZeroOut( C_ElementSecurity_Material_Plan, view_erase );
+ViewZeroOut( C_ElementSecurity_Material_Plan_Price, view_erase );
+
+#-----------Destruction des objets--------#
+ViewDestroy( C_ElementSecurity_Material_Plan, view_erase );
+ViewDestroy( C_ElementSecurity_Material_Plan_Price, view_erase );
+SubsetDestroy(D_Mat_Plan, subset_erase);
+SubsetDestroy(D_Mat_Plan_Price, subset_erase);
+SubsetDestroy(D_Groups, subset_erase);
+
+
+#=========================================#
+#   Initialisation du subset à copier     #
+#=========================================#
+
+#-----------Destruction des objets--------#
+ViewDestroy( C_ElementSecurity_Material_Plan, view_copy );
+SubsetDestroy(D_Mat_Plan, subset_copy);
+SubsetDestroy(D_Groups, subset_copy);
+
+#-----------Création des objets-----------#
+#Vue
+ViewCreate( C_ElementSecurity_Material_Plan, view_copy, 1 );
+
+
+#D_Material_Plan
+MDX = '{{[SLS_MATERIAL_PLAN].[Total Planning Material]},{TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_MATERIAL_PLAN]), 0)}}';
+SubsetCreatebyMDX( subset_copy, MDX, 1 );
+SubsetElementDelete( D_Mat_Plan, subset_copy, 1 );
+
+#D_Groups
+MDX = '{
+	{[}Groups].[ADMIN]},
+	{[}Groups].[Functional_Admin_CDG]},
+	{EXCEPT(
+		{TM1SUBSETALL([}Groups])} , 		
+		TM1FILTERBYPATTERN(
+			{TM1SUBSETALL([}Groups])} , 
+			"*ADMIN*"
+			)
+		)
+	}
+}';
+SubsetCreatebyMDX( subset_copy, MDX, 1 );
+SubsetElementDelete( D_Groups, subset_copy, 1 );
+
+#---------------------Affectation des sous-ensembles à la vue---------------------------------#
+ViewSubsetAssign(C_ElementSecurity_Material_Plan, view_copy, D_Mat_Plan, subset_copy);
+ViewSubsetAssign(C_ElementSecurity_Material_Plan, view_copy, D_Groups, subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_ElementSecurity_Material_Plan, view_copy,1);
+ViewSetSkipCalcs(C_ElementSecurity_Material_Plan,view_copy, 0);
+ViewSetSkipZeroes(C_ElementSecurity_Material_Plan,view_copy, 0);
+
+#-------définition du subset source-------#
+DatasourceCubeview = view_copy;
+
+
+SubsetDestroy(D_Attr_MATERIAL, subset_temp);
+MDX_Attr = '{{['|D_Attr_MATERIAL|'].[Caption]},{FILTER( {TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|D_Attr_MATERIAL|'] )}, 0)}, ['|D_Attr_MATERIAL|'].[Flag_Hier] = 1.000000)}}}';
+SubsetCreateByMDX(subset_temp, MDX_Attr);
+SubsetElementDelete(D_Attr_MATERIAL, subset_temp, 1);
+Subsize = SubsetGetSize(D_Attr_MATERIAL, subset_temp);
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+If( AttrS(D_Mat_Plan, vELEM_MAT_PLAN, 'Volume_Unit')@<>'' % vELEM_MAT_PLAN @= 'Total Planning Material');
+	CellPutS('WRITE', C_ElementSecurity_Material_Plan, vELEM_MAT_PLAN, vELEM_Groups);
+EndIf;
+
+vELEM_MAT_PLAN = DimensionElementPrincipalName( D_Mat_Plan, vELEM_MAT_PLAN );
+vELEM_Groups = DimensionElementPrincipalName( D_Groups, vELEM_Groups );
+
+If(AttrS(D_Mat_Plan,vELEM_MAT_PLAN, 'Status')@= 'ACT' % AttrS(D_Mat_Plan,vELEM_MAT_PLAN, 'Status')@= 'VAL' % AttrS(D_Mat_Plan,vELEM_MAT_PLAN, 'Status')@= '');
+	#---------------Planning Material-----------#
+	CellPutS('WRITE', C_ElementSecurity_Material_Plan, vELEM_MAT_PLAN, vELEM_Groups);
+    Div = ELPAR(D_Mat_Plan, vELEM_MAT_PLAN, 1);
+    CellPutS('READ', C_ElementSecurity_Material_Plan, Div, vELEM_Groups);
+     If( vELEM_GROUPS @= 'Functional_Admin_CDG' % vELEM_Groups@= 'CS' % vELEM_Groups@= 'Logistics');
+    	CellPutS('WRITE', C_ElementSecurity_Material_Plan, Div, vELEM_Groups);
+    EndIf;
+    
+    #---------------Hiérarchies Planning Material-----------#
+	#Parcours du subset attr
+	elem_nb = 1;
+	While(elem_nb<=Subsize);
+		#Vérification du flag pour chacun des éléments du subset
+    	elem = SubsetGetElementName( D_Attr_MATERIAL, subset_temp, elem_nb);
+    	Flag = AttrN(D_Attr_MATERIAL, elem,'Flag_Hier');
+    	#Si l'attr doit être une hiérarchie : création
+    	If(Flag = 1);
+        	Par = ELPAR(D_Mat_Plan|':'|elem, vELEM_MAT_PLAN, 1);
+            If(Par@<>'');
+				CellPutS('WRITE', C_ElementSecurity_Material_Plan, (elem|':'|Par), vELEM_Groups);
+            EndIf;
+            CellPutS('WRITE', C_ElementSecurity_Material_Plan, (elem|':All '|elem), vELEM_Groups);	
+		EndIf;    
+		elem_nb = elem_nb + 1;
+	End;
+   
+    #-----------Planning Material Price---------#
+    If( DIMIX(D_Mat_PLan_Price, vELEM_MAT_PLAN)<>0);
+    	CellPutS('WRITE', C_ElementSecurity_Material_Plan_Price, vELEM_MAT_PLAN, vELEM_Groups);
+        Lab = AttrS(D_Mat_Plan, vELEM_MAT_PLAN, 'Lab');
+        If(DIMIX(D_Mat_PLan_Price, Lab)<>0);
+        	CellPutS('WRITE', C_ElementSecurity_Material_Plan_Price, Lab, vELEM_Groups);
+        EndIf;
+	EndIf;
+    If(DIMIX(D_Mat_Plan_Price, Div)<>0);
+    	CellPutS('READ', C_ElementSecurity_Material_Plan_Price, Div, vELEM_Groups);
+    EndIf;
+    
+Else;
+	#---------------Planning Material-----------#
+	CellPutS('READ', C_ElementSecurity_Material_Plan, vELEM_MAT_PLAN, vELEM_Groups);
+    Div = ELPAR(D_Mat_Plan, vELEM_MAT_PLAN, 1);
+    CellPutS('READ', C_ElementSecurity_Material_Plan, Div, vELEM_Groups);
+     If( vELEM_GROUPS @= 'Functional_Admin_CDG' % vELEM_Groups@= 'CS' % vELEM_Groups@= 'Logistics');
+    	CellPutS('WRITE', C_ElementSecurity_Material_Plan, Div, vELEM_Groups);
+    EndIf;
+    
+        #---------------Hiérarchies Planning Material-----------#
+	#Parcours du subset attr
+	elem_nb = 1;
+	While(elem_nb<=Subsize);
+		#Vérification du flag pour chacun des éléments du subset
+    	elem = SubsetGetElementName( D_Attr_MATERIAL, subset_temp, elem_nb);
+    	Flag = AttrN(D_Attr_MATERIAL, elem,'Flag_Hier');
+    	#Si l'attr doit être une hiérarchie : création
+    	If(Flag = 1);
+        	Par = ELPAR(D_Mat_Plan|':'|elem, vELEM_MAT_PLAN, 1);
+            If(Par @<> '');
+				CellPutS('READ', C_ElementSecurity_Material_Plan, (elem|':'|Par), vELEM_Groups);
+            EndIf;
+		EndIf;
+		elem_nb = elem_nb + 1;
+	End;
+    
+    #-----------Planning Material Price---------#
+    If( DIMIX(D_Mat_PLan_Price, vELEM_MAT_PLAN)<>0);
+    	CellPutS('READ', C_ElementSecurity_Material_Plan_Price, vELEM_MAT_PLAN, vELEM_Groups);
+        Lab = AttrS(D_Mat_Plan, vELEM_MAT_PLAN, 'Lab');
+        If(DIMIX(D_Mat_PLan_Price, Lab)<>0);
+        	CellPutS('WRITE', C_ElementSecurity_Material_Plan_Price, Lab, vELEM_Groups);
+        EndIf;
+	EndIf;
+	If(DIMIX(D_Mat_Plan_Price, Div)<>0);
+    	CellPutS('READ', C_ElementSecurity_Material_Plan_Price, Div, vELEM_Groups);
+    EndIf;
+    
+EndIf;
+
+
+#Droits Hiérarchie retail pour le retail
+If((SCAN('10',AttrS(D_Mat_Plan, vELEM_MAT_PLAN, 'Distribution Channel'))<>0 & SCAN('_10',vELEM_GROUPS)<>0)% vELEM_GROUPS @= 'Functional_Admin_CDG'% vELEM_GROUPS @= '4Net' %  vELEM_GROUPS @= 'Volume_Only');
+	Par_Ret_1 = ELPAR(D_Mat_Plan, vELEM_MAT_PLAN, 2);
+    Par_Ret_2 = ELPAR(D_Mat_Plan, Par_Ret_1, 1);
+    Par_Ret_3 = ELPAR(D_Mat_Plan, Par_Ret_2, 1);
+    Par_Ret_4 = ELPAR(D_Mat_Plan, Par_Ret_3, 1);
+    Tot_Ret = ELPAR(D_Mat_Plan, Par_Ret_4, 1);
+    If(DIMIX(D_Mat_Plan, Par_Ret_1)<>0);
+    	CellPutS('WRITE', C_ElementSecurity_Material_Plan, Par_Ret_1, vELEM_Groups);
+        If(DIMIX(D_Mat_Plan, Par_Ret_2)<>0);
+	    	CellPutS('WRITE', C_ElementSecurity_Material_Plan, Par_Ret_2, vELEM_Groups);
+            If(DIMIX(D_Mat_Plan, Par_Ret_3)<>0);
+            	CellPutS('WRITE', C_ElementSecurity_Material_Plan, Par_Ret_3, vELEM_Groups);
+                If(DIMIX(D_Mat_Plan, Par_Ret_4)<>0);
+                	CellPutS('WRITE', C_ElementSecurity_Material_Plan, Par_Ret_4, vELEM_Groups);
+                    If(DIMIX(D_Mat_Plan, Tot_Ret)<>0);
+                    	CellPutS('WRITE', C_ElementSecurity_Material_Plan, Tot_Ret, vELEM_Groups);
+                    EndIf;
+                EndIf;
+            EndIf;
+    	EndIf;
+   	EndIf; 
+    If(DIMIX(D_Mat_Plan_Price, Par_Ret_1)<>0);
+    	CellPutS('WRITE', C_ElementSecurity_Material_Plan_Price, Par_Ret_1, vELEM_Groups);
+        If(DIMIX(D_Mat_Plan_Price, Par_Ret_2)<>0);
+	    	CellPutS('WRITE', C_ElementSecurity_Material_Plan_Price, Par_Ret_2, vELEM_Groups);
+            If(DIMIX(D_Mat_Plan_Price, Par_Ret_3)<>0);
+            	CellPutS('WRITE', C_ElementSecurity_Material_Plan_Price, Par_Ret_3, vELEM_Groups);
+                If(DIMIX(D_Mat_Plan_Price, Par_Ret_4)<>0);
+                	CellPutS('WRITE', C_ElementSecurity_Material_Plan_Price, Par_Ret_4, vELEM_Groups);
+                    If(DIMIX(D_Mat_Plan_Price, Tot_Ret)<>0);
+                    	CellPutS('WRITE', C_ElementSecurity_Material_Plan_Price, Tot_Ret, vELEM_Groups);
+                    EndIf;
+                EndIf;
+            EndIf;
+    	EndIf;
+   	EndIf; 
+EndIf;
+
+
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+CellPutS('READ', C_ElementSecurity_Material_Plan, 'Total Planning Material', vELEM_Groups);
+CellPutS('READ', C_ElementSecurity_Material_Plan, 'Total Retail', vELEM_Groups);
+CellPutS('READ', C_ElementSecurity_Material_Plan, 'Total Retail', 'Functional_Admin_CDG');
+
+#-----------Destruction des objets--------#
+ViewDestroy( C_ElementSecurity_Material_Plan, view_copy);
+SubsetDestroy(D_Mat_Plan, subset_copy);
+SubsetDestroy(D_Groups, subset_copy);
+SubsetDestroy(D_Attr_MATERIAL, subset_temp);
+
+
+#endregion

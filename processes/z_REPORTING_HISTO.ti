@@ -1,0 +1,414 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+################################################################
+#                                               DESCRIPTION DU PROCESSUS                                             
+#                                                                                                                                                  
+# Date :   30/03/2023                                                                                                                
+#                                                                                                                                                  
+# Fait par :    Emmanuel LOUTSCH                                                                                               
+#                                                                                                                                                  
+# Action : PROCESSUS PERMETTANT DE METTRE A JOUR LES DONNEES DU CUBE SLS_REPORTING_HISTO 
+# DEPUIS LE CUBE SLS_REPORTING
+# POUR UNE SEULE PHASE ET TOUS LES MOIS
+# Si la Phase ACT est sélectionnée, les périodes de début et de fin doivent l'être aussi
+#################################################################
+
+#====================================#
+#             Déclaration des variables                   #
+#====================================#
+# Nom du process
+sProcess = GetProcessName() ;
+
+nDebug = 1 ;
+
+# Cube paramètre utilisateur
+sCubeUser = 'zSELECT' ;
+# Utilisateur lancant le processus
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+#Cube administration
+sCubePROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+
+# Information sur le process
+Z_STATUS = 'KO' ;
+CellPutS ( Z_STATUS , sCubeUser , vClient , 'ExecuteProcess' ) ;
+
+#--------------------Paramètres utilisateurs--------------------#
+# PHASE
+p_PHASE = CellGetS ( sCubeUser , vClient, 'Phase_Copy_SLS_REPORTING' ) ;
+p_PHASE = DimensionElementPrincipalName ( '1_G_PHASE_REP' , p_PHASE ) ;
+
+# Vérification que la p_PHASE n'est pas vide, sinon, sortie du processus
+IF ( p_PHASE @= '' ) ;
+ ProcessQuit ;
+ENDIF ;
+
+## Au cas où, pour plus tard
+#P_SALES_GROUP 
+P_SALES_GROUP = '' ;
+
+#--------------------Paramètres utilisateurs--------------------#
+
+#--------------------Cubes--------------------#
+sCubeSource = 'SLS_REPORTING' ;
+sCube = 'SLS_REPORTING_HISTO' ;
+
+#--------------------Dimensions--------------------#
+sDimPhase = '1_G_PHASE_REP' ;
+sDimPeriod = '1_G_PERIOD' ;
+sDimSalesOrg = '1_G_SALES_ORG' ;
+sDimDistribChannel = '1_G_DISTRIB_CHANNEL' ;
+sDimVolumeUnit = '1_G_VOLUME_UNIT' ;
+sDimSalesGroup = 'SLS_SALES_GROUP' ;
+sDimCustomer = 'SLS_CUSTOMER' ;
+sDimMaterialPlan = 'SLS_MATERIAL_PLAN' ;
+sDimPayer = 'SLS_PAYER' ;
+sDimSoldTo = 'SLS_SOLD_TO' ;
+sDimShipPoint = 'SLS_SHIP_POINT' ;
+sDimShipPlant = 'SLS_SHIP_PLANT' ;
+sDimProdPlant = 'SLS_PROD_PLANT' ;
+sDimVendor = 'SLS_VENDOR' ;
+sDimMatFreightGroup = 'SLS_MAT_FREIGHT_GROUP' ;
+sDimIncoterm = 'SLS_INCOTERM' ;
+sDimQuota = 'SLS_Q_HQ' ;
+sDimMesure = 'SLS_REPORTING_IND' ;
+
+# Gestion des périodes
+IF ( p_PHASE @= 'ACT' ) ;
+ p_DEBUT = CellGetS ( sCubeUser , vClient, 'Period Debut SLS_REPORTING' ) ;
+ p_FIN = CellGetS ( sCubeUser , vClient, 'Period Fin SLS_REPORTING' ) ;
+ IF ( P_DEBUT @= '' % P_FIN @= '' ) ;
+  ProcessQuit ;
+ ENDIF ;
+  n_Debut = DIMIX ( sDimPERIOD , p_DEBUT ) ;
+  n_Fin = DIMIX ( sDimPERIOD , p_FIN ) ;
+ENDIF ;
+
+# Vue source
+sVueSource = 'zTI_' | sProcess | '_Source';
+IF( ViewExists( sCubeSource, sVueSource ) = 1 );
+  ViewDestroy( sCubeSource, sVueSource );
+ENDIF;
+ViewCreate( sCubeSource, sVueSource , nDebug );
+
+# sDimPhase
+IF( SubsetExists( sDimPhase , sVueSource ) = 1 );
+  SubsetDestroy( sDimPhase , sVueSource );
+ENDIF;
+SubsetCreate ( sDimPHASE , sVueSource  ) ;
+SubsetElementInsert ( sDimPHASE , sVueSource , p_PHASE , 1 ) ;
+ViewSubsetAssign( sCubeSource, sVueSource , sDimPhase , sVueSource );
+
+# sDimPeriod
+IF( SubsetExists( sDimPeriod , sVueSource ) = 1 );
+  SubsetDestroy( sDimPeriod , sVueSource );
+ENDIF;
+# Si la PHASE est ACT, restriction des périodes entre Debut et fin (comprises) via une boucle
+IF ( P_PHASE @= 'ACT' ) ;
+ SubsetCreate ( sDimPERIOD , sVueSource ) ;
+ nPosition = 1 ;
+ WHILE ( n_Debut <= n_Fin ) ;
+  sPeriod = DimNm ( sDimPERIOD , n_Debut ) ;
+  IF ( ELLEV ( sDimPERIOD , sPeriod ) = 0 ) ;
+   SubsetElementInsert ( sDimPERIOD , sVueSource , sPeriod , nPosition ) ;
+   nPosition = nPosition + 1 ;
+  ENDIF ;
+  n_Debut = n_Debut + 1 ;
+ END ;
+# Sinon, l'ensemble des périodes (niveau 0) sont inclues
+ELSE ;
+ SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimPeriod |'] )}, 0)}' , nDebug );
+ENDIF ;
+ViewSubsetAssign( sCubeSource, sVueSource , sDimPeriod , sVueSource );
+
+# sDimSalesOrg
+IF( SubsetExists( sDimSalesOrg , sVueSource ) = 1 );
+  SubsetDestroy( sDimSalesOrg , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimSalesOrg |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimSalesOrg , sVueSource );
+
+# sDimDistribChannel
+IF( SubsetExists( sDimDistribChannel , sVueSource ) = 1 );
+  SubsetDestroy( sDimDistribChannel , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimDistribChannel |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimDistribChannel , sVueSource );
+
+# sDimVolumeUnit
+IF( SubsetExists( sDimVolumeUnit , sVueSource ) = 1 );
+  SubsetDestroy( sDimVolumeUnit , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimVolumeUnit |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimVolumeUnit , sVueSource );
+
+# sDimSalesGroup
+IF( SubsetExists( sDimSalesGroup , sVueSource ) = 1 );
+  SubsetDestroy( sDimSalesGroup , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimSalesGroup |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimSalesGroup , sVueSource );
+
+# sDimCustomer
+IF( SubsetExists( sDimCustomer , sVueSource ) = 1 );
+  SubsetDestroy( sDimCustomer , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimCustomer |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimCustomer , sVueSource );
+
+# sDimMaterialPlan
+IF( SubsetExists( sDimMaterialPlan , sVueSource ) = 1 );
+  SubsetDestroy( sDimMaterialPlan , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimMaterialPlan |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimMaterialPlan , sVueSource );
+
+# sDimPayer
+IF( SubsetExists( sDimPayer , sVueSource ) = 1 );
+  SubsetDestroy( sDimPayer , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimPayer |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimPayer , sVueSource );
+
+# sDimSoldTo
+IF( SubsetExists( sDimSoldTo , sVueSource ) = 1 );
+  SubsetDestroy( sDimSoldTo , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimSoldTo |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimSoldTo , sVueSource );
+
+# sDimShipPoint
+IF( SubsetExists( sDimShipPoint , sVueSource ) = 1 );
+  SubsetDestroy( sDimShipPoint , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimShipPoint |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimShipPoint , sVueSource );
+
+# sDimShipPlant
+IF( SubsetExists( sDimShipPlant , sVueSource ) = 1 );
+  SubsetDestroy( sDimShipPlant , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimShipPlant |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimShipPlant , sVueSource );
+
+# sDimProdPlant
+IF( SubsetExists( sDimProdPlant , sVueSource ) = 1 );
+  SubsetDestroy( sDimProdPlant , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimProdPlant |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimProdPlant , sVueSource );
+
+# sDimVendor
+IF( SubsetExists( sDimVendor , sVueSource ) = 1 );
+  SubsetDestroy( sDimVendor , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimVendor |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimVendor , sVueSource );
+
+# sDimMatFreightGroup
+IF( SubsetExists( sDimMatFreightGroup , sVueSource ) = 1 );
+  SubsetDestroy( sDimMatFreightGroup , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimMatFreightGroup |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimMatFreightGroup , sVueSource );
+
+# sDimIncoterm
+IF( SubsetExists( sDimIncoterm , sVueSource ) = 1 );
+  SubsetDestroy( sDimIncoterm , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimIncoterm |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimIncoterm , sVueSource );
+
+# sDimQuota
+IF( SubsetExists( sDimQuota , sVueSource ) = 1 );
+  SubsetDestroy( sDimQuota , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimQuota |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimQuota , sVueSource );
+
+# sDimMesure
+IF( SubsetExists( sDimMesure , sVueSource ) = 1 );
+  SubsetDestroy( sDimMesure , sVueSource );
+ENDIF;
+SubsetCreatebyMDX( sVueSource , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimMesure |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCubeSource, sVueSource , sDimMesure , sVueSource );
+
+#### Uniquement pour une vue source ####
+ViewExtractSkipCalcsSet( sCubeSource , sVueSource , 1 );
+ViewExtractSkipZeroesSet( sCubeSource , sVueSource , 1 );
+ViewExtractSkipRuleValuesSet( sCubeSource , sVueSource , 0 );
+
+#Définition de la source
+DataSourceNameForServer = sCubeSource ;
+DatasourceCubeView = sVueSource ;
+
+
+# Vue RAZ
+sVueZero = 'zTI_' | sProcess | '_Zero';
+IF( ViewExists( sCube, sVueZero ) = 1 );
+  ViewDestroy( sCube, sVueZero );
+ENDIF;
+ViewCreate( sCube, sVueZero , nDebug );
+
+# sDimPhase
+IF( SubsetExists( sDimPhase , sVueZero ) = 1 );
+  SubsetDestroy( sDimPhase , sVueZero );
+ENDIF;
+SubsetCreate ( sDimPHASE , sVueZero ) ;
+SubsetElementInsert ( sDimPHASE , sVueZero , p_PHASE , 1 ) ;
+ViewSubsetAssign( sCube, sVueZero , sDimPhase , sVueZero );
+
+# sDimPeriod
+IF( SubsetExists( sDimPeriod , sVueZero ) = 1 );
+  SubsetDestroy( sDimPeriod , sVueZero );
+ENDIF;
+# Si la PHASE est ACT, restriction des périodes entre Debut et fin (comprises) via une boucle
+IF ( P_PHASE @= 'ACT' ) ;
+ SubsetCreate ( sDimPERIOD , sVueZero ) ;
+ n_Debut = DIMIX ( sDimPERIOD , p_DEBUT ) ;
+ nPosition = 1 ;
+ WHILE ( n_Debut <= n_Fin ) ;
+  sPeriod = DimNm ( sDimPERIOD , n_Debut ) ;
+  IF ( ELLEV ( sDimPERIOD , sPeriod ) = 0 ) ;
+   SubsetElementInsert ( sDimPERIOD , sVueZero , sPeriod , nPosition ) ;
+   nPosition = nPosition + 1 ;
+  ENDIF ;
+  n_Debut = n_Debut + 1 ;
+ END ;
+# Sinon, l'ensemble des périodes (niveau 0) sont inclues
+ELSE ;
+ SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimPeriod |'] )}, 0)}' , nDebug );
+ENDIF ;
+ViewSubsetAssign( sCube, sVueZero , sDimPeriod , sVueZero );
+
+# sDimSalesOrg
+IF( SubsetExists( sDimSalesOrg , sVueZero ) = 1 );
+  SubsetDestroy( sDimSalesOrg , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimSalesOrg |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimSalesOrg , sVueZero );
+
+# sDimDistribChannel
+IF( SubsetExists( sDimDistribChannel , sVueZero ) = 1 );
+  SubsetDestroy( sDimDistribChannel , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimDistribChannel |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimDistribChannel , sVueZero );
+
+# sDimVolumeUnit
+IF( SubsetExists( sDimVolumeUnit , sVueZero ) = 1 );
+  SubsetDestroy( sDimVolumeUnit , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimVolumeUnit |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimVolumeUnit , sVueZero );
+
+# sDimSalesGroup
+IF( SubsetExists( sDimSalesGroup , sVueZero ) = 1 );
+  SubsetDestroy( sDimSalesGroup , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimSalesGroup |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimSalesGroup , sVueZero );
+
+# sDimCustomer
+IF( SubsetExists( sDimCustomer , sVueZero ) = 1 );
+  SubsetDestroy( sDimCustomer , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimCustomer |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimCustomer , sVueZero );
+
+# sDimMaterialPlan
+IF( SubsetExists( sDimMaterialPlan , sVueZero ) = 1 );
+  SubsetDestroy( sDimMaterialPlan , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimMaterialPlan |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimMaterialPlan , sVueZero );
+
+# sDimPayer
+IF( SubsetExists( sDimPayer , sVueZero ) = 1 );
+  SubsetDestroy( sDimPayer , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimPayer |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimPayer , sVueZero );
+
+# sDimSoldTo
+IF( SubsetExists( sDimSoldTo , sVueZero ) = 1 );
+  SubsetDestroy( sDimSoldTo , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimSoldTo |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimSoldTo , sVueZero );
+
+# sDimShipPoint
+IF( SubsetExists( sDimShipPoint , sVueZero ) = 1 );
+  SubsetDestroy( sDimShipPoint , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimShipPoint |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimShipPoint , sVueZero );
+
+# sDimShipPlant
+IF( SubsetExists( sDimShipPlant , sVueZero ) = 1 );
+  SubsetDestroy( sDimShipPlant , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimShipPlant |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimShipPlant , sVueZero );
+
+# sDimProdPlant
+IF( SubsetExists( sDimProdPlant , sVueZero ) = 1 );
+  SubsetDestroy( sDimProdPlant , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimProdPlant |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimProdPlant , sVueZero );
+
+# sDimVendor
+IF( SubsetExists( sDimVendor , sVueZero ) = 1 );
+  SubsetDestroy( sDimVendor , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimVendor |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimVendor , sVueZero );
+
+# sDimMatFreightGroup
+IF( SubsetExists( sDimMatFreightGroup , sVueZero ) = 1 );
+  SubsetDestroy( sDimMatFreightGroup , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimMatFreightGroup |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimMatFreightGroup , sVueZero );
+
+# sDimIncoterm
+IF( SubsetExists( sDimIncoterm , sVueZero ) = 1 );
+  SubsetDestroy( sDimIncoterm , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimIncoterm |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimIncoterm , sVueZero );
+
+# sDimQuota
+IF( SubsetExists( sDimQuota , sVueZero ) = 1 );
+  SubsetDestroy( sDimQuota , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimQuota |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimQuota , sVueZero );
+
+# sDimMesure
+IF( SubsetExists( sDimMesure , sVueZero ) = 1 );
+  SubsetDestroy( sDimMesure , sVueZero );
+ENDIF;
+SubsetCreatebyMDX( sVueZero , '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| sDimMesure |'] )}, 0)}' , nDebug );
+ViewSubsetAssign( sCube, sVueZero , sDimMesure , sVueZero );
+
+# RAZ
+ViewZeroOut( sCube, sVueZero );
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+# Copie des éléments (y compris les règles)
+CellPutN ( Value , sCube , PHASE , PERIOD , SALES_ORG , DISTRIB_CHANNEL , VOLUME_UNIT , SLS_SALES_GROUP , SLS_CUSTOMER , SLS_MATERIAL_PLAN , SLS_PAYER , SLS_SOLD_TO , SLS_SHIP_POINT , SLS_SHIP_PLANT , SLS_PROD_PLANT , SLS_VENDOR , SLS_MAT_FREIGHT_GROUP , SLS_INCOTERM , SLS_Q_HQ , SLS_REPORTING_IND ) ;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

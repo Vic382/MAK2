@@ -1,0 +1,37 @@
+{
+	"@type":"Cube",
+	"Name":"SLS_PRICE",
+	"Rules@Code.link":"SLS_PRICE.rules",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('1_G_CURRENT_PHASE')"
+		},
+		{
+			"@id":"Dimensions('1_G_PERIOD')"
+		},
+		{
+			"@id":"Dimensions('1_G_SALES_ORG')"
+		},
+		{
+			"@id":"Dimensions('1_G_DISTRIB_CHANNEL')"
+		},
+		{
+			"@id":"Dimensions('SLS_CUSTOMER_PRICE')"
+		},
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN_PRICE')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_GROUP')"
+		},
+		{
+			"@id":"Dimensions('SLS_PRICE_IND')"
+		}
+	],
+	"Views@Code.links":
+	[
+		"SLS_PRICE.views/All.json",
+		"SLS_PRICE.views/View1.json"
+	]
+}

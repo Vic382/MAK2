@@ -1,0 +1,27 @@
+{
+	"@type":"Cube",
+	"Name":"SLS_RESSOURCES_PLAN",
+	"Rules@Code.link":"SLS_RESSOURCES_PLAN.rules",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('1_G_CURRENT_PHASE')"
+		},
+		{
+			"@id":"Dimensions('1_G_PERIOD')"
+		},
+		{
+			"@id":"Dimensions('1_G_SALES_ORG')"
+		},
+		{
+			"@id":"Dimensions('1_G_DISTRIB_CHANNEL')"
+		},
+		{
+			"@id":"Dimensions('1_G_LINE')"
+		},
+		{
+			"@id":"Dimensions('SLS_RESS_PLAN_IND')"
+		}
+	],
+	"Views@Code.links":[]
+}

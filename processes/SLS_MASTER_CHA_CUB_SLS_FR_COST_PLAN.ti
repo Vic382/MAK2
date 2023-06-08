@@ -1,0 +1,116 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   03/03/2023                                                        #
+#                                                                            #
+# Fait par :    ELH		                                                     #
+#                                                                            #
+# Action : Processus Master permettant l'import des données Logistique       #
+#          depuis le fichier exporté via book 09 Admin et modifié par        #
+#		   recherchev. Import dans le cube SLS_FR_COST_PLAN.				 #
+#           																 #
+#																			 #
+##############################################################################
+
+#===============================#
+#	Déclaration des variables	#
+#===============================#
+
+
+#--------------------Cubes--------------------#
+C_Cube_Logistique = 'SLS_FR_COST_PLAN';
+C_Cube_Param = 'zPROCESS_ADMINISTRATION' ;
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+vUser_Name = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vUSER = SUBST(vUser_Name, SCAN('/',vUser_Name)+1, 100);
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+e_message_data = '';
+
+# Suppression éventuel des cubes temporaires
+IF ( CubeExists ( 'zLogistiqueTemp' ) = 1 ) ;
+ CubeDestroy ( 'zLogistiqueTemp' ) ;
+ENDIF ;
+IF ( CubeExists ( 'zFiltresLogistiqueTemp' ) = 1 ) ;
+ CubeDestroy ( 'zFiltresLogistiqueTemp' ) ;
+ENDIF ;
+
+# Suppression éventuelle des dimensions temporaires
+IF ( DimensionExists ( 'zFiltres' ) = 1 ) ;
+ DimensionDestroy ( 'zFiltres' ) ;
+ENDIF ;
+IF ( DimensionExists ( 'zFiltresIND' ) = 1 ) ;
+ DimensionDestroy ( 'zFiltresIND' ) ;
+ENDIF ;
+IF ( DimensionExists ( 'zLogistiqueIND' ) = 1 ) ;
+ DimensionDestroy ( 'zLogistiqueIND' ) ;
+ENDIF ;
+
+# Création de la dimension zFiltres
+DimensionCreate ( 'zFiltres' ) ;
+# Insertion des éléments p_sales_org, p_distrib_channel et p_mat_freight_group
+DimensionElementInsertDirect ( 'zFiltres' , '' , 'p_sales_org', 'N' );
+DimensionElementInsertDirect ( 'zFiltres' , '' , 'p_distrib_channel', 'N' );
+# DimensionElementInsertDirect ( 'zFiltres' , '' , 'p_mat_freight_group', 'N' );
+DimensionElementInsertDirect ( 'zFiltres' , '' , 'p_debut_periode', 'N' );
+DimensionElementInsertDirect ( 'zFiltres' , '' , 'p_fin_periode', 'N' );
+# Création de la dimension zFiltresIND
+DimensionCreate ( 'zFiltresIND' ) ;
+# Insertion de l'élément value dans la dimension zFiltresIND
+DimensionElementInsertDirect ( 'zFiltresIND' , '' , 'Value', 'S' );
+# Création du cube zFiltresLogistiqueTemp permettant de filtrer certaines dimension de la vue source pour importer le fichier fourni par la Logistique
+CubeCreate ( 'zFiltresLogistiqueTemp' , 'zFiltres' , 'zFiltresIND' ) ;
+
+# Création de la dimension zLogistiqueIND
+DimensionCreate ( 'zLogistiqueIND' ) ;
+# Insertion de l'élément Manual_Freight dans la dimension zLogistiqueIND
+DimensionElementInsertDirect ( 'zLogistiqueIND' , '' , 'Mesure', 'N' );
+# Insertion de l'élément de comptage de lignes modifiées dans la dimension zLogistiqueIND
+DimensionElementInsertDirect ( 'zLogistiqueIND' , '' , 'NbLignesModif', 'N' );
+# Insertion de l'élément de comptage de lignes Cible dans la dimension zLogistiqueIND
+DimensionElementInsertDirect ( 'zLogistiqueIND' , '' , 'NbLignesCible', 'N' );
+
+# Création du cube zLogistiqueTemp permettant l'import des données du fichier fourni par la Logistique
+CubeCreate ( 'zLogistiqueTemp' , 'SLS_MAT_FREIGHT_GROUP' , 'SLS_SHIP_POINT' , '1_G_PERIOD' , 'SLS_CUSTOMER' , 'zLogistiqueIND' ) ;
+
+# Lancement du processus permettant de récupérer les données du fichier fourni par la Logistique dans le cube zLogistiqueTemp
+ExecuteProcess ( 'SLS_CHA_CUB_zLogistiqueTemp' , 'p_cube' , 'zLogistiqueTemp' , 'p_param' , 'zFiltresLogistiqueTemp' ) ;
+
+# Lancement du processus permettant de récupérer les données, pour tous les articles, dans le cube SLS_FR_COST_PLAN (en passant par le cube zLogistiqueTemp)
+ExecuteProcess ( 'SLS_CHA_CUB_SLS_FR_COST_PLAN' , 'p_cube' , 'zLogistiqueTemp' , 'p_param' , 'zFiltresLogistiqueTemp' ) ;
+
+# Lancement du processus permettant de récupérer le nombres de lignes modifiées dans le fichier et le nombre de lignes Cible
+ExecuteProcess ( 'zVERIF_IMPORT_LOGISTIQUE' ) ;
+
+# Suppression du cube zFiltresLogistiqueTemp
+CubeDestroy ( 'zFiltresLogistiqueTemp' ) ;
+
+# Suppression du cube 
+CubeDestroy ( 'zLogistiqueTemp' ) ;
+
+# Suppression des dimensions créées pour les processus
+DimensionDestroy ( 'zFiltres' ) ;
+DimensionDestroy ( 'zFiltresIND' ) ;
+DimensionDestroy ( 'zLogistiqueIND' ) ;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

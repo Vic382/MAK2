@@ -1,0 +1,19 @@
+{
+	"@type":"Cube",
+	"Name":"zSELECT",
+	"Rules@Code.link":"zSELECT.rules",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('}Clients')"
+		},
+		{
+			"@id":"Dimensions('zSELECT_IND')"
+		}
+	],
+	"Views@Code.links":
+	[
+		"zSELECT.views/All.json",
+		"zSELECT.views/View1.json"
+	]
+}

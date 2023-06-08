@@ -1,0 +1,212 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#############################################################################################################################
+#                                               DESCRIPTION DU PROCESSUS                                                    #
+#                                                                                                                           #
+# Date :   14/03/2019                                                                                                       #
+#                                                                                                                           #
+# Fait par :   Ann BESNARD																								    #
+#                                                                                                                           #
+# Action : Processus de mise à jour des hiérarchies virtuelles de SLS_CUSTOMER                                              #
+#																                                                            #
+#				                                  					                                                        #
+#                                                                                                                           #
+#############################################################################################################################
+
+#=============================================#
+#             Déclaration des variables       #
+#=============================================#
+
+#--------------------Cubes--------------------#
+C_Attr_MATERIAL = '}ElementAttributes_1_G_MATERIAL';
+
+#--------------------Dimensions--------------------#
+D_MATERIAL = '1_G_MATERIAL';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_Attr_MATERIAL = '}ElementAttributes_1_G_MATERIAL';
+
+#--------------------Elements--------------------#
+TOT_MATERIAL = 'TOTAL_MATERIAL';
+
+#--------------------Hiérarchies--------------------#
+Stt_PM = 'Status_PM';
+Stt = 'Status';
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+subset_temp = 'z_temp_' | vUSER |'_' | vPRO_NAME;
+subset_hier = 'z_hier_' | vUSER |'_' | vPRO_NAME;
+
+#-------------------Création ou update des hiérarchies-------#
+#Vérification à partir de quels attributs créé-t-on des hiérarchies
+
+#Création d'un subset avec tous les attributs
+SubsetDestroy(D_Attr_MATERIAL, subset_temp);
+MDX_Attr = '{{['|D_Attr_MATERIAL|'].[Caption]},{FILTER( {TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|D_Attr_MATERIAL|'] )}, 0)}, ['|D_Attr_MATERIAL|'].[Flag_Hier] = 1.000000)}}}';
+SubsetCreateByMDX(subset_temp, MDX_Attr);
+SubsetElementDelete(D_Attr_MATERIAL, subset_temp, 1);
+Subsize = SubsetGetSize(D_Attr_MATERIAL, subset_temp);
+
+#Parcours du subset
+elem_nb = 1;
+While(elem_nb<=Subsize);
+	#Vérification du flag pour chacun des éléments du subset
+    elem = SubsetGetElementName( D_Attr_MATERIAL, subset_temp, elem_nb);
+    Flag = AttrN(D_Attr_MATERIAL, elem,'Flag_Hier');
+    #Si l'attr doit être une hiérarchie : création
+    If(Flag = 1);
+HierarchyDestroy( D_MATERIAL, elem );
+		CreateHierarchyByAttribute( D_MATERIAL, elem );
+HierarchyDestroy( D_MATERIAL_PLAN, elem );
+        CreateHierarchyByAttribute( D_MATERIAL_PLAN, elem );
+        SetHierarchyGroupsSecurity( 'READ', D_MATERIAL, elem );
+        SetHierarchyGroupsSecurity( 'READ', D_MATERIAL_PLAN, elem );
+	EndIf;    
+    
+    #On créé un subset 'all' dans chacune des hiérachies virtuelles
+    If(HierarchySubsetExists( D_MATERIAL_PLAN, Elem, 'All' ) = 0);
+	    HierarchySubsetCreate( D_MATERIAL_PLAN, Elem, 'All', 0 );
+	EndIf;
+    MDX = 'TM1FILTERBYLEVEL({TM1SUBSETALL([' | D_MATERIAL_PLAN | ':' | Elem | '])},1)';
+    HierarchySubsetMDXSet( D_MATERIAL_PLAN, Elem, 'All',  MDX);
+    HierarchySubsetAliasSet( D_MATERIAL_PLAN, Elem, 'All', 'Caption' );
+    
+    If(HierarchySubsetExists( D_MATERIAL, Elem, 'All' ) = 0);
+	    HierarchySubsetCreate( D_MATERIAL, Elem, 'All', 0 );
+	EndIf;
+    MDX = 'TM1FILTERBYLEVEL({TM1SUBSETALL([' | D_MATERIAL | ':' | Elem | '])},1)';
+    HierarchySubsetMDXSet( D_MATERIAL, Elem, 'All',  MDX);
+    HierarchySubsetAliasSet( D_MATERIAL, Elem, 'All', 'Caption' );
+	elem_nb = elem_nb + 1;
+End;
+
+
+
+
+
+#--------------------Sources de données--------------------#
+SubsetDestroy(D_MATERIAL, subset_copy);
+
+MDX = '{{['|D_MATERIAL|'].['|TOT_MATERIAL|']},{TM1FILTERBYLEVEL({TM1SUBSETALL(['|D_MATERIAL|'])},0)}}';
+SubsetCreateByMDX(subset_copy, MDX);
+SubsetElementDelete(D_MATERIAL, subset_copy, 1);
+
+
+
+DatasourceDimensionSubset = subset_copy;
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+Subsize = SubsetGetSize(D_Attr_MATERIAL, subset_temp);
+
+
+#Parcours du subset
+elem_nb = 1;
+While(elem_nb<=Subsize);
+	#Vérification du flag pour chacun des éléments du subset
+    Elem_Attr = SubsetGetElementName( D_Attr_MATERIAL, subset_temp, elem_nb);
+    elem_nb = elem_nb + 1;
+
+    #Existe-t-il une description pour cet attribut?
+    If(DIMIX(D_Attr_MATERIAL,Elem_Attr|' Name')<>0);
+   
+    	#L'attribut est il renseigné?
+    	Attr_Code = AttrS(D_MATERIAL, vELEM_MATERIAL, Elem_Attr);
+                  IF ( Attr_Code @= 'MEK' % Attr_Code @= '250' % Attr_Code @= 'XX' ) ;
+                   Attr_Code_SLS = Attr_Code | '.' ;
+                  ELSEIF ( Attr_Code @= 'VIN' ) ;
+                   Attr_Code_SLS = Attr_Code | '..' ;
+                  ELSE ;
+                   Attr_Code_SLS = Attr_Code ;
+                  ENDIF ;
+                  
+        #hvn 20/07/2021prb ph3 = VIN deux libellés #          
+        if ( Elem_Attr @= 'PH3 Range' );
+           if ( Attr_Code_SLS @= 'VIN..' );
+              Attr_Code_SLS = Attr_Code_SLS | '.' ;
+           endif;   
+        endif;
+        #Fin spé hvn
+        
+		If(Attr_Code @<> '');
+			Attr_Name = AttrS(D_MATERIAL, vELEM_MATERIAL, Elem_Attr|' Name');
+            t1=AttrS(D_MATERIAL|':'|Elem_Attr, Attr_code,'Caption');
+            
+            #ASCIIOutput('rv.txt',Velem_material, Elem_Attr|' Name',Attr_Code,Attr_Code_SLS,Elem_Attr,Attr_Name,t1); 
+            
+            AttrPutS(Attr_Code | ' - ' | Attr_Name,D_MATERIAL|':'|Elem_Attr, Attr_Code,'Code - Caption');
+
+            While( DIMIX(D_MATERIAL|':'|Elem_Attr, Attr_Name) <> 0 & DIMIX(D_MATERIAL|':'|Elem_Attr, Attr_Name) <> DIMIX(D_MATERIAL|':'|Elem_Attr, Attr_Code) );
+				Attr_Name = Attr_Name|'.';
+			End;
+            Attr_Hier = AttrS(D_MATERIAL|':'|Elem_Attr, Attr_code,'Caption');
+			If(Attr_Hier @<> Attr_Name);
+            	AttrPutS(Attr_Name,D_MATERIAL|':'|Elem_Attr, Attr_Code,'Caption');
+            EndIf;
+            If(DIMIX(D_MATERIAL_PLAN|':'|Elem_Attr, Attr_Code_SLS )<>0);
+            	AttrPutS( Attr_Code_SLS | ' - ' | Attr_Name,D_MATERIAL_PLAN|':'|Elem_Attr, Attr_Code_SLS ,'Code - Caption');
+            
+            	While( DIMIX(D_MATERIAL_PLAN|':'|Elem_Attr, Attr_Name) <> 0 & DIMIX(D_MATERIAL_PLAN|':'|Elem_Attr, Attr_Name) <> DIMIX(D_MATERIAL_PLAN|':'|Elem_Attr, Attr_Code_SLS ) );
+					Attr_Name = Attr_Name|'.';
+				End;
+            	Attr_Hier_PM = AttrS(D_MATERIAL_PLAN|':'|Elem_Attr, Attr_Code_SLS ,'Caption');
+            	If(Attr_Hier_PM @<> Attr_Name);
+            		AttrPutS(Attr_Name,D_MATERIAL_PLAN|':'|Elem_Attr, Attr_Code_SLS , 'Caption');
+            	EndIf;
+            EndIf;
+        EndIf;
+    
+   EndIf;
+   
+End;
+
+
+
+
+
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+HierarchySubsetAliasSet ( 'SLS_MATERIAL_PLAN' , 'Material Type',  'All', 'Code_Retail' );
+SubsetDestroy(D_Attr_MATERIAL, subset_temp);
+SubsetDestroy(D_MATERIAL, subset_copy);
+#endregion

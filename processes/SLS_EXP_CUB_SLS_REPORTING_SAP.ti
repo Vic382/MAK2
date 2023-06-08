@@ -1,0 +1,497 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#############################################################################
+#                         DESCRIPTION DU PROCESSUS							#
+#																			#
+# Date :   25/06/2019														#
+#																			#
+# Fait par : Jean-Marc Besnard												#
+#																			#
+# Action : Processus d'export des données vers SAP							#
+#																			#
+#############################################################################
+
+#===============================#
+#	Déclaration des variables	#
+#===============================#
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_REPORTING';
+C_zSELECT = 'zSELECT';
+
+#--------------------Dimensions--------------------#
+D_PHASE_REP = '1_G_PHASE_REP';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_VOLUME_UNIT = '1_G_VOLUME_UNIT';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_PAYER = 'SLS_PAYER';
+D_SOLD_TO = 'SLS_SOLD_TO';
+D_SHIP_POINT = 'SLS_SHIP_POINT';
+D_SHIP_PLANT = 'SLS_SHIP_PLANT';
+D_PROD_PLANT='SLS_PROD_PLANT';
+D_VENDOR = 'SLS_VENDOR';
+D_MAT_FR_GROUP = 'SLS_MAT_FREIGHT_GROUP';
+D_INCOTERM = 'SLS_INCOTERM';
+D_QUOTA = 'SLS_Q_HQ';
+D_REPORTING_IND = 'SLS_REPORTING_IND';
+
+#--------------------Elements--------------------#
+vVolume_Unit_Valos = 'N/A_VOLUME_UNIT';
+vVolume_Unit_L = 'L';
+vVolume_Unit_LAP = 'LAP';
+vVolume_Unit_L20 = 'L20';
+vVolume_Unit_TO = 'TO';
+vVolume_Unit_KSP = 'KSP';
+vElem_Ind_Cust_Price = 'CUST_PRICE';
+vElem_Ind_RPP = 'RPP';
+vElem_Ind_CPV = 'CPV';
+vElem_Ind_Promo = 'PROMO';
+vElem_Ind_Cust_Rebate = 'CUST_REBATE';
+vElem_Ind_Retail_Services = 'RET_SERV';
+vElem_Ind_Freight_Costs = 'FR_COST';
+vElem_Ind_NIP = 'NIP';
+vElem_Ind_Volume = 'SLS_VOL';
+vElem_Ind_Invoiced = 'INV_VAL';
+vElem_Ind_Surcharge = 'SURCH';
+vElem_Ind_Free_Samples = 'FR_SAMP';
+
+subsetall = 'subsetall';
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+#--------------------Vues--------------------#
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Paramètres ASCII--------------------#
+DatasourceASCIIDecimalSeparator='.';
+DatasourceASCIIThousandSeparator='';
+DatasourceASCIIDelimiter=';';
+DatasourceASCIIQuoteCharacter='';
+
+
+#===============================#
+#	Vérification des paramètres	#
+#===============================#
+
+# Init des variables d'erreur
+err_prolog=0;
+message_err_prolog='';
+
+P_PHASE = CellGetS(C_zSELECT, vClient, 'Phase_Export' );
+# Phase
+IF(DIMIX(D_PHASE_REP, P_PHASE) = 0);
+err_prolog = 1;
+message_err_prolog = 'Erreur : la phase ' | P_PHASE | ' n''existe pas.';
+ENDIF;
+
+# Gestion des erreurs
+IF(err_prolog <> 0);
+processBreak;
+ENDIF;
+
+
+#===========================#
+#	Calcul des variables	#
+#===========================#
+
+# Requêtes MDX
+If(ATTRS(D_PHASE_REP, P_PHASE, 'Phase') @= 'CURR_PHASE');
+	vMDX_PERIOD = '{{[' | D_PERIOD | '].[Campaign]},{TM1SubsetToSet([' | D_PERIOD | '] , "Current Phase Periods")}}';
+EndIf;
+vMDX_SALES_ORG = '{{[1_G_SALES_ORG].[TOTAL SALES ORG]},{TM1FILTERBYLEVEL({TM1SUBSETALL([1_G_SALES_ORG])},0)}}';
+vMDX_DISTRIB_CHANNEL = '{{[1_G_DISTRIB_CHANNEL].[Total Distribution Channel]},{TM1FILTERBYLEVEL({TM1SUBSETALL([1_G_DISTRIB_CHANNEL])},0)}}';
+vMDX_SALES_GROUP = '{{[SLS_SALES_GROUP].[Total Sales Group]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_SALES_GROUP])},0)}}';
+vMDX_CUSTOMER = '{{[SLS_CUSTOMER].[Total Customer]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_CUSTOMER])},0)}}';
+vMDX_MATERIAL = '{{[SLS_MATERIAL_PLAN].[Total Planning Material]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_MATERIAL_PLAN])},0)}}';
+vMDX_PAYER = '{{[SLS_PAYER].[Total Payer]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_PAYER])},0)}}';
+vMDX_SOLD_TO = '{{[SLS_SOLD_TO].[Total Sold To]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_SOLD_TO])},0)}}';
+vMDX_SHIP_POINT = '{{[SLS_SHIP_POINT].[Total Shipping Point]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_SHIP_POINT])},0)}}';
+vMDX_SHIP_PLANT = '{{[SLS_SHIP_PLANT].[Total Ship Plant]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_SHIP_PLANT])},0)}}';
+vMDX_PROD_PLANT = '{{[SLS_PROD_PLANT].[Total Prod Plant]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_PROD_PLANT])},0)}}';
+vMDX_VENDOR = '{{[SLS_VENDOR].[Total Vendor]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_VENDOR])},0)}}';
+vMDX_INCOTERM = '{{[SLS_INCOTERM].[Total Incoterm]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_INCOTERM])},0)}}';
+vMDX_QUOTA = '{{[SLS_Q_HQ].[Total Quotas]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_Q_HQ])},0)}}';
+
+# Définition du fichier cible
+vTarget_Folder = '../Exports/';
+vTarget_File = vTarget_Folder | P_FILE_NAME;
+
+
+#===================================#
+#	Initialisation de la vue source	#
+#===================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy(D_PHASE_REP, subset_copy);
+SubsetDestroy(D_PERIOD, subset_copy);
+SubsetDestroy(D_SALES_ORG, subset_copy);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_copy);
+SubsetDestroy(D_VOLUME_UNIT, subset_copy);
+SubsetDestroy(D_SALES_GROUP, subset_copy);
+SubsetDestroy(D_CUSTOMER, subset_copy);
+SubsetDestroy(D_MATERIAL_PLAN, subset_copy);
+SubsetDestroy(D_PAYER, subset_copy);
+SubsetDestroy(D_SOLD_TO, subset_copy);
+SubsetDestroy(D_SHIP_POINT, subset_copy);
+SubsetDestroy(D_SHIP_PLANT, subset_copy);
+SubsetDestroy(D_PROD_PLANT, subset_copy);
+SubsetDestroy(D_VENDOR, subset_copy);
+SubsetDestroy(D_MAT_FR_GROUP, subset_copy);
+SubsetDestroy(D_INCOTERM, subset_copy);
+SubsetDestroy(D_QUOTA, subset_copy);
+SubsetDestroy(D_REPORTING_IND, subset_copy);
+
+#--------------------Création des objets--------------------#
+ViewCreate(C_Cube_Source,view_copy);
+# 1_G_PHASE_REP
+subsetcreate(D_PHASE_REP,subset_copy);
+SubsetElementInsert(D_PHASE_REP, subset_copy, P_PHASE, 1);
+# 1_G_PERIOD
+#Pour une phase historisée, subset créé ci-dessus avec un while
+If(ATTRS(D_PHASE_REP, P_PHASE, 'Phase') @= 'CURR_PHASE');
+	SubsetCreatebyMDX( subset_copy, vMDX_PERIOD );
+	SubsetElementDelete( D_PERIOD, subset_copy, 1);
+Else;
+	subsetcreate(D_PERIOD,subset_copy);
+	First_Period = ATTRS(D_PHASE_REP, P_PHASE, 'First Period');
+	Last_Period = ATTRS(D_PHASE_REP, P_PHASE, 'Last Period');
+    MDX = '{{[1_G_PERIOD].[Fiscal]},{EXCEPT(
+	{FILTER(
+	{TM1SORT( {TM1FILTERBYLEVEL( {TM1SUBSETALL( [1_G_PERIOD] )}, 0)}, ASC)},
+	[}ElementAttributes_1_G_PERIOD].([}ElementAttributes_1_G_PERIOD].[Index])@<>"T")},
+	{TM1FILTERBYPATTERN( {TM1SUBSETALL( [1_G_PERIOD] )}, "*Input")})}}';
+	SubsetCreatebyMDX(subsetall, MDX, 1);
+	SubsetElementDelete(D_PERIOD,subsetall,1);
+    
+	SubSize = SubsetGetSize( D_PERIOD, subsetall);
+	cur_month = Subsize;
+	While( cur_month >= 1);
+	Current_Month = SubsetGetElementName( D_PERIOD, subsetall, cur_month );
+    Current_Month_Num = StringToNumber(AttrS(D_PERIOD, Current_Month, 'Index'));
+	If(Current_Month_Num >= Stringtonumber(ATTRS(D_PERIOD, First_Period, 'Index')) & Current_Month_Num <= stringtonumber(ATTRS(D_PERIOD,Last_Period, 'Index')));
+    	SubsetElementInsert(D_PERIOD, subset_copy, Current_Month, 1 );
+    EndIf;
+	cur_month = cur_month - 1;
+	End;
+	Subsetdestroy(D_PERIOD, subsetall);
+EndIf;
+# 1_G_SALES_ORG
+SubsetCreatebyMDX( subset_copy, vMDX_SALES_ORG );
+SubsetElementDelete( D_SALES_ORG, subset_copy, 1);
+# 1_G_DISTRIB_CHANNEL
+SubsetCreatebyMDX( subset_copy, vMDX_DISTRIB_CHANNEL );
+SubsetElementDelete( D_DISTRIB_CHANNEL, subset_copy, 1);
+# 1_G_VOLUME_UNIT
+subsetcreate(D_VOLUME_UNIT,subset_copy);
+SubsetElementInsert(D_VOLUME_UNIT, subset_copy, 'TO', 1);
+SubsetElementInsert(D_VOLUME_UNIT, subset_copy, 'TSP', 1);
+SubsetElementInsert(D_VOLUME_UNIT, subset_copy, 'HLAP', 1);
+# SLS_SALES_GROUP
+SubsetCreatebyMDX( subset_copy, vMDX_SALES_GROUP );
+SubsetElementDelete( D_SALES_GROUP, subset_copy, 1);
+# SLS_CUSTOMER
+SubsetCreatebyMDX( subset_copy, vMDX_CUSTOMER );
+SubsetElementDelete( D_CUSTOMER, subset_copy, 1);
+# SLS_MATERIAL_PLAN
+SubsetCreatebyMDX( subset_copy, vMDX_MATERIAL );
+SubsetElementDelete( D_MATERIAL_PLAN, subset_copy, 1);
+# SLS_PAYER
+SubsetCreatebyMDX( subset_copy, vMDX_PAYER );
+SubsetElementDelete( D_PAYER, subset_copy, 1);
+# SLS_SOLD_TO
+SubsetCreatebyMDX( subset_copy, vMDX_SOLD_TO );
+SubsetElementDelete( D_SOLD_TO, subset_copy, 1);
+# SLS_SHIP_POINT
+SubsetCreatebyMDX( subset_copy, vMDX_SHIP_POINT );
+SubsetElementDelete( D_SHIP_POINT, subset_copy, 1);
+# SLS_SHIP_PLANT
+SubsetCreatebyMDX( subset_copy, vMDX_SHIP_PLANT );
+SubsetElementDelete( D_SHIP_PLANT, subset_copy, 1);
+# SLS_PROD_PLANT
+SubsetCreatebyMDX( subset_copy, vMDX_PROD_PLANT );
+SubsetElementDelete( D_PROD_PLANT, subset_copy, 1);
+# SLS_VENDOR
+SubsetCreatebyMDX( subset_copy, vMDX_VENDOR );
+SubsetElementDelete( D_VENDOR, subset_copy, 1);
+# SLS_MAT_FREIGHT_GROUP
+subsetcreate(D_MAT_FR_GROUP,subset_copy);
+SubsetElementInsert(D_MAT_FR_GROUP, subset_copy, 'Total Mat Freight Group', 1);
+# SLS_INCOTERM
+SubsetCreatebyMDX( subset_copy, vMDX_INCOTERM );
+SubsetElementDelete( D_INCOTERM, subset_copy, 1);
+# SLS_Q_HQ
+SubsetCreatebyMDX( subset_copy, vMDX_QUOTA );
+SubsetElementDelete( D_QUOTA, subset_copy, 1);
+# SLS_REPORTING_IND
+subsetcreate(D_REPORTING_IND,subset_copy);
+SubsetElementInsert(D_REPORTING_IND, subset_copy, 'Sales Volume', 1);
+SubsetElementInsert(D_REPORTING_IND, subset_copy, vElem_Ind_Cust_Price, 1);
+SubsetElementInsert(D_REPORTING_IND, subset_copy, vElem_Ind_RPP, 1);
+SubsetElementInsert(D_REPORTING_IND, subset_copy, vElem_Ind_CPV, 1);
+SubsetElementInsert(D_REPORTING_IND, subset_copy, vElem_Ind_Promo, 1);
+SubsetElementInsert(D_REPORTING_IND, subset_copy, vElem_Ind_Cust_Rebate, 1);
+SubsetElementInsert(D_REPORTING_IND, subset_copy, vElem_Ind_Retail_Services, 1);
+SubsetElementInsert(D_REPORTING_IND, subset_copy, vElem_Ind_Freight_Costs, 1);
+SubsetElementInsert(D_REPORTING_IND, subset_copy, vElem_Ind_NIP, 1);
+SubsetElementInsert(D_REPORTING_IND, subset_copy, vElem_Ind_Invoiced, 1);
+SubsetElementInsert(D_REPORTING_IND, subset_copy, vElem_Ind_Surcharge, 1);
+SubsetElementInsert(D_REPORTING_IND, subset_copy, vElem_Ind_Free_Samples, 1);
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PHASE_REP,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PERIOD,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_ORG,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_DISTRIB_CHANNEL,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_VOLUME_UNIT,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_GROUP,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CUSTOMER,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_MATERIAL_PLAN,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PAYER,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SOLD_TO,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SHIP_POINT,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SHIP_PLANT,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PROD_PLANT,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_VENDOR,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_MAT_FR_GROUP,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_INCOTERM,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_QUOTA,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_REPORTING_IND,subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 0);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+# définition de la vue source#
+DatasourceCubeview= view_copy ;
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+vCustomer_Price = 0;
+vRPP = 0; vCPV = 0;
+vPromo = 0;
+vCustomer_Rebate = 0;
+vRetail_Services = 0;
+vFreight_Costs = 0;
+vNIP = 0;
+vInvoiced = 0;
+vSurcharge = 0;
+vFree_Samples = 0;
+vVolume_Default_Unit = 0;
+vVolume_L = 0;
+vVolume_LAP = 0;
+Volume_L20 = 0;
+vVolume_TO = 0;
+vVolume_KSP = 0;
+
+#===========================#
+#	Calcul des variables	#
+#===========================#
+
+# Mise à jour du nombre de lignes
+vNb_lines = vNb_lines + 1;
+
+# Calcul de la division
+vDivision = SUBST(ELPAR( D_MATERIAL_PLAN, vMATERIAL_PLAN, 1 ), 3, 2);
+
+#Modification EMO le 12/11/2019
+#On parcourt seulement l'unité par défaut car modification de la vue source (avant on parcourait TO uniquement)
+Division = ELPAR( D_MATERIAL_PLAN, vMATERIAL_PLAN, 1);
+vDefault_Unit = ATTRS('1_G_MATERIAL', Division, 'Volume_Unit');
+If(vVOLUME_UNIT @<> vDefault_Unit);
+	itemskip;
+EndIf;
+
+#Cas particulier HLAP => LAP
+If(vDefault_Unit @= 'HLAP');
+	vDefault_Unit = 'LAP';
+EndIf;
+
+# Ship_To
+vShip_To = SUBST(vCUSTOMER, 1, 6);
+
+# Périodes : RAF cas particulier HELLENIC
+vCal_Month = SUBST(vPERIOD,1,4) | SUBST(vPERIOD,6,2);
+vCal_Month_2 = ATTRS(D_PERIOD, vPERIOD, 'Index_Calendar');
+vCal_Year = SUBST(vPERIOD,1,4);
+vFisc_Per = SUBST(ATTRS(D_PERIOD, vPERIOD, 'FISC_N'),8,4) | FILL('0',3-LONG(AttrS(D_PERIOD, vPERIOD, 'Index_Fiscal'))) | AttrS(D_PERIOD, vPERIOD, 'Index_Fiscal');
+vFisc_Per3 = AttrS(D_PERIOD, vPERIOD, 'Index_Fiscal');
+vFisc_Year = SUBST(ATTRS(D_PERIOD, vPERIOD, 'FISC_N'),8,4);
+
+#Ajout Elisabeth Mounier le 26/11/2019
+If(ATTRS(D_REPORTING_IND, vREPORTING_IND, 'Type_Indicateur') @= 'Volume');
+
+# Valorisations 
+vCustomer_Price = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_Valos , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_Cust_Price);
+vRPP = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_Valos , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_RPP);
+vCPV = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_Valos , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_CPV);
+vPromo = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_Valos , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_Promo);
+vCustomer_Rebate = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_Valos , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_Cust_Rebate);
+vRetail_Services = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_Valos , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_Retail_Services);
+vFreight_Costs = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_Valos , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_Freight_Costs);
+vNIP = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_Valos , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_NIP);
+
+#ajout EMO le 10/12/2019: Evolution ticket 7112
+vInvoiced = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_Valos , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_Invoiced);
+vSurcharge = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_Valos , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_Surcharge);
+vFree_Samples = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_Valos , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_Free_Samples);
+
+# Quantités 
+vVolume_Default_Unit = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vDefault_Unit , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_Volume);
+vVolume_L = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_L , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_Volume);
+vVolume_LAP = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_LAP , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_Volume);
+vVolume_L20 = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_L20 , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_Volume);
+vVolume_TO = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_TO , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_Volume);
+vVolume_KSP = CellGetN( C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vVolume_Unit_KSP , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA , vElem_Ind_Volume);
+
+#On parcourt les valos, seulement si Volume = 0 pour compléter.
+Else;
+	Volume = CellGetN(C_Cube_Source , vPHASE , vPERIOD , vSALES_ORG , vDISTRIB_CHANNEL , vDefault_Unit , vSALES_GROUP , vCUSTOMER , vMATERIAL_PLAN , vPAYER , vSOLD_TO , vSHIP_POINT , vSHIP_PLANT , vPROD_PLANT , vVENDOR , vMAT_FREIGHT_GROUP , vINCOTERM , vQUOTA, vElem_Ind_Volume);
+    If(Volume <> 0);
+    	itemskip;
+    EndIf;
+    If(vREPORTING_IND @= vElem_Ind_Cust_Price);
+    	vCustomer_Price = vDATA_SLS_REPORTING;
+    ElseIf(vREPORTING_IND @= vElem_Ind_RPP);
+    	vRPP = vDATA_SLS_REPORTING;
+    ElseIf(vREPORTING_IND @= vElem_Ind_CPV);
+    	vCPV = vDATA_SLS_REPORTING;
+    ElseIf(vREPORTING_IND @= vElem_Ind_Promo);
+    	vPromo = vDATA_SLS_REPORTING;
+    ElseIf(vREPORTING_IND @= vElem_Ind_Cust_Rebate);
+    	vCustomer_Rebate = vDATA_SLS_REPORTING;
+    ElseIf(vREPORTING_IND @= vElem_Ind_Retail_Services);
+    	vRetail_Services = vDATA_SLS_REPORTING;
+    ElseIf(vREPORTING_IND @= vElem_Ind_Freight_Costs);
+    	vFreight_Costs = vDATA_SLS_REPORTING;
+    ElseIf(vREPORTING_IND @= vElem_Ind_NIP);
+    	vNIP = vDATA_SLS_REPORTING;
+    ElseIf(vREPORTING_IND @= vElem_Ind_Invoiced);
+    	vInvoiced = vDATA_SLS_REPORTING;
+    ElseIf(vREPORTING_IND @= vElem_Ind_Surcharge);
+    	vSurcharge = vDATA_SLS_REPORTING;
+    ElseIf(vREPORTING_IND @= vElem_Ind_Free_Samples);
+    	vFree_Samples = vDATA_SLS_REPORTING;
+    EndIf;
+EndIf;
+
+# Remplacement des N/A
+IF(vPROD_PLANT @= 'N/A_PROD_PLANT'); vPROD_PLANT = ''; ENDIF;
+IF(vSHIP_PLANT @= 'N/A_SHIP_PLANT'); vSHIP_PLANT = ''; ENDIF;
+IF(vSHIP_POINT @= 'N/A_SHIP_POINT'); vSHIP_POINT = ''; ENDIF;
+IF(vVENDOR @= 'N/A_VENDOR'); vVENDOR = ''; ENDIF;
+
+# RAF : Périmètre analytique + Variante fiscale HELLENIC
+If(ATTRN(D_SALES_ORG, vSALES_ORG, 'Cas particulier Export') = 1);
+	vPerimetre_analytique = '1001';
+    vVariante_Fisc = 'K4';
+    #Période fiscale
+	vFisc_Per = SUBST(vPERIOD,1,4) | '0' | SUBST(vPERIOD,6,2);
+    
+    # TVN 0110 Correction année fiscale et fiscper 3
+    vFisc_Per3 = AttrS(D_PERIOD, vPERIOD, 'Index_Calendar');
+    vFisc_Year = vCal_Year;
+    #fin TVN 0110 Correction année fiscale et fiscper 3
+    
+Else;
+	vPerimetre_analytique = '1000';
+    vVariante_Fisc = 'V9';
+EndIf;
+
+#remis en commentaire suite au changement d'avis dans ticket 7000
+#modif EMO le 06/12/2019 : ticket 7000
+#pas de RPP avant 2019.09
+# If(ATTRN(D_PERIOD, vPERIOD, 'Index_num') <= ATTRN(D_PERIOD, '2019.09', 'Index_num'));
+# 	vRPP = 0;
+# EndIf;
+
+#===========================#
+#	Ecriture de l'en-tête	#
+#===========================#
+
+IF(vNb_lines = 1);
+AsciiOutput( vTarget_File , 'CO_AREA' , 'DISTR_CHAN' , 'DIVISION' , 'SALES_ORG' , 'ZPAQHQ' , 'CURTYPE' , 'VERSION' , 'VTYPE' , 'ZPASCENAR' , 'ZPAMATREG' , 
+'PLANT' , 'SITEEXP' , 'PTEXP' , 'INCOTERMS' , 'SALES_GRP' , 'SHIP_TO' , 'VENDOR' , 'CALMONTH' , 'CALMONTH2' , 'CALYEAR' , 'FISCPER' , 'FISCPER3' , 'FISCVARNT' , 'FISCYEAR' , 
+'CURRENCY' , 'ZUVVQ01' , 'ZUVVQ03' , 'ZUVVQ04' , 'ZUVVQ06' , 'ZUVVQ07' , 'ZUVVQ08' , 'ZVV100' , 'ZVVRPP' , 'ZVVCPV' , 'ZVVPROMO' , 'ZVV320' , 'ZVVRETSERV' , 'ZVV390' , 'ZVVNIP' , 
+'ZVVQ08' , 'ZVVQ03' , 'ZVVQ06' , 'ZVVQ07' , 'ZVVQ04' , 'ZVVQ01', 'INV_VAL', 'ZVV300', 'ZVV280' );
+ENDIF;
+
+
+#===========================#
+#	Ecriture des données	#
+#===========================#
+
+AsciiOutput( vTarget_File , vPerimetre_analytique , vDISTRIB_CHANNEL , vDivision , vSALES_ORG , 'Z' , 'B0' , '100' , '20' , 'SR' , vMATERIAL_PLAN , 
+vPROD_PLANT , vSHIP_PLANT , vSHIP_POINT , vINCOTERM , vSALES_GROUP , vShip_To , vVENDOR , vCal_Month , vCal_Month_2 , vCal_Year , vFisc_Per , vFisc_Per3 , vVariante_Fisc , vFisc_Year , 
+'EUR' , 'KSP' , 'L' , 'TO' , 'LAP' , 'L20' , vDefault_Unit , NumberToStringEx(vCustomer_Price,'#0.##' ,'.','') , NumberToStringEx(vRPP,'#0.##' ,'.','') , numberToStringEx(vCPV,'#0.##' ,'.','') , numberToStringEx(vPromo,'#0.##' ,'.','') ,
+numberToStringEx(vCustomer_Rebate*(-1),'#0.##' ,'.','') , numberToStringEx(vRetail_Services,'#0.##' ,'.','') , numberToStringEx(vFreight_Costs,'#0.##' ,'.','') , numberToStringEx(vNIP,'#0.##' ,'.','') , numberToStringEx(vVolume_Default_Unit,'#0.###' ,'.','') , 
+numberToStringEx(vVolume_L,'#0.###' ,'.','') , numberToStringEx(vVolume_LAP,'#0.###' ,'.','') , numberToStringEx(vVolume_L20,'#0.###' ,'.','') , numberToStringEx(vVolume_TO,'#0.###' ,'.','') , numberToStringEx(vVolume_KSP,'#0.###' ,'.',''), numberToStringEx(vInvoiced,'#0.##' ,'.',''), 
+numberToStringEx(vSurcharge,'#0.##' ,'.',''), numberToStringEx(vFree_Samples,'#0.##' ,'.',''));
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#=======================#
+#	Gestion des erreurs	#
+#=======================#
+
+IF(err_prolog <> 0);
+itemreject(message_err_prolog);
+ENDIF;
+
+
+#=======================================#
+#	Destruction des objets temporaires	#
+#=======================================#
+
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy(D_PHASE_REP, subset_copy);
+SubsetDestroy(D_PERIOD, subset_copy);
+SubsetDestroy(D_SALES_ORG, subset_copy);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_copy);
+SubsetDestroy(D_VOLUME_UNIT, subset_copy);
+SubsetDestroy(D_SALES_GROUP, subset_copy);
+SubsetDestroy(D_CUSTOMER, subset_copy);
+SubsetDestroy(D_MATERIAL_PLAN, subset_copy);
+SubsetDestroy(D_PAYER, subset_copy);
+SubsetDestroy(D_SOLD_TO, subset_copy);
+SubsetDestroy(D_SHIP_POINT, subset_copy);
+SubsetDestroy(D_SHIP_PLANT, subset_copy);
+SubsetDestroy(D_PROD_PLANT, subset_copy);
+SubsetDestroy(D_VENDOR, subset_copy);
+SubsetDestroy(D_MAT_FR_GROUP, subset_copy);
+SubsetDestroy(D_INCOTERM, subset_copy);
+SubsetDestroy(D_QUOTA, subset_copy);
+SubsetDestroy(D_REPORTING_IND, subset_copy);
+#endregion

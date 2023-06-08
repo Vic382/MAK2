@@ -1,0 +1,125 @@
+{
+	"@type":"NativeView",
+	"Name":"z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel",
+	"Columns":
+	[
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('SLS_INIT_IND')/Hierarchies('SLS_INIT_IND')/Subsets('z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel')"
+			}
+		}
+	],
+	"Rows":
+	[
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('SLS_VENDOR')/Hierarchies('SLS_VENDOR')/Subsets('z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel')"
+			}
+		}
+	],
+	"Titles":
+	[
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('1_G_CURRENT_PHASE')/Hierarchies('1_G_CURRENT_PHASE')/Subsets('z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel')"
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('1_G_CURRENT_PHASE')/Hierarchies('1_G_CURRENT_PHASE')/Elements('CURR_PHASE')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Subsets('z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel')"
+			},
+			"Selected":null
+		},
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Subsets('z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel')"
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('1400')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('1_G_DISTRIB_CHANNEL')/Hierarchies('1_G_DISTRIB_CHANNEL')/Subsets('z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel')"
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('1_G_DISTRIB_CHANNEL')/Hierarchies('1_G_DISTRIB_CHANNEL')/Elements('20')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('1_G_VOLUME_UNIT')/Hierarchies('1_G_VOLUME_UNIT')/Subsets('z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel')"
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('1_G_VOLUME_UNIT')/Hierarchies('1_G_VOLUME_UNIT')/Elements('HLAP')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Subsets('z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel')"
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('11311000')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Subsets('z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel')"
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('230075_14002020')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('SLS_SHIP_POINT')/Hierarchies('SLS_SHIP_POINT')/Subsets('z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel')"
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('SLS_SHIP_POINT')/Hierarchies('SLS_SHIP_POINT')/Elements('680T')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('SLS_SHIP_PLANT')/Hierarchies('SLS_SHIP_PLANT')/Subsets('z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel')"
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('SLS_SHIP_PLANT')/Hierarchies('SLS_SHIP_PLANT')/Elements('6060')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('SLS_PROD_PLANT')/Hierarchies('SLS_PROD_PLANT')/Subsets('z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel')"
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('SLS_PROD_PLANT')/Hierarchies('SLS_PROD_PLANT')/Elements('6060')"
+			}
+		}
+	],
+	"SuppressEmptyColumns":false,
+	"SuppressEmptyRows":false,
+	"FormatString":"0.00"
+}

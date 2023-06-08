@@ -1,0 +1,294 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+################################################################
+#                 DESCRIPTION DU PROCESSUS                     #
+#                                                              #
+# Date :   11/04/2019                                          #
+#                                                              #
+# Fait par :   Anne BESNARD                                    #
+#                                                              #
+# Action : Sécurité sur les customer    				       #
+#															   #
+#                                                              #
+################################################################
+
+#====================================#
+#     Déclaration des variables      #
+#====================================#
+
+#--------------------Cubes--------------------#
+C_ElementSecurity_Customer = '}ElementSecurity_SLS_CUSTOMER';
+C_ElementSecurity_Customer_Price = '}ElementSecurity_SLS_CUSTOMER_PRICE';
+
+#--------------------Dimensions--------------------#
+D_Customer = 'SLS_CUSTOMER';
+D_Customer_Price = 'SLS_CUSTOMER_PRICE';
+D_Groups = '}Groups';
+D_Attr_CUSTOMER = '}ElementAttributes_SLS_CUSTOMER';
+
+#--------------------Elements--------------------#
+
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+
+#vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+subset_temp = 'z_temp_' | vUSER |'_' | vPRO_NAME;
+
+#=========================================#
+#   Initialisation du subset à supprimer  #
+#=========================================#
+
+#-----------Destruction des objets--------#
+ViewDestroy( C_ElementSecurity_Customer, view_erase );
+ViewDestroy( C_ElementSecurity_Customer_Price, view_erase );
+SubsetDestroy(D_Customer, subset_erase);
+SubsetDestroy(D_Customer_Price, subset_erase);
+SubsetDestroy(D_Groups, subset_erase);
+
+#-----------Création des objets-----------#
+#Vue
+ViewCreate( C_ElementSecurity_Customer, view_erase, 1 );
+ViewCreate( C_ElementSecurity_Customer_Price, view_erase, 1 );
+
+#D_Customer
+If(P_All_Customers = 1);
+MDX = '{EXCEPT({{[SLS_CUSTOMER].[Total Customer]},{TM1SUBSETALL([SLS_CUSTOMER])}},{[SLS_CUSTOMER].[N/A_CUSTOMER]})}';
+Else;
+MDX = '{
+		EXCEPT(
+			{
+				{[SLS_CUSTOMER].[Total Customer]},
+				{FILTER(
+					{TM1SUBSETALL([SLS_CUSTOMER])},
+					[SLS_CUSTOMER].[Nv_Cust]=1
+					)
+				}
+			},
+			{[SLS_CUSTOMER].[N/A_CUSTOMER]})
+		}';
+EndIf;
+SubsetCreatebyMDX( subset_erase, MDX, 1 );
+SubsetElementDelete( D_Customer, subset_erase, 1 );
+
+#D_Customer_Price
+If(P_All_Customers = 1);
+MDX = '{{[SLS_CUSTOMER_PRICE].[N/A_CUSTOMER_PRICE]},{TM1SUBSETALL([SLS_CUSTOMER_PRICE])}}';
+Else;
+MDX = '{
+			{[SLS_CUSTOMER_PRICE].[N/A_CUSTOMER_PRICE]},
+			{FILTER(
+				{TM1SUBSETALL([SLS_CUSTOMER_PRICE])},
+				[SLS_CUSTOMER_PRICE].[Nv_Cust]=1
+			)}
+			}';
+EndIf;
+SubsetCreatebyMDX( subset_erase, MDX, 0 );
+SubsetElementDelete( D_Customer_Price, subset_erase, 1 );
+
+#D_Groups
+MDX = '{
+	{[}Groups].[ADMIN]},
+	{[}Groups].[Functional_Admin_CDG]},
+	{EXCEPT(
+		{TM1SUBSETALL([}Groups])} , 		
+		TM1FILTERBYPATTERN(
+			{TM1SUBSETALL([}Groups])} , 
+			"*ADMIN*"
+			)
+		)
+	}
+}';
+SubsetCreatebyMDX( subset_erase, MDX, 1 );
+SubsetElementDelete( D_Groups, subset_erase, 1 );
+
+#-----Affectation des sous-ensembles à la vue---#
+ViewSubsetAssign(C_ElementSecurity_Customer, view_erase, D_Customer, subset_erase);
+ViewSubsetAssign(C_ElementSecurity_Customer, view_erase, D_Groups, subset_erase);
+ViewSubsetAssign(C_ElementSecurity_Customer_Price, view_erase, D_Customer_Price, subset_erase);
+ViewSubsetAssign(C_ElementSecurity_Customer_Price, view_erase, D_Groups, subset_erase);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_ElementSecurity_Customer, view_erase,1);
+ViewSetSkipCalcs(C_ElementSecurity_Customer,view_erase, 1);
+ViewSetSkipZeroes(C_ElementSecurity_Customer,view_erase, 0);
+
+ViewSetSkipRuleValues(C_ElementSecurity_Customer_Price, view_erase,1);
+ViewSetSkipCalcs(C_ElementSecurity_Customer_Price,view_erase, 1);
+ViewSetSkipZeroes(C_ElementSecurity_Customer_Price,view_erase, 0);
+
+#-------définition du subset source-------#
+ViewZeroOut( C_ElementSecurity_Customer, view_erase );
+
+ViewZeroOut( C_ElementSecurity_Customer_Price, view_erase );
+
+#-----------Destruction des objets--------#
+ViewDestroy( C_ElementSecurity_Customer, view_erase );
+ViewDestroy( C_ElementSecurity_Customer_Price, view_erase );
+SubsetDestroy(D_Customer, subset_erase);
+SubsetDestroy(D_Customer_Price, subset_erase);
+SubsetDestroy(D_Groups, subset_erase);
+
+
+#=========================================#
+#   Initialisation du subset à copier     #
+#=========================================#
+
+#-----------Destruction des objets--------#
+ViewDestroy( C_ElementSecurity_Customer, view_copy );
+SubsetDestroy(D_Customer, subset_copy);
+SubsetDestroy(D_Groups, subset_copy);
+
+#-----------Création des objets-----------#
+#Vue
+ViewCreate( C_ElementSecurity_Customer, view_copy, 1 );
+
+
+#D_Sales_Group
+MDX = '{EXCEPT({{[SLS_CUSTOMER].[Total Customer]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_CUSTOMER])},0)}},{[SLS_CUSTOMER].[N/A_CUSTOMER]})}';
+SubsetCreatebyMDX( subset_copy, MDX, 1 );
+SubsetElementDelete( D_Customer, subset_copy, 1 );
+
+#D_Groups
+MDX = '{
+	{[}Groups].[ADMIN]},
+	{[}Groups].[Functional_Admin_CDG]},
+	{EXCEPT(
+		{TM1SUBSETALL([}Groups])} , 		
+		TM1FILTERBYPATTERN(
+			{TM1SUBSETALL([}Groups])} , 
+			"*ADMIN*"
+			)
+		)
+	}
+}';
+SubsetCreatebyMDX( subset_copy, MDX, 1 );
+SubsetElementDelete( D_Groups, subset_copy, 1 );
+
+#---------------------Affectation des sous-ensembles à la vue---------------------------------#
+ViewSubsetAssign(C_ElementSecurity_Customer, view_copy, D_Customer, subset_copy);
+ViewSubsetAssign(C_ElementSecurity_Customer, view_copy, D_Groups, subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_ElementSecurity_Customer, view_copy,1);
+ViewSetSkipCalcs(C_ElementSecurity_Customer,view_copy, 1);
+ViewSetSkipZeroes(C_ElementSecurity_Customer,view_copy, 0);
+
+#-------définition du subset source-------#
+DatasourceCubeview = view_copy;
+
+
+#Création d'un subset avec tous les attributs
+SubsetDestroy(D_Attr_CUSTOMER, subset_temp);
+MDX_Attr = '{{['|D_Attr_CUSTOMER|'].[Caption]},{FILTER( {TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|D_Attr_CUSTOMER|'] )}, 0)}, ['|D_Attr_CUSTOMER|'].[Flag_Hier] = 1.000000)}}}';
+SubsetCreateByMDX(subset_temp, MDX_Attr);
+SubsetElementDelete(D_Attr_CUSTOMER, subset_temp, 1);
+Subsize = SubsetGetSize(D_Attr_CUSTOMER, subset_temp);
+
+
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+CellPutS('READ', C_ElementSecurity_Customer, 'Total Customer', vELEM_Groups);
+
+vELEM_CUSTOMER = DimensionElementPrincipalName( D_Customer, vELEM_CUSTOMER );
+vELEM_Groups = DimensionElementPrincipalName( D_Groups, vELEM_Groups );
+Nv_Cust = AttrN(D_Customer, vELEM_CUSTOMER, 'Nv_Cust');
+If((P_All_Customers = 0 & Nv_Cust = 1) % P_All_Customers = 1);
+	If(AttrS(D_CUSTOMER,vELEM_CUSTOMER, 'Sales Group')@= vELEM_GROUPS % AttrN(D_Groups, vELEM_Groups, 'Sales')=0 % SCAN( 'Manager',vELEM_Groups )<>0);
+		#---------------Customer-----------#
+	    #Ship-To-Party
+		CellPutS('WRITE', C_ElementSecurity_Customer, vELEM_CUSTOMER, vELEM_Groups);
+	    #IC3
+	    IC3 = ELPAR(D_Customer, vELEM_CUSTOMER, 1);
+	    CellPutS('WRITE', C_ElementSecurity_Customer, IC3, vELEM_Groups);
+	    #IC2
+	    IC2 = ELPAR(D_Customer, IC3, 1);
+	    CellPutS('WRITE', C_ElementSecurity_Customer, IC2, vELEM_Groups);
+	    #IC1
+	    IC1 = ELPAR(D_Customer, IC2, 1);
+	    CellPutS('WRITE', C_ElementSecurity_Customer, IC1, vELEM_Groups);
+   
+        #-----------Customer Price---------#
+	    If( DIMIX(D_Customer_Price, vELEM_CUSTOMER)<>0);
+    		#Ship-To-Party
+	  	  	CellPutS('WRITE', C_ElementSecurity_Customer_Price, vELEM_CUSTOMER, vELEM_Groups);
+   		    #IC3
+   		    CellPutS('WRITE', C_ElementSecurity_Customer_Price, IC3, vELEM_Groups);
+		    #IC2
+		    CellPutS('WRITE', C_ElementSecurity_Customer_Price, IC2, vELEM_Groups);
+       		#IC1
+       		CellPutS('WRITE', C_ElementSecurity_Customer_Price, IC1, vELEM_Groups);
+		EndIf;
+	EndIf; 
+EndIf;
+
+ 
+Droits = CellGetS(C_ElementSecurity_Customer, vELEM_CUSTOMER, vELEM_Groups);
+If( Droits @= 'WRITE');
+    #Parcours du subset
+	elem_nb = 1;
+	While(elem_nb<=Subsize);
+		#Vérification du flag pour chacun des éléments du subset
+	    elem = SubsetGetElementName( D_Attr_CUSTOMER, subset_temp, elem_nb);
+	    Flag = AttrN(D_Attr_CUSTOMER, elem,'Flag_Hier');
+	    #Si l'attr doit être une hiérarchie : création si elle existe pas, update si elle existe
+	    If(Flag = 1);
+        	Par = ELPAR(D_Customer|':'|elem, vELEM_CUSTOMER, 1);
+            If(Par @<> '');
+				CellPutS('WRITE', C_ElementSecurity_Customer, (elem|':'|Par), vELEM_Groups);
+            EndIf;
+            CellPutS('WRITE', C_ElementSecurity_Customer, (elem|':All '|elem), vELEM_Groups);				
+		EndIf;    
+		elem_nb = elem_nb + 1;
+	End;
+EndIf;
+
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#-----------Destruction des objets--------#
+ViewDestroy( C_ElementSecurity_Customer, view_copy );
+SubsetDestroy(D_Customer, subset_copy);
+SubsetDestroy(D_Groups, subset_copy);
+#endregion

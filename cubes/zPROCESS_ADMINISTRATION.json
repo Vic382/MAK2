@@ -1,0 +1,18 @@
+{
+	"@type":"Cube",
+	"Name":"zPROCESS_ADMINISTRATION",
+	"Rules@Code.link":"zPROCESS_ADMINISTRATION.rules",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('}Processes')"
+		},
+		{
+			"@id":"Dimensions('zPROCESS_ADMINISTRATION_IND')"
+		},
+		{
+			"@id":"Dimensions('1_G_VALUE')"
+		}
+	],
+	"Views@Code.links":[]
+}

@@ -1,0 +1,407 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   30/04/2019                                                        #
+#                                                                            #
+# Fait par :    JM 		                                        	         #
+#                                                                            #
+# Action : Processus pour la creation des nouveaux combinaisons logistiques	 #
+#           																 #
+#																			 #
+##############################################################################
+
+#===============================#
+#	Déclaration des variables	#
+#===============================#
+
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_NEW_COMBINATION';
+C_Cube_Cible = 'SLS_ASSIGN';
+
+
+#--------------------Dimensions--------------------#
+D_CURRENT_PHASE = '1_G_CURRENT_PHASE';
+
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_SALES_GROUP= 'SLS_SALES_GROUP';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_LINE = '1_G_LINE';
+D_COMB_TYPE='SLS_COMB_TYPE';
+D_NEW_COMBINATION_IND='SLS_NEW_COMBINATION_IND';
+
+D_MATERIAL_PLAN =' SLS_MATERIAL_PLAN' ; 
+D_CUSTOMER='SLS_CUSTOMER' ; 
+D_Version = 'SLS_VERSION';
+D_ASSIGN_IND = 'SLS_ASSIGN_IND';
+
+# VRT : Mise en place contrat indexé
+D_Q_HQ = 'SLS_Q_HQ' ;
+# Fin VRT 
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+vUser_Name = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vUSER = SUBST(vUser_Name, SCAN('/',vUser_Name)+1, 100);
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+e_message_data = '';
+
+#--------------------Vues--------------------#
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Déclaration de la vue source--------------------#
+DataSourceNameForServer=C_Cube_Source;
+DatasourceCubeview=view_copy;
+
+
+
+
+
+As_Temporary = 1;
+#--------------------Création des objets Source--------------------#
+ViewCreate(C_Cube_Source ,view_copy, As_Temporary );
+# 1_G_CURRENT_PHASE
+subsetcreate(D_CURRENT_PHASE,subset_copy ,As_Temporary);
+SubsetElementInsert(D_CURRENT_PHASE, subset_copy, 'CURR_PHASE', 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CURRENT_PHASE,subset_copy);
+
+# 1_G_SALES_ORG
+
+subsetcreate(D_SALES_ORG,subset_copy ,As_Temporary);
+SubsetElementInsert(D_SALES_ORG, subset_copy, p_Sales_org, 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_ORG,subset_copy);
+
+# 1_G_DISTRIB_CHANNEL
+
+subsetcreate(D_DISTRIB_CHANNEL,subset_copy ,As_Temporary);
+SubsetElementInsert(D_DISTRIB_CHANNEL, subset_copy, p_Distrib_Channel, 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_DISTRIB_CHANNEL,subset_copy);
+
+
+#SLS_SALES_GROUP
+subsetcreate(D_SALES_GROUP,subset_copy ,As_Temporary);
+SubsetElementInsert(D_SALES_GROUP, subset_copy, 'N/A_SALES_GROUP', 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_GROUP,subset_copy);
+
+
+#SLS_COMB_TYPE
+subsetcreate(D_COMB_TYPE ,subset_copy ,As_Temporary);
+SubsetElementInsert(D_COMB_TYPE, subset_copy, 'CS_Switch', 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_COMB_TYPE,subset_copy);
+
+ 
+#SLS_NEW_COMBINATION_IND
+subsetcreate(D_NEW_COMBINATION_IND ,subset_copy ,As_Temporary);
+SubsetElementInsert(D_NEW_COMBINATION_IND, subset_copy, 'Volume', 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_NEW_COMBINATION_IND,subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées pour la vue source--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 1);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+#=========================================#
+# Initialisation de la vue à supprimer # REINIT de NEW COMB, ce n'est pas la vue cible
+#=========================================#
+
+#pas de restriction sur les périodes à faire car on supprime la vue à la fin de ce process. 
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_erase);
+SubsetDestroy(D_CURRENT_PHASE, subset_erase);
+SubsetDestroy(D_SALES_GROUP, subset_erase);
+SubsetDestroy(D_COMB_TYPE, subset_erase);
+SubsetDestroy(D_SALES_ORG, subset_erase);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_erase);
+
+#--------------------Création des objets--------------------#
+
+ViewCreate(C_Cube_Source,view_erase);
+
+#D_CURRENT_PHASE
+subsetcreate(D_CURRENT_PHASE,subset_erase);
+SubsetElementInsert(D_CURRENT_PHASE, subset_erase, 'CURR_PHASE', 1);
+
+#D_SALES_GROUP
+subsetcreate(D_SALES_GROUP,subset_erase);
+SubsetElementInsert(D_SALES_GROUP, subset_erase, 'N/A_SALES_GROUP', 1);
+
+#D_COMB_TYPE
+subsetcreate(D_COMB_TYPE, subset_erase);
+SubsetElementInsert(D_COMB_TYPE, subset_erase, 'CS_Switch', 1);
+
+# 1_G_SALES_ORG
+
+subsetcreate(D_SALES_ORG,subset_erase);
+SubsetElementInsert(D_SALES_ORG, subset_erase, p_Sales_org, 1);
+ViewSubsetAssign(C_Cube_Source,view_erase, D_SALES_ORG,subset_erase);
+
+# 1_G_DISTRIB_CHANNEL
+
+subsetcreate(D_DISTRIB_CHANNEL,subset_erase );
+SubsetElementInsert(D_DISTRIB_CHANNEL, subset_erase, p_Distrib_Channel, 1);
+ViewSubsetAssign(C_Cube_Source,view_erase, D_DISTRIB_CHANNEL,subset_erase);
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Source,view_erase, D_CURRENT_PHASE,subset_erase);
+ViewSubsetAssign(C_Cube_Source,view_erase, D_SALES_GROUP,subset_erase);
+ViewSubsetAssign(C_Cube_Source,view_erase, D_COMB_TYPE,subset_erase);
+ViewSubsetAssign(C_Cube_Source,view_erase, D_SALES_ORG,subset_erase);
+ViewSubsetAssign(C_Cube_Source,view_erase, D_DISTRIB_CHANNEL,subset_erase);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_erase,1);
+ViewSetSkipCalcs(C_Cube_Source,view_erase, 1);
+ViewSetSkipZeroes(C_Cube_Source,view_erase, 1);
+
+
+#-------Creation d'un sous ensemble pour la dimension SLS_ASSIGN_IND 
+V_S_TEMPORARY_NAME =  'Assign_IND_' | vUSER |'_' | vPRO_NAME;
+sDimName = 'SLS_ASSIGN_IND';
+sMDX = '{TM1FILTERBYLEVEL( {FILTER( {TM1SUBSETALL( [' | sDimName | '] )}, [' | sDimName | '].[Type_indicateur] = ''Prix_Unit'' )}, 0)}';
+SubsetCreatebyMDX( V_S_TEMPORARY_NAME, sMDX , As_Temporary );
+nSubsetSize = SubsetGetSize( sDimName, V_S_TEMPORARY_NAME);
+
+# ELH - EVO Commerciaux
+#-- Création d'un sous-ensemble pour la dimension 1_G_PERIOD afin de ne se baser que sur ces périodes pour la comparaison des valeurs une fois le switch réalisé
+sTemporaryNamePeriod = 'Period_' | vUSER | '_Verification_Volumes_Assign_Sales_Plan' ;
+subsetcreate ( D_PERIOD , sTemporaryNamePeriod ) ;
+# Fin ELH - EVO Commerciaux
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+# Comme la source contient que le volume , il faut recuperer la combinaison log et commercial 
+#--------End 
+v_Customer = CellGetS( C_Cube_Source,v_Current_Phase  ,'N/A PERIOD', v_g_sales_org , v_g_distrib_channel, v_SALES_GROUP,v_G_Line,v_COMB_TYPE,'Customer' ) ;
+v_Planning_Material = CellGetS( C_Cube_Source,v_Current_Phase  ,'N/A PERIOD', v_g_sales_org , v_g_distrib_channel, v_SALES_GROUP,v_G_Line,v_COMB_TYPE,'Planning Material' ) ;
+v_Shipping_Point =  CellGetS( C_Cube_Source,v_Current_Phase  ,'N/A PERIOD', v_g_sales_org , v_g_distrib_channel, v_SALES_GROUP,v_G_Line,v_COMB_TYPE,'Shipping Point' ) ;
+v_Shipping_Plant = CellGetS( C_Cube_Source,v_Current_Phase  ,'N/A PERIOD', v_g_sales_org , v_g_distrib_channel, v_SALES_GROUP,v_G_Line,v_COMB_TYPE,'Shipping Plant' ) ;
+v_Production_Plant =  CellGetS( C_Cube_Source,v_Current_Phase  ,'N/A PERIOD', v_g_sales_org , v_g_distrib_channel, v_SALES_GROUP,v_G_Line,v_COMB_TYPE,'Production Plant' ) ;
+v_Vendor =  CellGetS( C_Cube_Source,v_Current_Phase  ,'N/A PERIOD', v_g_sales_org , v_g_distrib_channel, v_SALES_GROUP,v_G_Line,v_COMB_TYPE,'Vendor');
+v_Target_Material =  CellGetS( C_Cube_Source,v_Current_Phase  ,'N/A PERIOD', v_g_sales_org , v_g_distrib_channel, v_SALES_GROUP,v_G_Line,v_COMB_TYPE,'Target Planning Material');
+
+# VRT : Mise en place contrat indexé
+v_Q_HQ = CellGetS( C_Cube_Source,v_Current_Phase  ,'N/A PERIOD', v_g_sales_org , v_g_distrib_channel, v_SALES_GROUP,v_G_Line,v_COMB_TYPE,'Standard_Indexe');
+# Fin VRT 
+
+
+#Verfication de la combinaison dans le cube Assign
+# le total ligne et total annee nous indique s' il existe des lignes sur la combinaison commerciale 
+vTotal_VolumeAssignPM = CellGetN ( 'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , 'CAMP YEAR',v_g_sales_org , v_g_distrib_channel, v_Planning_Material , v_Customer ,'Total_Line','ASSIGN_VOL');
+
+############################
+#asciioutput('..\Tests\switch_cal.csv', v_g_period, v_Planning_Material, v_Customer, numbertostring(vTotal_VolumeAssignPM));
+###########################
+
+if ( vTotal_VolumeAssignPM > 0  );
+
+	MyLine ='L1' ;
+	MyEmptyLine = '' ;
+#------------- boucle pour chercher la ligne a saisir pour la combinasion log avec le planning material source 
+	while ( MyEmptyLine @= '' ) ;
+    
+
+#------------- recuperation la comb log de la ligne en cours 
+		myShip_Pt =  CellGetS ( 'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , 'N/A PERIOD',v_g_sales_org , v_g_distrib_channel, v_Planning_Material , v_Customer ,myLine,'SHIP_PT' ) ;
+		myShip_Pl =  CellGetS ( 'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , 'N/A PERIOD',v_g_sales_org , v_g_distrib_channel,v_Planning_Material  , v_Customer ,myLine,'SHIP_PLANT' ) ;
+		myProd_Pt =  CellGetS ( 'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , 'N/A PERIOD',v_g_sales_org , v_g_distrib_channel,v_Planning_Material  , v_Customer ,myLine,'PROD_PLANT' ) ;
+		myVendor =  CellGetS ( 'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , 'N/A PERIOD',v_g_sales_org , v_g_distrib_channel, v_Planning_Material  , v_Customer ,myLine,'Vendor' ) ;
+		myvolPM       =   CellGetN ( 'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Planning_Material , v_Customer ,myLine,'ASSIGN_VOL' ) ;
+#------------- si c'est la meme comb log et le volume actuel est superieur au volume du cube new comb
+
+        #modif EMO le 18/09/2019 : gestion des arrondis également lors du switch et pas seulement lors de la gestion d'erreur
+        diff = myvolPM - valeur;
+        #if ( v_Shipping_Point @= myShip_Pt  & v_Shipping_Plant @= myShip_Pl & v_Production_Plant @= myProd_Pt  & v_Vendor @= myVendor  &  myvolPM >= valeur ) ;
+		if ( v_Shipping_Point @= myShip_Pt  & v_Shipping_Plant @= myShip_Pl & v_Production_Plant @= myProd_Pt  & v_Vendor @= myVendor  &  diff >= -0.001 ) ;	
+            
+            #Nouveau cas : Si le volume à switcher est égale à 0.001 près, on switch tout.
+            If(diff >= -0.001 & diff <= 0.001);
+            	valeur = myvolPM;
+            EndIf;
+            CellputN ( myvolPM - valeur  ,'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Planning_Material  ,v_Customer ,MyLine,'ASSIGN_VOL' ) ;
+			#On modifie le Sales Volume seulement sur la Ligne 1 puisqu'il n'est pas réparti selon la comb log
+			CellIncrementN (-valeur ,'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Planning_Material  ,v_Customer ,'L1','SLS_VOL' ) ;
+           
+            MyEmptyLine = MyLine ;
+
+#--------------ecrire le vol sur le target planning material
+
+			MyLine2 ='L1' ;	
+			MyEmptyLine2 = '' ;
+
+
+            while ( MyEmptyLine2 @= '' ) ;
+
+				myShip_Pt =  CellGetS ( 'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , 'N/A PERIOD',v_g_sales_org , v_g_distrib_channel, v_Target_Material  , v_Customer ,myLine2,'SHIP_PT' ) ;
+				myShip_Pl =  CellGetS ( 'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , 'N/A PERIOD',v_g_sales_org , v_g_distrib_channel,v_Target_Material  , v_Customer ,myLine2,'SHIP_PLANT' ) ;
+				myProd_Pt =  CellGetS ( 'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , 'N/A PERIOD',v_g_sales_org , v_g_distrib_channel,v_Target_Material   , v_Customer ,myLine2,'PROD_PLANT' ) ;
+				myVendor =  CellGetS ( 'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , 'N/A PERIOD',v_g_sales_org , v_g_distrib_channel, v_Target_Material  , v_Customer ,myLine2,'Vendor' ) ;
+				#myvolTPM       =   CellGetN ( 'SLS_ASSIGN',v_Current_Phase , 'FV',v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Target_Material , v_Customer ,myLine2,'ASSIGN_VOL' ) ;
+
+				if ( v_Shipping_Point @= myShip_Pt  & v_Shipping_Plant @= myShip_Pl & v_Production_Plant @= myProd_Pt  & v_Vendor @= myVendor   ) ;
+					CellincrementN (  valeur  ,'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Target_Material ,v_Customer ,MyLine2,'ASSIGN_VOL' ) ;
+					#Ajout le 14/01/2019 par Elisabeth Mounier
+					CellIncrementN (  valeur  ,'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Target_Material ,v_Customer ,'L1','SLS_VOL' ) ;
+                    
+                    #modif 1 EMO le 18/11/2019 
+                    #on récupère la valeur incrémentée et non la valeur switchée
+                    New_value = CellGetN('SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Target_Material ,v_Customer ,'Total Line','ASSIGN_VOL' ) ;
+					
+                   
+                    #modif 2 EMO lE 18/11/2019
+                    #le traitement des valo se fait dans chaque cas if sinon il est traité plusieurs fois et les valeurs sont mal calculées
+                    #--------------------Debut :Cube Assign : traitement des valo 
+					ind = 1;
+
+					while ( ind <= nSubsetSize  ) ;
+					myPrix_Assign = SubsetGetElementName ( sDimName , V_S_TEMPORARY_NAME , ind ) ;
+
+					vPrix =  CellGetN ( 'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Planning_Material  ,v_Customer , 'L1',myPrix_Assign ) ;
+					v_valo = vPrix * valeur ;
+					v_valo_String = Delet ( myPrix_Assign ,SCAN ('_UNIT' , myPrix_Assign ),long (myPrix_Assign) ) ; 
+					vValo_Act = CellGetN ('SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Target_Material   ,v_Customer ,'L1',v_valo_String) ;
+					
+                   # asciioutput('..\Tests\ascii1'|myLine2|'.csv', numbertostring(vPrix), NumberToString( v_valo ), NumberToString( valeur ), v_valo_string);
+                    
+                    CellincrementN (  v_valo  ,'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Target_Material   ,v_Customer ,'L1',v_valo_String) ;
+					CellincrementN ( -1 *  v_valo  ,'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel ,v_Planning_Material    ,v_Customer ,'L1',v_valo_String) ;
+
+					#----------------calcul des prix pour le plnaning material cible 
+                    #asciioutput('..\Tests\ascii'|myLine2|'2.csv', NumberToString( vValo_Act ), myPrix_Assign);
+
+					CellputN (( vValo_Act+ v_valo) \ new_value , 'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Target_Material   ,v_Customer ,'L1',myPrix_Assign);
+					#----------------------
+					ind = ind +1 ;
+					End ;
+					#-------------------Fin : Cube Assign : traitement des valo 
+                	#Fin modif EMO
+                
+                 	MyEmptyLine2 = MyLine2 ;
+				endif ;
+                
+				if ( myShip_Pt @=''  & myShip_Pl @= '' & myProd_Pt @= ''  & myVendor @= '' ) ;
+					CellputS ( v_Shipping_Point  ,'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , 'N/A PERIOD',v_g_sales_org , v_g_distrib_channel, v_Target_Material ,v_Customer , MyLine2,'SHIP_PT' ) ;
+					CellputS ( v_Shipping_Plant  ,'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , 'N/A PERIOD',v_g_sales_org , v_g_distrib_channel, v_Target_Material ,v_Customer ,MyLine2,'SHIP_PLANT' ) ;
+					CellputS ( v_Production_Plant  ,'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , 'N/A PERIOD',v_g_sales_org , v_g_distrib_channel, v_Target_Material ,v_Customer ,MyLine2,'PROD_PLANT' ) ;
+					CellputS ( v_Vendor ,'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , 'N/A PERIOD',v_g_sales_org , v_g_distrib_channel, v_Target_Material ,v_Customer ,MyLine2,'VENDOR' ) ;
+					CellputN (  valeur  ,'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Target_Material ,v_Customer ,MyLine2,'ASSIGN_VOL' ) ;
+					
+                    #Ajout le 14/01/2019 par Elisabeth Mounier
+					CellIncrementN (  valeur  ,'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Target_Material ,v_Customer ,'L1','SLS_VOL' ) ;
+					
+                    #modif 1 EMO le 18/11/2019 
+                    #on récupère la valeur incrémentée et non la valeur switchée
+                    New_value = CellGetN('SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Target_Material ,v_Customer ,'Total Line','ASSIGN_VOL' ) ;
+					
+                    
+                    #modif 2 EMO lE 18/11/2019
+                    #le traitement des valo se fait dans chaque cas if sinon il est traité plusieurs fois et les valeurs sont mal calculées
+                    #--------------------Debut :Cube Assign : traitement des valo 
+					ind = 1;
+
+					while ( ind <= nSubsetSize  ) ;
+					myPrix_Assign = SubsetGetElementName ( sDimName , V_S_TEMPORARY_NAME , ind ) ;
+
+					vPrix =  CellGetN ( 'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Planning_Material  ,v_Customer , 'L1',myPrix_Assign ) ;
+					v_valo = vPrix * valeur ;
+					v_valo_String = Delet ( myPrix_Assign ,SCAN ('_UNIT' , myPrix_Assign ),long (myPrix_Assign) ) ; 
+					vValo_Act = CellGetN ('SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Target_Material   ,v_Customer ,'L1',v_valo_String) ;
+					
+                    #asciioutput('..\Tests\ascii1'|myLine2|'.csv', numbertostring(vPrix), NumberToString( v_valo ), NumberToString( valeur ), v_valo_string);
+                    
+                    CellincrementN (  v_valo  ,'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Target_Material   ,v_Customer ,'L1',v_valo_String) ;
+					CellincrementN ( -1 *  v_valo  ,'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel ,v_Planning_Material    ,v_Customer ,'L1',v_valo_String) ;
+
+					#----------------calcul des prix pour le plnaning material cible 
+                    #asciioutput('..\Tests\ascii'|myLine2|'2.csv', NumberToString( vValo_Act ), myPrix_Assign);
+
+					CellputN (( vValo_Act+ v_valo) \ new_value , 'SLS_ASSIGN',v_Current_Phase , 'FV', v_Q_HQ , v_G_PERIOD,v_g_sales_org , v_g_distrib_channel, v_Target_Material   ,v_Customer ,'L1',myPrix_Assign);
+					#----------------------
+					ind = ind +1 ;
+					End ;
+					#-------------------Fin : Cube Assign : traitement des valo 
+                	#fin modif EMO
+                    
+                	MyEmptyLine2 = MyLine2 ;
+				Endif ;
+
+				MyLine2 = ATTRS ( D_Line , MyLine2 , 'Ligne_Suivante' ) ;
+				if ( myLine2 @='' ) ; 
+					MyEmptyLine2='Finish' ;
+				Endif;
+
+			End ;
+		#Else ;
+			#Asciioutput( '../Tests/errorSwitchArticle.txt' ,v_Current_Phase,v_G_PERIOD,v_G_Sales_org,v_G_Distrib_Channel, v_SALES_GROUP,v_G_Line,v_NEW_COMBINATION_IND,v_Customer,v_Planning_Material,v_Shipping_Point,v_Shipping_Plant,v_Production_Plant,v_Vendor);
+			#itemskip ;
+		Endif ;
+
+		MyLine = ATTRS ( D_Line , MyLine , 'Ligne_Suivante' ) ;
+        if ( myLine @='' ) ; 
+        	MyEmptyLine='Finish' ;
+        Endif;
+	End ; 
+
+Endif ;
+
+#On exécute ici le process qui fait le switch dans Sales Plan
+ExecuteProcess('SLS_CAL_CUB_SLS_SALES_PLAN_SWITCH_MAT_NEW_COMB','p_distrib_channel', p_distrib_channel, 'p_sales_org', p_sales_org, 
+'p_phase', v_current_phase, 'p_periode', v_g_period, 'p_planning_material', v_planning_material, 'p_customer', v_customer, 
+'p_target_planning_material', v_target_material, 'p_valeur_switch', valeur);
+
+# ELH - EVO Commerciaux
+# Ajout de la période au sous-ensemble de la dimension période pour la comparaison des volumes une fois le switch réalisé
+SubsetElementInsert ( D_PERIOD , sTemporaryNamePeriod , v_g_period , 1 ) ;
+# Fin ELH - EVO Commerciaux
+
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+ViewZeroOut(C_Cube_Source, view_erase);
+
+ViewDestroy(C_Cube_Source,view_erase);
+SubsetDestroy(D_CURRENT_PHASE, subset_erase);
+SubsetDestroy(D_SALES_GROUP, subset_erase);
+SubsetDestroy(D_COMB_TYPE, subset_erase);
+SubsetDestroy(D_SALES_ORG, subset_erase);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_erase);
+
+
+# ELH - EVO Commerciaux
+# Exécution du processus qui compare, une fois le switch réalisé, les volumes dans SLS_SALES_PLAN et les volumes dans SLS_ASSIGN, pour s'assurer que les 2 cubes soient iso
+ExecuteProcess ( 'SLS_CAL_CUB_SLS_ASSIGN_SLS_SALES_PLAN_CUB_SLS_VERIF_VOLUMES' , 'p_distrib_channel' , p_distrib_channel , 'p_sales_org' , p_sales_org ) ;
+# Fin ELH - EVO Commerciaux
+#endregion
