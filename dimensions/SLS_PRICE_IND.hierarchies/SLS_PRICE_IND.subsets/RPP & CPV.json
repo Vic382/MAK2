@@ -1,0 +1,13 @@
+{
+	"@type":"Subset",
+	"Name":"RPP & CPV",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_PRICE_IND')/Hierarchies('SLS_PRICE_IND')/Elements('RPP_PER')"
+		},
+		{
+			"@id":"Dimensions('SLS_PRICE_IND')/Hierarchies('SLS_PRICE_IND')/Elements('CPV_PER')"
+		}
+	]
+}

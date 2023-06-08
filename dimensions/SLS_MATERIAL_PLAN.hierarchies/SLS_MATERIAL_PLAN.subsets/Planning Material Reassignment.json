@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Planning Material Reassignment",
+	"Expression":"{TM1FILTERBYLEVEL(DESCENDANTS(STRTOMEMBER((((\"[SLS_MATERIAL_PLAN].[\" + [zSELECT].(STRTOMEMBER((((\"[}Clients].[\" + USERNAME))) + \"]\"),[zSELECT_IND].[Planning Material_CS])))) + \"]\")) , 0)}"
+}

@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Current Phase Control",
+	"Expression":"{STRTOMEMBER((\"[1_G_CURRENT_PHASE].[\" + [SECURITY_CUBES].([SECURITY_CUBES].[SLS_SALES_PLAN],[m_SECURITY_CUBES].[security])) + \"]\")}"
+}

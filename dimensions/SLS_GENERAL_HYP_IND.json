@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_GENERAL_HYP_IND",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_GENERAL_HYP_IND')/Hierarchies('SLS_GENERAL_HYP_IND')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_GENERAL_HYP_IND.hierarchies/SLS_GENERAL_HYP_IND.json"
+	]
+}

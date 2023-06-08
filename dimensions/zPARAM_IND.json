@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"zPARAM_IND",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('zPARAM_IND')/Hierarchies('zPARAM_IND')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"zPARAM_IND.hierarchies/zPARAM_IND.json"
+	]
+}

@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Current_Division_Level0",
+	"Expression":"{TM1FILTERBYLEVEL(DESCENDANTS(STRTOMEMBER((((\"[SLS_MATERIAL_PLAN].[\" + [zSELECT].(STRTOMEMBER((((\"[}Clients].[\" + USERNAME))) + \"]\"),[zSELECT_IND].[Division])))) + \"]\")) , 0)}"
+}

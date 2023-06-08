@@ -1,0 +1,13 @@
+{
+	"@type":"Subset",
+	"Name":"Price_20_Alcohol_I",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('I_VOL')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('I_BASE_UNIT')"
+		}
+	]
+}

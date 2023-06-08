@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"1_G_PERIOD",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"1_G_PERIOD.hierarchies/1_G_PERIOD.json"
+	]
+}

@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_ORDER_ITEM",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_ORDER_ITEM')/Hierarchies('SLS_ORDER_ITEM')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_ORDER_ITEM.hierarchies/SLS_ORDER_ITEM.json"
+	]
+}

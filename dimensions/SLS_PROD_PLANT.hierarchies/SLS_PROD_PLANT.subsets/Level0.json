@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Level0",
+	"Expression":"{TM1SORT(TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_PROD_PLANT]) , 0) , ASC)}"
+}

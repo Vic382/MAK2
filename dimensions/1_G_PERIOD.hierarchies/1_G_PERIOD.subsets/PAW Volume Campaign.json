@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"PAW Volume Campaign",
+	"Expression":"{[1_G_PERIOD].[CAMP_ACT_N-1],[1_G_PERIOD].[CAMP_ACT_N],TM1SubsetToSet([1_G_PERIOD] , \"Campaign Input\"),[1_G_PERIOD].[N/A PERIOD]}"
+}

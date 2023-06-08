@@ -1,0 +1,25 @@
+{
+	"@type":"Subset",
+	"Name":"Phase_to_repart",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_PHASE')/Hierarchies('1_G_PHASE')/Elements('ACT')"
+		},
+		{
+			"@id":"Dimensions('1_G_PHASE')/Hierarchies('1_G_PHASE')/Elements('BDG')"
+		},
+		{
+			"@id":"Dimensions('1_G_PHASE')/Hierarchies('1_G_PHASE')/Elements('FC1')"
+		},
+		{
+			"@id":"Dimensions('1_G_PHASE')/Hierarchies('1_G_PHASE')/Elements('FC2')"
+		},
+		{
+			"@id":"Dimensions('1_G_PHASE')/Hierarchies('1_G_PHASE')/Elements('FC3')"
+		},
+		{
+			"@id":"Dimensions('1_G_PHASE')/Hierarchies('1_G_PHASE')/Elements('FC1.5')"
+		}
+	]
+}

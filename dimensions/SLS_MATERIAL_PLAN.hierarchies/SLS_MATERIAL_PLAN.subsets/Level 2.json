@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Level 2",
+	"Expression":"{GENERATE([SLS_MATERIAL_PLAN].[TOTAL_RETAIL].CHILDREN , [SLS_MATERIAL_PLAN].CURRENTMEMBER.CHILDREN)}"
+}

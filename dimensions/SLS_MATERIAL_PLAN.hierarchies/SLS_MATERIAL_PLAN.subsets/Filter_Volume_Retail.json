@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Filter_Volume_Retail",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN]) , 0) , [SLS_SALES_PLAN].([1_G_CURRENT_PHASE].[Current Phase],[1_G_PERIOD].[Campaign],STRTOMEMBER(((\"[1_G_SALES_ORG].[\" + [zSELECT].(STRTOMEMBER(((\"[}Clients].[\" + USERNAME)) + \"]\"),[zSELECT_IND].[Sales Org]))) + \"]\"),[1_G_DISTRIB_CHANNEL].[Retail],[1_G_CURRENCY].[EUR],[1_G_VOLUME_UNIT].[TO],[SLS_CUSTOMER].[TOTAL_CUSTOMER],[SLS_MATERIAL_PLAN].CURRENTMEMBER,STRTOMEMBER(((\"[SLS_SALES_GROUP].[\" + [zSELECT].(STRTOMEMBER(((\"[}Clients].[\" + USERNAME)) + \"]\"),[zSELECT_IND].[Sales Group]))) + \"]\"),[SLS_SALES_PLAN_IND].[Sales Volume]) <> 0)}"
+}

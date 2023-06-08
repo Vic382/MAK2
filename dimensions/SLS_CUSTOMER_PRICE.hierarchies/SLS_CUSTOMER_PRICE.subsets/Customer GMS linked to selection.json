@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Customer GMS linked to selection",
+	"Expression":"{GENERATE(DESCENDANTS(STRTOMEMBER((((\"[SLS_CUSTOMER].[\" + (zSELECT.(STRTOMEMBER((((\"[}Clients].[\" + USERNAME))) + \"]\"),[zSELECT_IND].[Customer GMS]))))) + \"]\")) , {STRTOMEMBER(((((((\"[SLS_CUSTOMER_PRICE].[\" + [SLS_CUSTOMER].CURRENTMEMBER.NAME)))))) + \"]\")})}"
+}

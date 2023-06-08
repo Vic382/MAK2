@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Source_Subset_23-03-10_SLS_SALES_PLAN_VALIDATION_VOLUME",
+	"Expression":"{TM1FILTERBYLEVEL( {TM1SUBSETALL([SLS_CUSTOMER] )}, 0)}"
+}

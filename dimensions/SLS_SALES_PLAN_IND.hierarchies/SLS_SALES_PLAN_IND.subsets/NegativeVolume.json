@@ -1,0 +1,13 @@
+{
+	"@type":"Subset",
+	"Name":"NegativeVolume",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('Vol_Neg')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('I_Vol_Neg')"
+		}
+	]
+}

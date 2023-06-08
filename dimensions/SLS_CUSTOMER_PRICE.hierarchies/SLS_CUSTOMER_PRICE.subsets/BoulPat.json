@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"BoulPat",
+	"Expression":"{FILTER(TM1SubsetAll([SLS_CUSTOMER_PRICE].[SLS_CUSTOMER_PRICE]), ([SLS_CUSTOMER_PRICE].[SLS_CUSTOMER_PRICE].CURRENTMEMBER.PROPERTIES(\"IC1\") = \"IC1 - E00070\"))}"
+}

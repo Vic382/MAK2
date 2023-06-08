@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"1_G_LINE",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('1_G_LINE')/Hierarchies('1_G_LINE')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"1_G_LINE.hierarchies/1_G_LINE.json"
+	]
+}

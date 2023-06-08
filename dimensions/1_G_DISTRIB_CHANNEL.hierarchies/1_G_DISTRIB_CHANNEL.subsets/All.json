@@ -1,0 +1,19 @@
+{
+	"@type":"Subset",
+	"Name":"All",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_DISTRIB_CHANNEL')/Hierarchies('1_G_DISTRIB_CHANNEL')/Elements('TOTAL_DISTRIB_CHANNEL')"
+		},
+		{
+			"@id":"Dimensions('1_G_DISTRIB_CHANNEL')/Hierarchies('1_G_DISTRIB_CHANNEL')/Elements('10')"
+		},
+		{
+			"@id":"Dimensions('1_G_DISTRIB_CHANNEL')/Hierarchies('1_G_DISTRIB_CHANNEL')/Elements('20')"
+		},
+		{
+			"@id":"Dimensions('1_G_DISTRIB_CHANNEL')/Hierarchies('1_G_DISTRIB_CHANNEL')/Elements('40')"
+		}
+	]
+}

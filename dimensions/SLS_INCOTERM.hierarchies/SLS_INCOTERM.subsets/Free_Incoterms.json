@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Free_Incoterms",
+	"Expression":"{EXCEPT(TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_INCOTERM]) , 0) , {[SLS_INCOTERM].[EXW],[SLS_INCOTERM].[FAS],[SLS_INCOTERM].[FCA],[SLS_INCOTERM].[FOB]})}"
+}

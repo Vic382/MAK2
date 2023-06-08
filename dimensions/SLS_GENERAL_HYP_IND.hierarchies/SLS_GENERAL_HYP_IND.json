@@ -1,0 +1,16 @@
+{
+	"@type":"Hierarchy",
+	"Name":"SLS_GENERAL_HYP_IND",
+	"Elements":
+	[
+		{
+			"Name":"Initialization Phase",
+			"Type":"String"
+		},
+		{
+			"Name":"Initialization Month",
+			"Type":"String"
+		}
+	],
+	"Subsets@Code.links":[]
+}

@@ -1,0 +1,10 @@
+{
+	"@type":"Subset",
+	"Name":"zTI_z_REPORTING_HISTO_Source",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_PHASE_REP')/Hierarchies('1_G_PHASE_REP')/Elements('ACT')"
+		}
+	]
+}

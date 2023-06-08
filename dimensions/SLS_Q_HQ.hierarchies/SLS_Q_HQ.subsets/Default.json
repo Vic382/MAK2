@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Default",
+	"Expression":"{{DESCENDANTS([SLS_Q_HQ].[SLS_Q_HQ].[TOTAL_TYPE_QUOTA])}}"
+}

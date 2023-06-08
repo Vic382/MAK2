@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Current Sales Org",
+	"Expression":"{STRTOMEMBER((\"[1_G_SALES_ORG].[\" + [zSELECT].(STRTOMEMBER(((\"[}Clients].[\" + USERNAME)) + \"]\"),[zSELECT_IND].[Sales Org])) + \"]\")}"
+}

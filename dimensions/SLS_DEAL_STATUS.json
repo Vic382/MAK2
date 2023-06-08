@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_DEAL_STATUS",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_DEAL_STATUS')/Hierarchies('SLS_DEAL_STATUS')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_DEAL_STATUS.hierarchies/SLS_DEAL_STATUS.json"
+	]
+}

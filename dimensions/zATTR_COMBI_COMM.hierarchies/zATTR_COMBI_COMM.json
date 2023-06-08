@@ -1,0 +1,28 @@
+{
+	"@type":"Hierarchy",
+	"Name":"zATTR_COMBI_COMM",
+	"Elements":
+	[
+		{
+			"Name":"Ship Point Max SLS_INIT",
+			"Type":"String"
+		},
+		{
+			"Name":"Ship Plant Max SLS_INIT",
+			"Type":"String"
+		},
+		{
+			"Name":"Prod Plant Max SLS_INIT",
+			"Type":"String"
+		},
+		{
+			"Name":"Vendor Max SLS_INIT",
+			"Type":"String"
+		},
+		{
+			"Name":"Valeur Max SLS_INIT",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":[]
+}

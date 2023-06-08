@@ -1,0 +1,10 @@
+{
+	"@type":"Subset",
+	"Name":"Total",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('TOTAL_RETAIL')"
+		}
+	]
+}

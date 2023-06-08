@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Customer BoulPat PAW",
+	"Expression":"TM1SubsetToSet([SLS_CUSTOMER] , \rIIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Level_Customer_BoulPat]) <> \"\" , \rIIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Customer IC BoulPat]) <> \"\" , \rIIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Level_Customer_BoulPat]) = \"Ship-to-party\" ,\r \"Ship-to-party BoulPat\" , \"Filtre BoulPat\") , \rIIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Level_Customer_BoulPat]) = \"Ship-to-party\" ,\r \"MDX_Sales_Group_level0\" , [zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Level_Customer_BoulPat]))) , \rIIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Customer IC BoulPat]) <> \"\" , \"Ship-to-party BoulPat\" , \"MDX_Sales_Group_level0\")))"
+}

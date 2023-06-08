@@ -1,0 +1,24 @@
+{
+	"@type":"Hierarchy",
+	"Name":"SLS_RECONCIL_IND",
+	"Elements":
+	[
+		{
+			"Name":"SLS_VOL",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"RESS_VOL",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"VOL_DIFF",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"UNIT_FR_COST",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":[]
+}

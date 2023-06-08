@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Divisions_Init",
+	"Expression":"{{DRILLDOWNMEMBER({[1_G_MATERIAL].[1_G_MATERIAL].[TOTAL_MATERIAL]}, {[1_G_MATERIAL].[1_G_MATERIAL].[TOTAL_MATERIAL]}, RECURSIVE)}}"
+}

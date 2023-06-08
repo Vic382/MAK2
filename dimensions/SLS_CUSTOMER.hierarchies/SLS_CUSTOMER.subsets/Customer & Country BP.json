@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Customer & Country BP",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(DESCENDANTS(STRTOMEMBER(\"[SLS_CUSTOMER].[\" + [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Customer IC BoulPat]) + \"]\")) , 0) , [SLS_CUSTOMER].[Country Name] = [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Country]))}"
+}

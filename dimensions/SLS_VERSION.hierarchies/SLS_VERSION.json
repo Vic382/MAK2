@@ -1,0 +1,19 @@
+{
+	"@type":"Hierarchy",
+	"Name":"SLS_VERSION",
+	"Elements":
+	[
+		{
+			"Name":"AV",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FV",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":
+	[
+		"SLS_VERSION.subsets/sub.json"
+	]
+}

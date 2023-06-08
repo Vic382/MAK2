@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Level 1",
+	"Expression":"{[SLS_MATERIAL_PLAN].[TOTAL_RETAIL].CHILDREN}"
+}

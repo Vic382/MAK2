@@ -1,0 +1,16 @@
+{
+	"@type":"Hierarchy",
+	"Name":"SLS_CURRENCY_RATE_IND",
+	"Elements":
+	[
+		{
+			"Name":"EUR",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"USD",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":[]
+}

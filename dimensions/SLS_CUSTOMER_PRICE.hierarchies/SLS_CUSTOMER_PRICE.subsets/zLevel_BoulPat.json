@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"zLevel_BoulPat",
+	"Expression":"{TM1SubsetToSet([SLS_CUSTOMER_PRICE] , [zSELECT].(STRTOMEMBER(((((((((((\"[}Clients].[\" + USERNAME)))))))))) + \"]\"),[zSELECT_IND].[Level_Customer_BoulPat]))}"
+}

@@ -1,0 +1,33 @@
+{
+	"@type":"Hierarchy",
+	"Name":"SLS_VERIF_VOLUMES_ASSIGN_SALES_IND",
+	"Elements":
+	[
+		{
+			"Name":"Difference",
+			"Type":"Consolidated"
+		},
+		{
+			"Name":"SLS_ASSIGN",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"SLS_SALES_PLAN",
+			"Type":"Numeric"
+		}
+	],
+	"Edges":
+	[
+		{
+			"ParentName":"Difference",
+			"ComponentName":"SLS_ASSIGN",
+			"Weight":1
+		},
+		{
+			"ParentName":"Difference",
+			"ComponentName":"SLS_SALES_PLAN",
+			"Weight":-1
+		}
+	],
+	"Subsets@Code.links":[]
+}

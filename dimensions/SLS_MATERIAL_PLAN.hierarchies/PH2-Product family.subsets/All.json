@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"All",
+	"Expression":"TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_MATERIAL_PLAN:PH2-Product family])},1)"
+}

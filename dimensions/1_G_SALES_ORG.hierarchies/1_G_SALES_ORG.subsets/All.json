@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"All",
+	"Expression":"{EXCEPT(DESCENDANTS([1_G_SALES_ORG].[1_G_SALES_ORG].[TOTAL SALES ORG]) , {[1_G_SALES_ORG].[1_G_SALES_ORG].[N/A SALES ORG]})}"
+}

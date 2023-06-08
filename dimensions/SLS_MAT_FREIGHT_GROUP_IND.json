@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_MAT_FREIGHT_GROUP_IND",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_MAT_FREIGHT_GROUP_IND')/Hierarchies('SLS_MAT_FREIGHT_GROUP_IND')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_MAT_FREIGHT_GROUP_IND.hierarchies/SLS_MAT_FREIGHT_GROUP_IND.json"
+	]
+}

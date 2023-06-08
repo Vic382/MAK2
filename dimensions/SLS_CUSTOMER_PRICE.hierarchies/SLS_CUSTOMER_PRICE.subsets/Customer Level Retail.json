@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Customer Level Retail",
+	"Expression":"{FILTER(FILTER(TM1SUBSETALL([SLS_CUSTOMER_PRICE]) , INSTR(1 , [SLS_CUSTOMER_PRICE].[Distribution Channel] , \"10\") >= 1) , [SLS_CUSTOMER_PRICE].[Level] = [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Customer_Type]))}"
+}

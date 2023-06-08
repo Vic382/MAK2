@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_COUT_APPROCHE_IND",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_COUT_APPROCHE_IND')/Hierarchies('SLS_COUT_APPROCHE_IND')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_COUT_APPROCHE_IND.hierarchies/SLS_COUT_APPROCHE_IND.json"
+	]
+}

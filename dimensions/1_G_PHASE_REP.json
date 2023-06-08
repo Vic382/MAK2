@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"1_G_PHASE_REP",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('1_G_PHASE_REP')/Hierarchies('1_G_PHASE_REP')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"1_G_PHASE_REP.hierarchies/1_G_PHASE_REP.json"
+	]
+}

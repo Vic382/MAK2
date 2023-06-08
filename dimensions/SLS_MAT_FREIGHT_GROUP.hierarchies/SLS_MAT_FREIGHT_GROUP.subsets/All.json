@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"All",
+	"Expression":"{TM1SUBSETALL([SLS_MAT_FREIGHT_GROUP])}"
+}

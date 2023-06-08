@@ -1,0 +1,10 @@
+{
+	"@type":"Subset",
+	"Name":"z_erase_master_Admin_SLS_CHA_CUB_SLS_CHA_SAP_NEW_INDICATEURS",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_PHASE')/Hierarchies('1_G_PHASE')/Elements('ACT')"
+		}
+	]
+}

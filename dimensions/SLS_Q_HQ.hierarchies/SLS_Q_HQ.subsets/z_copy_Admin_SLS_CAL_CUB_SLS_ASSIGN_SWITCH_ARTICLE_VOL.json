@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"z_copy_Admin_SLS_CAL_CUB_SLS_ASSIGN_SWITCH_ARTICLE_VOL",
+	"Expression":"TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_Q_HQ])},0)"
+}

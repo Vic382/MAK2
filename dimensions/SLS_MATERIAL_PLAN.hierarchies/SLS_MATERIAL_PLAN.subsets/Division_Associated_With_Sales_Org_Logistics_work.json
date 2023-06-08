@@ -1,0 +1,37 @@
+{
+	"@type":"Subset",
+	"Name":"Division_Associated_With_Sales_Org_Logistics_work",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_90')"
+		},
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_40')"
+		},
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_10')"
+		},
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_30')"
+		},
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_20')"
+		},
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_70')"
+		},
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_80')"
+		},
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_50')"
+		},
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_60')"
+		},
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_85')"
+		}
+	]
+}

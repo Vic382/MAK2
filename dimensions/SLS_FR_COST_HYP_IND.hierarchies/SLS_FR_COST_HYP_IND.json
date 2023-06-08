@@ -1,0 +1,12 @@
+{
+	"@type":"Hierarchy",
+	"Name":"SLS_FR_COST_HYP_IND",
+	"Elements":
+	[
+		{
+			"Name":"Variation Percentage",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":[]
+}

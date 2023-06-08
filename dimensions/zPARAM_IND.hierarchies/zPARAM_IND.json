@@ -1,0 +1,151 @@
+{
+	"@type":"Hierarchy",
+	"Name":"zPARAM_IND",
+	"Elements":
+	[
+		{
+			"Name":"PATH_ZIP_EXE",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"PATH_BKP",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"PATH_SRC_DATA",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"NameFileBackup",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Server_Name",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"V_SERVER_BACKUP_BATCH",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Phase",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Campaign Last Display Month",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Campaign First Display Month",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Calendar Last Display Month",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Calendar First Display Month",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Fiscal Last Display Month",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Fiscal First Display Month",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Country",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Distribution Channel",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Division",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Period",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Sales Group",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Sales Org",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Source Period",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Target Period",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Phase to delete",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Concat_Nv_Cust",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Source Division",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Source Distribution Channel",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Target Division",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Target Distribution Channel",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Control Period",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"First_Month_Actual_New_Ind",
+			"Type":"String"
+		},
+		{
+			"Name":"Last_Month_Actual_New_Ind",
+			"Type":"String"
+		},
+		{
+			"Name":"zControl_Assigned_Vol",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"zMessage_Error_Comb_Log",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"zError_Repart",
+			"Type":"String"
+		},
+		{
+			"Name":"zMessage_Err_Upd_Ressources",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Clients_Forecast",
+			"Type":"String"
+		}
+	],
+	"Subsets@Code.links":
+	[
+		"zPARAM_IND.subsets/Display Month.json"
+	]
+}

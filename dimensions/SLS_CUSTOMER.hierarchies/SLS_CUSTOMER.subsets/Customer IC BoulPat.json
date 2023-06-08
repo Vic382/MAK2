@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Customer IC BoulPat",
+	"Expression":"{DESCENDANTS([SLS_CUSTOMER].[SLS_CUSTOMER].[IC1 - E00070])}"
+}

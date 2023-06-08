@@ -1,0 +1,13 @@
+{
+	"@type":"Subset",
+	"Name":"Subset_Reporting",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_CURRENCY')/Hierarchies('1_G_CURRENCY')/Elements('EUR')"
+		},
+		{
+			"@id":"Dimensions('1_G_CURRENCY')/Hierarchies('1_G_CURRENCY')/Elements('USD')"
+		}
+	]
+}

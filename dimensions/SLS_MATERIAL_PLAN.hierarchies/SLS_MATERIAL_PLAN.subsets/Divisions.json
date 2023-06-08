@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Divisions",
+	"Expression":"{FILTER(TM1SubsetAll([SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN]), (INSTR(1 , [SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].CURRENTMEMBER.PROPERTIES(\"MEMBER_NAME\") , \"D_\" , 1) >= 1))}"
+}

@@ -1,0 +1,37 @@
+{
+	"@type":"Subset",
+	"Name":"z_erase_Admin_SLS_CAL_CUB_SLS_CHA_SAP_NEW_INDICATEURS_UNIT",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('COUT_APPROCHE_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('HEDGING_RESULT_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('EBVD_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('FULL_COST_MAR_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('TRF_COST_MAR_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('VAR_COST_MAR_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('FULL_COST_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('TRF_COST_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('VAR_COST_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('MP_STD_UNIT')"
+		}
+	]
+}

@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"z_copy_Admin_SLS_CAL_CUBS_SWITCH_ARTICLE_PRICE",
+	"Expression":"{\t\t\t{FILTER({TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_SALES_PLAN_IND])},0)},[SLS_SALES_PLAN_IND].[Type_Indicateur]@=\"Prix_Unit\")},            {FILTER({TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_SALES_PLAN_IND])},0)},[SLS_SALES_PLAN_IND].[Type_Indicateur]@=\"Percentage\")}            }"
+}

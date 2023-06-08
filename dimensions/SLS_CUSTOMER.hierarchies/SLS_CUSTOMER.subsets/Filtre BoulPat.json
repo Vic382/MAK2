@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Filtre BoulPat",
+	"Expression":"{TM1FILTERBYPATTERN( {TM1SUBSETALL( [SLS_CUSTOMER] )}, [zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Customer IC BoulPat]) )} )}\r"
+}

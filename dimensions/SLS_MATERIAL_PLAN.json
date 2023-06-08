@@ -1,0 +1,49 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_MATERIAL_PLAN",
+	"AllLeavesHierarchyName":"Leaves",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_MATERIAL_PLAN.hierarchies/SLS_MATERIAL_PLAN.json",
+		"SLS_MATERIAL_PLAN.hierarchies/C-Bundle unit.json",
+		"SLS_MATERIAL_PLAN.hierarchies/C-Certificates.json",
+		"SLS_MATERIAL_PLAN.hierarchies/C-Packaging type.json",
+		"SLS_MATERIAL_PLAN.hierarchies/C-Pallet type.json",
+		"SLS_MATERIAL_PLAN.hierarchies/C-Specific marks.json",
+		"SLS_MATERIAL_PLAN.hierarchies/Ext. Matl Group.json",
+		"SLS_MATERIAL_PLAN.hierarchies/Group material.json",
+		"SLS_MATERIAL_PLAN.hierarchies/Lab.json",
+		"SLS_MATERIAL_PLAN.hierarchies/Material Group 1.json",
+		"SLS_MATERIAL_PLAN.hierarchies/Material Group 2.json",
+		"SLS_MATERIAL_PLAN.hierarchies/Material Group 3.json",
+		"SLS_MATERIAL_PLAN.hierarchies/Material Group 4.json",
+		"SLS_MATERIAL_PLAN.hierarchies/Material Group 5.json",
+		"SLS_MATERIAL_PLAN.hierarchies/Material Price.json",
+		"SLS_MATERIAL_PLAN.hierarchies/Material Pricing Group.json",
+		"SLS_MATERIAL_PLAN.hierarchies/Material Type.json",
+		"SLS_MATERIAL_PLAN.hierarchies/Mat Group Pack.json",
+		"SLS_MATERIAL_PLAN.hierarchies/MG1-Market solution.json",
+		"SLS_MATERIAL_PLAN.hierarchies/MG2-Brand.json",
+		"SLS_MATERIAL_PLAN.hierarchies/MG3-Sourcing.json",
+		"SLS_MATERIAL_PLAN.hierarchies/MG4-Color_Und-Denat.json",
+		"SLS_MATERIAL_PLAN.hierarchies/MG5-Formulation.json",
+		"SLS_MATERIAL_PLAN.hierarchies/PH1-Raw material.json",
+		"SLS_MATERIAL_PLAN.hierarchies/PH1 Type.json",
+		"SLS_MATERIAL_PLAN.hierarchies/PH2-Product family.json",
+		"SLS_MATERIAL_PLAN.hierarchies/PH2 Segment.json",
+		"SLS_MATERIAL_PLAN.hierarchies/PH3-Calib_TAV_Charac.json",
+		"SLS_MATERIAL_PLAN.hierarchies/PH3 Range.json",
+		"SLS_MATERIAL_PLAN.hierarchies/PH4-Packag. Format.json",
+		"SLS_MATERIAL_PLAN.hierarchies/PH4 Family.json",
+		"SLS_MATERIAL_PLAN.hierarchies/PH5-Sales Unit.json",
+		"SLS_MATERIAL_PLAN.hierarchies/PH5 Sub Family.json",
+		"SLS_MATERIAL_PLAN.hierarchies/PH6 Trade Unit.json",
+		"SLS_MATERIAL_PLAN.hierarchies/rv.json",
+		"SLS_MATERIAL_PLAN.hierarchies/Status.json",
+		"SLS_MATERIAL_PLAN.hierarchies/Tamisage.json"
+	]
+}
