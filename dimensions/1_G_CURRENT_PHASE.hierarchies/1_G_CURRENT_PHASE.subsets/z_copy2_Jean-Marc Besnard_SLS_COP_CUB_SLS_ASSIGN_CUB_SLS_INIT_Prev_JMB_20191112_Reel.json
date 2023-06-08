@@ -1,0 +1,10 @@
+{
+	"@type":"Subset",
+	"Name":"z_copy2_Jean-Marc Besnard_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_CURRENT_PHASE')/Hierarchies('1_G_CURRENT_PHASE')/Elements('CURR_PHASE')"
+		}
+	]
+}

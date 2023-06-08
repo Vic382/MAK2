@@ -1,0 +1,16 @@
+{
+	"@type":"Subset",
+	"Name":"Volume_10_Sugar_bis",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('PROMO_VOL')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('CURR_VOL')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('SLS_VOL')"
+		}
+	]
+}

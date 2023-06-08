@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Control",
+	"Expression":"TM1SubsetToSet([SLS_SALES_PLAN_IND] , IIF([zSELECT].(STRTOMEMBER(((\"[}Clients].[\" + USERNAME)) + \"]\"),[zSELECT_IND].[Control_Type]) = \"Volume without Price\" , \"VolumeWithoutPrice\" ,  IIF([zSELECT].(STRTOMEMBER(((\"[}Clients].[\" + USERNAME)) + \"]\"),[zSELECT_IND].[Control_Type]) = \"Negative Volume\" , \"NegativeVolume\" , \"NegativePrice\")))"
+}

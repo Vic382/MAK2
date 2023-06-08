@@ -1,0 +1,44 @@
+{
+	"@type":"Hierarchy",
+	"Name":"SLS_NEW_COMBINATION_IND",
+	"Elements":
+	[
+		{
+			"Name":"Standard_Indexe",
+			"Type":"String"
+		},
+		{
+			"Name":"Customer",
+			"Type":"String"
+		},
+		{
+			"Name":"Planning Material",
+			"Type":"String"
+		},
+		{
+			"Name":"Target Planning Material",
+			"Type":"String"
+		},
+		{
+			"Name":"Shipping Point",
+			"Type":"String"
+		},
+		{
+			"Name":"Shipping Plant",
+			"Type":"String"
+		},
+		{
+			"Name":"Production Plant",
+			"Type":"String"
+		},
+		{
+			"Name":"Vendor",
+			"Type":"String"
+		},
+		{
+			"Name":"Volume",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":[]
+}

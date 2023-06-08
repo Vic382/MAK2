@@ -1,0 +1,10 @@
+{
+	"@type":"Subset",
+	"Name":"Source_Subset_23-03-10_SLS_SALES_PLAN_VALIDATION_VOLUME",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_VOLUME_UNIT')/Hierarchies('1_G_VOLUME_UNIT')/Elements('TO')"
+		}
+	]
+}

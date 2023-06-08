@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_CURRENCY_RATE_IND",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_CURRENCY_RATE_IND')/Hierarchies('SLS_CURRENCY_RATE_IND')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_CURRENCY_RATE_IND.hierarchies/SLS_CURRENCY_RATE_IND.json"
+	]
+}

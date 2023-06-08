@@ -1,0 +1,28 @@
+{
+	"@type":"Subset",
+	"Name":"z_erase_master_Admin_SLS_CHA_CUB_SLS_CHA_SAP_NEW_INDICATEURS",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('Hedging_Result')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('PREMIUM')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('FULL_COST')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('TRF_COST')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('VAR_COST')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('MP_STD')"
+		},
+		{
+			"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')/Elements('COUT_APPROCHE')"
+		}
+	]
+}

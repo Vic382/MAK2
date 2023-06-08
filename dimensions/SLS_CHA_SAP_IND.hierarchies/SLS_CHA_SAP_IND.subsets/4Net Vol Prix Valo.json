@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"4Net Vol Prix Valo",
+	"Expression":"{[SLS_CHA_SAP_IND].[SLS_CHA_SAP_IND].[SLS_VOL],[SLS_CHA_SAP_IND].[SLS_CHA_SAP_IND].[4NET_UNIT],[SLS_CHA_SAP_IND].[SLS_CHA_SAP_IND].[4NET]}"
+}

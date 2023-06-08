@@ -1,0 +1,28 @@
+{
+	"@type":"Hierarchy",
+	"Name":"SLS_MAT_FREIGHT_GROUP_IND",
+	"Elements":
+	[
+		{
+			"Name":"MAT_FR_GROUP",
+			"Type":"String"
+		},
+		{
+			"Name":"PROCUREMENT",
+			"Type":"String"
+		},
+		{
+			"Name":"PROCUREMENT_DESC",
+			"Type":"String"
+		},
+		{
+			"Name":"SPEC_PROCUREMENT",
+			"Type":"String"
+		},
+		{
+			"Name":"SPEC_PROCUREMENT_DESC",
+			"Type":"String"
+		}
+	],
+	"Subsets@Code.links":[]
+}

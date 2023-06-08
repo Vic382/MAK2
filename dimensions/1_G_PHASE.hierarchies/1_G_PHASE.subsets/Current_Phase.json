@@ -1,0 +1,10 @@
+{
+	"@type":"Subset",
+	"Name":"Current_Phase",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_PHASE')/Hierarchies('1_G_PHASE')/Elements('FC1')"
+		}
+	]
+}

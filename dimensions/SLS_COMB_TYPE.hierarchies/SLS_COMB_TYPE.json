@@ -1,0 +1,20 @@
+{
+	"@type":"Hierarchy",
+	"Name":"SLS_COMB_TYPE",
+	"Elements":
+	[
+		{
+			"Name":"Sales",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"CS_Assign",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"CS_Switch",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":[]
+}

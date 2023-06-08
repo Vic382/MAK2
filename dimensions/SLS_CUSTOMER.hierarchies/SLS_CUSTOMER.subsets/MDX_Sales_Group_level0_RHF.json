@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"MDX_Sales_Group_level0_RHF",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(DESCENDANTS([SLS_CUSTOMER].[IC1 - E00095]) , 0) , [SLS_CUSTOMER].[Sales Group Name] = [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Sales Group]))}"
+}

@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"1_G_VOLUME_UNIT",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('1_G_VOLUME_UNIT')/Hierarchies('1_G_VOLUME_UNIT')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"1_G_VOLUME_UNIT.hierarchies/1_G_VOLUME_UNIT.json"
+	]
+}

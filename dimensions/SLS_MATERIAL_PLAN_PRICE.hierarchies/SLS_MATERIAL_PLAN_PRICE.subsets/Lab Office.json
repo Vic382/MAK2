@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Lab Office",
+	"Expression":"{FILTER(TM1SubsetAll([SLS_MATERIAL_PLAN_PRICE].[SLS_MATERIAL_PLAN_PRICE]), ([SLS_MATERIAL_PLAN_PRICE].[SLS_MATERIAL_PLAN_PRICE].[Flag_Lab] = 1))}"
+}

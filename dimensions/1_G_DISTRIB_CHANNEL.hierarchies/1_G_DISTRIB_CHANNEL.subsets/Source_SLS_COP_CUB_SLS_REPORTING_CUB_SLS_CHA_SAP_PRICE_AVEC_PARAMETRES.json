@@ -1,0 +1,10 @@
+{
+	"@type":"Subset",
+	"Name":"Source_SLS_COP_CUB_SLS_REPORTING_CUB_SLS_CHA_SAP_PRICE_AVEC_PARAMETRES",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_DISTRIB_CHANNEL')/Hierarchies('1_G_DISTRIB_CHANNEL')/Elements('10')"
+		}
+	]
+}

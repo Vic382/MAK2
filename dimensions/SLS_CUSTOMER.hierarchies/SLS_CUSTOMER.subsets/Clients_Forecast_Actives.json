@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Clients_Forecast_Actives",
+	"Expression":"{TM1SORT( {FILTER( {TM1SUBSETALL( [SLS_CUSTOMER] )}, [SLS_CUSTOMER].[Désactiver Client Forecast] <> \"Oui\")}, ASC)}"
+}

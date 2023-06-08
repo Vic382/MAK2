@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_PAYER",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_PAYER')/Hierarchies('SLS_PAYER')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_PAYER.hierarchies/SLS_PAYER.json"
+	]
+}

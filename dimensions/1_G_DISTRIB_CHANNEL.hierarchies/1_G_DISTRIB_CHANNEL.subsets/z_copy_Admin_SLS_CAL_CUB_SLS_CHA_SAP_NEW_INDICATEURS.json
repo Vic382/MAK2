@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"z_copy_Admin_SLS_CAL_CUB_SLS_CHA_SAP_NEW_INDICATEURS",
+	"Expression":"{TM1FILTERBYLEVEL( {TM1SUBSETALL( [1_G_DISTRIB_CHANNEL] )}, 0)}"
+}

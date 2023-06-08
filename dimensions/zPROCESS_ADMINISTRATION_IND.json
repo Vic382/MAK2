@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"zPROCESS_ADMINISTRATION_IND",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('zPROCESS_ADMINISTRATION_IND')/Hierarchies('zPROCESS_ADMINISTRATION_IND')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"zPROCESS_ADMINISTRATION_IND.hierarchies/zPROCESS_ADMINISTRATION_IND.json"
+	]
+}

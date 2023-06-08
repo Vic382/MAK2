@@ -1,0 +1,25 @@
+{
+	"@type":"Subset",
+	"Name":"Source_Subset_23-03-10_SLS_SALES_PLAN_VALIDATION_VOLUME",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('SLS_VOL')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('CUST_REBATE_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('BASE_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('PREMIUM_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('INV_VAL_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('3NET_UNIT')"
+		}
+	]
+}

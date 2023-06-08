@@ -1,0 +1,13 @@
+{
+	"@type":"Subset",
+	"Name":"Volume_20_Alcohol",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('VOL')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('I_VOL')"
+		}
+	]
+}

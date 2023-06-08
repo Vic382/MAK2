@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Planning Material PAW B2B Alcohol",
+	"Expression":"{TM1SubsetToSet([SLS_MATERIAL_PLAN] , IIF([zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Material Type]) = \"\" , \"Planning Material PAW\" , \"subset_Material_Type_zSelect\"))}"
+}

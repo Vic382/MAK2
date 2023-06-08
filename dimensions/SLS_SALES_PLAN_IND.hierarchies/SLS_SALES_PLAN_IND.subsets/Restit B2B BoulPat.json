@@ -1,0 +1,37 @@
+{
+	"@type":"Subset",
+	"Name":"Restit B2B BoulPat",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('SLS_VOL')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('BASE_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('RPP_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('CPV_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('PROMO_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('SURCH_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('INV_VAL_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('CUST_REBATE_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('RET_SERV_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('3NET_UNIT')"
+		}
+	]
+}

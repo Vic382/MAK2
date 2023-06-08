@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Ship_to_Division_Logistics",
+	"Expression":"{TM1FILTERBYLEVEL(DESCENDANTS(STRTOMEMBER(\"[SLS_MATERIAL_PLAN].[\" + [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Division Logistics]) + \"]\")) , 0)}"
+}

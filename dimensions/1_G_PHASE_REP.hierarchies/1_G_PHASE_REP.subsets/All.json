@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"All",
+	"Expression":"{[1_G_PHASE_REP].LEVELS(0).MEMBERS}"
+}

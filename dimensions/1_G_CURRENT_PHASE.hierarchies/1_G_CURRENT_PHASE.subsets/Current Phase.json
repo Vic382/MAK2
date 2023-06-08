@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Current Phase",
+	"Expression":"{STRTOMEMBER((\"[1_G_CURRENT_PHASE].[\" + [zPARAM].([zPARAM_IND].[Phase],[1_G_VALUE].[Value])) + \"]\")}"
+}

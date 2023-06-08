@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"subset1",
+	"Expression":"{[SLS_CUSTOMER].LEVELS(0).MEMBERS}"
+}

@@ -1,0 +1,20 @@
+{
+	"@type":"Hierarchy",
+	"Name":"1_G_VALUE",
+	"Elements":
+	[
+		{
+			"Name":"Comment",
+			"Type":"String"
+		},
+		{
+			"Name":"Num",
+			"Type":"String"
+		},
+		{
+			"Name":"Value",
+			"Type":"String"
+		}
+	],
+	"Subsets@Code.links":[]
+}

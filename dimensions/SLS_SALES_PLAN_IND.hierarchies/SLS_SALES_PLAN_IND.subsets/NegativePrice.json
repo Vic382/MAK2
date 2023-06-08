@@ -1,0 +1,13 @@
+{
+	"@type":"Subset",
+	"Name":"NegativePrice",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('Prix_Neg')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('I_Prix_Neg')"
+		}
+	]
+}

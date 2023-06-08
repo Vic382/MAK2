@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Indexed Customer only",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_CUSTOMER]) , 0) , ((([SLS_CUSTOMER].[Sales Group Name] = [zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Sales Group])))) AND ((([SLS_CUSTOMER].[Indexed Customer] = [zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[zIndexed_Customer])))))}"
+}

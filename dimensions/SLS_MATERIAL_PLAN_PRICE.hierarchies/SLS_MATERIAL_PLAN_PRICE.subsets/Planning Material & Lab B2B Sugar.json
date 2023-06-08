@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Planning Material & Lab B2B Sugar",
+	"Expression":"{FILTER(FILTER(FILTER(FILTER(FILTER(TM1SUBSETALL([SLS_MATERIAL_PLAN_PRICE].[SLS_MATERIAL_PLAN_PRICE]) , (INSTR(1 , [SLS_MATERIAL_PLAN_PRICE].[SLS_MATERIAL_PLAN_PRICE].[Sales Organisation Name] , [zSELECT].(STRTOMEMBER((((\"[}Clients].[\" + USERNAME))) + \"]\"),[zSELECT_IND].[Sales Org]) , 1) >= 1)) , (INSTR(1 , [SLS_MATERIAL_PLAN_PRICE].[SLS_MATERIAL_PLAN_PRICE].[Distribution Channel] , \"20\" , 1) >= 1)) , ([SLS_MATERIAL_PLAN_PRICE].[SLS_MATERIAL_PLAN_PRICE].[Division] = \"Sugar\")) , [SLS_MATERIAL_PLAN_PRICE].[SLS_MATERIAL_PLAN_PRICE].[Status] <> \"OBS\") , [SLS_MATERIAL_PLAN_PRICE].[SLS_MATERIAL_PLAN_PRICE].[Status] <> \"INA\"),TM1SubsetToSet([SLS_Material_PLAN_PRICE] , \"Lab Office\")}"
+}

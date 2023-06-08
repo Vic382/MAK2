@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"All_Available",
+	"Expression":"{FILTER(TM1SUBSETALL([zSALES_GROUP]) , [zCLIENT_SLS_SALES_GROUP].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\")) = \"WRITE\")}"
+}

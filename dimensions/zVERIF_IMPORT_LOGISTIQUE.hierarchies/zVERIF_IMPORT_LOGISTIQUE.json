@@ -1,0 +1,20 @@
+{
+	"@type":"Hierarchy",
+	"Name":"zVERIF_IMPORT_LOGISTIQUE",
+	"Elements":
+	[
+		{
+			"Name":"Nombre de lignes du fichier",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Nombre de lignes modifiées dans le fichier",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Nombre de lignes de la cible",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":[]
+}

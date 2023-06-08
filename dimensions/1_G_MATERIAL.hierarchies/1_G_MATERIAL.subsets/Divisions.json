@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Divisions",
+	"Expression":"{TM1FILTERBYLEVEL(DESCENDANTS([1_G_MATERIAL].[TOTAL_MATERIAL]) , 2)}"
+}

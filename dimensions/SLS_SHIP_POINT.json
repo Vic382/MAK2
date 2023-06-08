@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_SHIP_POINT",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_SHIP_POINT')/Hierarchies('SLS_SHIP_POINT')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_SHIP_POINT.hierarchies/SLS_SHIP_POINT.json"
+	]
+}

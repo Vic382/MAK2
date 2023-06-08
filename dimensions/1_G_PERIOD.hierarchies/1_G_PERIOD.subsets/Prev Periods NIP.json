@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Prev Periods NIP",
+	"Expression":"{FILTER(TM1SORT(DISTINCT({TM1SubsetToSet([1_G_PERIOD] , \"Calendar Input NIP\"),TM1SubsetToSet([1_G_PERIOD] , \"Campaign Input NIP\"),TM1SubsetToSet([1_G_PERIOD] , \"Fiscal Input NIP\"),TM1SubsetToSet([1_G_PERIOD] , \"Prev Periods\")}) , ASC) , [1_G_PERIOD].[Index_Num] >= [}ElementAttributes_1_G_CURRENT_PHASE].(STRTOMEMBER(\"[1_G_CURRENT_PHASE].[\" + [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Current Phase]) + \"]\"),[}ElementAttributes_1_G_CURRENT_PHASE].[First Simulation Month Index]))}"
+}

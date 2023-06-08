@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"B2B_Sugar_Unit",
+	"Expression":"{STRTOMEMBER(IIF(((((([zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Division]) = \"Sugar\"))))) OR ((((([zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Division]) = \"Stevia\"))))) , \"[1_G_VOLUME_UNIT].[TO]\" , \"[1_G_VOLUME_UNIT].[TSP]\"))}"
+}

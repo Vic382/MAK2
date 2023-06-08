@@ -1,0 +1,16 @@
+{
+	"@type":"Hierarchy",
+	"Name":"1_G_MIX_PHASE",
+	"Elements":
+	[
+		{
+			"Name":"ACT",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"CURR_PHASE",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":[]
+}

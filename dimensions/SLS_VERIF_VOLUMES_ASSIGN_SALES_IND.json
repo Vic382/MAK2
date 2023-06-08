@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_VERIF_VOLUMES_ASSIGN_SALES_IND",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_VERIF_VOLUMES_ASSIGN_SALES_IND')/Hierarchies('SLS_VERIF_VOLUMES_ASSIGN_SALES_IND')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_VERIF_VOLUMES_ASSIGN_SALES_IND.hierarchies/SLS_VERIF_VOLUMES_ASSIGN_SALES_IND.json"
+	]
+}

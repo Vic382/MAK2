@@ -1,0 +1,49 @@
+{
+	"@type":"Dimension",
+	"Name":"1_G_MATERIAL",
+	"AllLeavesHierarchyName":"Leaves",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('1_G_MATERIAL')/Hierarchies('1_G_MATERIAL')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"1_G_MATERIAL.hierarchies/1_G_MATERIAL.json",
+		"1_G_MATERIAL.hierarchies/C-Bundle unit.json",
+		"1_G_MATERIAL.hierarchies/C-Certificates.json",
+		"1_G_MATERIAL.hierarchies/C-Packaging type.json",
+		"1_G_MATERIAL.hierarchies/C-Pallet type.json",
+		"1_G_MATERIAL.hierarchies/C-Specific marks.json",
+		"1_G_MATERIAL.hierarchies/Ext. Matl Group.json",
+		"1_G_MATERIAL.hierarchies/Group material.json",
+		"1_G_MATERIAL.hierarchies/Lab.json",
+		"1_G_MATERIAL.hierarchies/Material Group 1.json",
+		"1_G_MATERIAL.hierarchies/Material Group 2.json",
+		"1_G_MATERIAL.hierarchies/Material Group 3.json",
+		"1_G_MATERIAL.hierarchies/Material Group 4.json",
+		"1_G_MATERIAL.hierarchies/Material Group 5.json",
+		"1_G_MATERIAL.hierarchies/Material Price.json",
+		"1_G_MATERIAL.hierarchies/Material Pricing Group.json",
+		"1_G_MATERIAL.hierarchies/Material Type.json",
+		"1_G_MATERIAL.hierarchies/Mat Group Pack.json",
+		"1_G_MATERIAL.hierarchies/MG1-Market solution.json",
+		"1_G_MATERIAL.hierarchies/MG2-Brand.json",
+		"1_G_MATERIAL.hierarchies/MG3-Sourcing.json",
+		"1_G_MATERIAL.hierarchies/MG4-Color_Und-Denat.json",
+		"1_G_MATERIAL.hierarchies/MG5-Formulation.json",
+		"1_G_MATERIAL.hierarchies/PH1-Raw material.json",
+		"1_G_MATERIAL.hierarchies/PH1 Type.json",
+		"1_G_MATERIAL.hierarchies/PH2-Product family.json",
+		"1_G_MATERIAL.hierarchies/PH2 Segment.json",
+		"1_G_MATERIAL.hierarchies/PH3-Calib_TAV_Charac.json",
+		"1_G_MATERIAL.hierarchies/PH3 Range.json",
+		"1_G_MATERIAL.hierarchies/PH4-Packag. Format.json",
+		"1_G_MATERIAL.hierarchies/PH4 Family.json",
+		"1_G_MATERIAL.hierarchies/PH5-Sales Unit.json",
+		"1_G_MATERIAL.hierarchies/PH5 Sub Family.json",
+		"1_G_MATERIAL.hierarchies/PH6 Trade Unit.json",
+		"1_G_MATERIAL.hierarchies/Status.json",
+		"1_G_MATERIAL.hierarchies/Status_PM.json",
+		"1_G_MATERIAL.hierarchies/Tamisage.json"
+	]
+}

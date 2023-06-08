@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_FR_COST_HYP_IND",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_FR_COST_HYP_IND')/Hierarchies('SLS_FR_COST_HYP_IND')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_FR_COST_HYP_IND.hierarchies/SLS_FR_COST_HYP_IND.json"
+	]
+}

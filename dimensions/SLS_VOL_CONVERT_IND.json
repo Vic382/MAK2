@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_VOL_CONVERT_IND",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_VOL_CONVERT_IND')/Hierarchies('SLS_VOL_CONVERT_IND')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_VOL_CONVERT_IND.hierarchies/SLS_VOL_CONVERT_IND.json"
+	]
+}

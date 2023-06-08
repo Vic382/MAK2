@@ -1,0 +1,191 @@
+{
+	"@type":"Hierarchy",
+	"Name":"1_G_SALES_ORG",
+	"Elements":
+	[
+		{
+			"Name":"TOTAL SALES ORG",
+			"Type":"Consolidated"
+		},
+		{
+			"Name":"1000",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"1200",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"1300",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"1400",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"1610",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"1620",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"1630",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"1710",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"1720",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"1730",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"2000",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"2100",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"2200",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"2300",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"2400",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"3310",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"N/A SALES ORG",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"2150",
+			"Type":"String"
+		}
+	],
+	"Edges":
+	[
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"1000",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"1200",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"1300",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"1400",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"1610",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"1620",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"1630",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"1710",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"1720",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"1730",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"2000",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"2100",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"2150",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"2200",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"2300",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"2400",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"3310",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL SALES ORG",
+			"ComponentName":"N/A SALES ORG",
+			"Weight":1
+		}
+	],
+	"Subsets@Code.links":
+	[
+		"1_G_SALES_ORG.subsets/All.json",
+		"1_G_SALES_ORG.subsets/Current Sales Org.json",
+		"1_G_SALES_ORG.subsets/hvn_test_sugar.json",
+		"1_G_SALES_ORG.subsets/Level0.json",
+		"1_G_SALES_ORG.subsets/Source_Subset_23-03-10_SLS_SALES_PLAN_VALIDATION_VOLUME.json",
+		"1_G_SALES_ORG.subsets/Source_Subset_23-03-11_SLS_SALES_PLAN_VALIDATION_VOLUME.json",
+		"1_G_SALES_ORG.subsets/Total Sales Org.json",
+		"1_G_SALES_ORG.subsets/z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel.json",
+		"1_G_SALES_ORG.subsets/z_copy2_Jean-Marc Besnard_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel.json",
+		"1_G_SALES_ORG.subsets/z_copy_Admin_SLS_CAL_CUB_SLS_CHA_SAP_NEW_INDICATEURS.json",
+		"1_G_SALES_ORG.subsets/z_copy_Admin_SLS_COP_CUB_SLS_FR_COST_PLAN_CUB_SLS_INIT.json",
+		"1_G_SALES_ORG.subsets/zDrill_Subset.json"
+	]
+}

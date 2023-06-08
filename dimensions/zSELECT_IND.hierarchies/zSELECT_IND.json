@@ -1,0 +1,376 @@
+{
+	"@type":"Hierarchy",
+	"Name":"zSELECT_IND",
+	"Elements":
+	[
+		{
+			"Name":"Material_Type_PAW",
+			"Type":"String"
+		},
+		{
+			"Name":"Current Phase Sales",
+			"Type":"String"
+		},
+		{
+			"Name":"Ship_PT",
+			"Type":"String"
+		},
+		{
+			"Name":"Division_ID",
+			"Type":"String"
+		},
+		{
+			"Name":"Expertise",
+			"Type":"String"
+		},
+		{
+			"Name":"Material_Type",
+			"Type":"String"
+		},
+		{
+			"Name":"Lab_Office_Input",
+			"Type":"String"
+		},
+		{
+			"Name":"IC_NIP",
+			"Type":"String"
+		},
+		{
+			"Name":"Retail_type",
+			"Type":"String"
+		},
+		{
+			"Name":"Customer_Type",
+			"Type":"String"
+		},
+		{
+			"Name":"Fiscal N",
+			"Type":"String"
+		},
+		{
+			"Name":"Calendar N",
+			"Type":"String"
+		},
+		{
+			"Name":"Campaign N",
+			"Type":"String"
+		},
+		{
+			"Name":"Filter_Type",
+			"Type":"String"
+		},
+		{
+			"Name":"Filter_Value",
+			"Type":"String"
+		},
+		{
+			"Name":"Current_Year_Type",
+			"Type":"String"
+		},
+		{
+			"Name":"Current_Division",
+			"Type":"String"
+		},
+		{
+			"Name":"Compteur",
+			"Type":"String"
+		},
+		{
+			"Name":"Division",
+			"Type":"String"
+		},
+		{
+			"Name":"Lab_Office",
+			"Type":"String"
+		},
+		{
+			"Name":"Customer",
+			"Type":"String"
+		},
+		{
+			"Name":"Sales Group",
+			"Type":"String"
+		},
+		{
+			"Name":"Distrib Channel",
+			"Type":"String"
+		},
+		{
+			"Name":"Sales org",
+			"Type":"String"
+		},
+		{
+			"Name":"Period",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Current Phase",
+			"Type":"String"
+		},
+		{
+			"Name":"Current Period",
+			"Type":"String"
+		},
+		{
+			"Name":"Actual to date Fiscal",
+			"Type":"String"
+		},
+		{
+			"Name":"Actual to date Campaign",
+			"Type":"String"
+		},
+		{
+			"Name":"Actual to date Calendar",
+			"Type":"String"
+		},
+		{
+			"Name":"ACT N-1 Fiscal",
+			"Type":"String"
+		},
+		{
+			"Name":"ACT N-1 Campaign",
+			"Type":"String"
+		},
+		{
+			"Name":"ACT N-1 Calendar",
+			"Type":"String"
+		},
+		{
+			"Name":"Unit Volume",
+			"Type":"String"
+		},
+		{
+			"Name":"Currency",
+			"Type":"String"
+		},
+		{
+			"Name":"Phase_Key_Repart",
+			"Type":"String"
+		},
+		{
+			"Name":"Customer_IC1",
+			"Type":"String"
+		},
+		{
+			"Name":"Customer_IC2",
+			"Type":"String"
+		},
+		{
+			"Name":"Customer_IC3",
+			"Type":"String"
+		},
+		{
+			"Name":"Customer_Country",
+			"Type":"String"
+		},
+		{
+			"Name":"Customer_IC",
+			"Type":"String"
+		},
+		{
+			"Name":"Indexed Customer",
+			"Type":"String"
+		},
+		{
+			"Name":"Sales_Group_Security",
+			"Type":"String"
+		},
+		{
+			"Name":"Customer_Price_BoulPat",
+			"Type":"String"
+		},
+		{
+			"Name":"Customer_Price_RHF",
+			"Type":"String"
+		},
+		{
+			"Name":"Level_Customer_BoulPat",
+			"Type":"String"
+		},
+		{
+			"Name":"Rates BoulPat",
+			"Type":"String"
+		},
+		{
+			"Name":"Rebates BoulPat",
+			"Type":"String"
+		},
+		{
+			"Name":"Rates GMS",
+			"Type":"String"
+		},
+		{
+			"Name":"Rebates GMS",
+			"Type":"String"
+		},
+		{
+			"Name":"Customer GMS",
+			"Type":"String"
+		},
+		{
+			"Name":"Source Phase",
+			"Type":"String"
+		},
+		{
+			"Name":"Source Period",
+			"Type":"String"
+		},
+		{
+			"Name":"Source Distribution Channel",
+			"Type":"String"
+		},
+		{
+			"Name":"Source Division",
+			"Type":"String"
+		},
+		{
+			"Name":"Target Period",
+			"Type":"String"
+		},
+		{
+			"Name":"Target Distribution Channel",
+			"Type":"String"
+		},
+		{
+			"Name":"Target Division",
+			"Type":"String"
+		},
+		{
+			"Name":"Control Period",
+			"Type":"String"
+		},
+		{
+			"Name":"B2B/Export",
+			"Type":"String"
+		},
+		{
+			"Name":"Level_Customer_RHF",
+			"Type":"String"
+		},
+		{
+			"Name":"Distribution Channel Init",
+			"Type":"String"
+		},
+		{
+			"Name":"Division Init",
+			"Type":"String"
+		},
+		{
+			"Name":"Period Init",
+			"Type":"String"
+		},
+		{
+			"Name":"Nb_Line",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"Customer_CS",
+			"Type":"String"
+		},
+		{
+			"Name":"Planning Material_CS",
+			"Type":"String"
+		},
+		{
+			"Name":"Filter_Customer_Retail_GMS",
+			"Type":"String"
+		},
+		{
+			"Name":"Control_CS",
+			"Type":"String"
+		},
+		{
+			"Name":"Material Freight Group",
+			"Type":"String"
+		},
+		{
+			"Name":"Incoterm",
+			"Type":"String"
+		},
+		{
+			"Name":"Target Phase",
+			"Type":"String"
+		},
+		{
+			"Name":"Distribution Channel Logistics",
+			"Type":"String"
+		},
+		{
+			"Name":"Sales Organisation Logistics",
+			"Type":"String"
+		},
+		{
+			"Name":"Customer IC BoulPat",
+			"Type":"String"
+		},
+		{
+			"Name":"Control_Type",
+			"Type":"String"
+		},
+		{
+			"Name":"Indicateurs",
+			"Type":"String"
+		},
+		{
+			"Name":"Phase_Export",
+			"Type":"String"
+		},
+		{
+			"Name":"zIndexed_Customer",
+			"Type":"String"
+		},
+		{
+			"Name":"Division Logistics",
+			"Type":"String"
+		},
+		{
+			"Name":"Sales Org Logistics Code",
+			"Type":"String"
+		},
+		{
+			"Name":"Customer Retail RHF",
+			"Type":"String"
+		},
+		{
+			"Name":"Source Phase Admin",
+			"Type":"String"
+		},
+		{
+			"Name":"Target Period Param",
+			"Type":"String"
+		},
+		{
+			"Name":"ExecuteProcess",
+			"Type":"String"
+		},
+		{
+			"Name":"Latest Process Info",
+			"Type":"String"
+		},
+		{
+			"Name":"Phase_RAZ_SLS_REPORTING",
+			"Type":"String"
+		},
+		{
+			"Name":"Phase_Copy_SLS_REPORTING",
+			"Type":"String"
+		},
+		{
+			"Name":"Period Debut SLS_REPORTING",
+			"Type":"String"
+		},
+		{
+			"Name":"Period Fin SLS_REPORTING",
+			"Type":"String"
+		},
+		{
+			"Name":"Standard / Indexé",
+			"Type":"String"
+		},
+		{
+			"Name":"First Simulation Month",
+			"Type":"String"
+		}
+	],
+	"Subsets@Code.links":[]
+}

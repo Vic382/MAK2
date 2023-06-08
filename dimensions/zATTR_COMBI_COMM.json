@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"zATTR_COMBI_COMM",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('zATTR_COMBI_COMM')/Hierarchies('zATTR_COMBI_COMM')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"zATTR_COMBI_COMM.hierarchies/zATTR_COMBI_COMM.json"
+	]
+}

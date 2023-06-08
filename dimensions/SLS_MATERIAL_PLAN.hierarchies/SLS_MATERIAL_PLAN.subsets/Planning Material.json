@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Planning Material",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(DESCENDANTS([SLS_MATERIAL_PLAN].[Sugar]) , 0) , INSTR(1 , [SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].CURRENTMEMBER.PROPERTIES(\"Distribution Channel Name\") , \"Retail\" , 1) >= 1)}"
+}

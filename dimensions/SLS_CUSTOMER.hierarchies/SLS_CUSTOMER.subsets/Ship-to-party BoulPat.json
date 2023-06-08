@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Ship-to-party BoulPat",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(DESCENDANTS([SLS_CUSTOMER].[IC1 - E00070]) , 0) , [SLS_CUSTOMER].[Sales Group Name] = [zSELECT].(STRTOMEMBER((((((((\"[}Clients].[\" + USERNAME))))))) + \"]\"),[zSELECT_IND].[Sales Group]))}"
+}

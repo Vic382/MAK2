@@ -1,0 +1,13 @@
+{
+	"@type":"Subset",
+	"Name":"Volume_10_Sugar_I",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('I_PROMO_VOL')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('I_CURR_VOL')"
+		}
+	]
+}

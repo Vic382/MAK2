@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"subset_new_comb_B2B",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(DESCENDANTS({STRTOMEMBER((\"[SLS_MATERIAL_PLAN].[\" + [zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Division])) + \"]\")}) , 0) , ((([SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].[Status] <> \"OBS\") AND ([SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].[Status] <> \"INA\")) AND (INSTR(1 , [SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].[Distribution Channel] , \"20\" , 1) >= 1)) AND (INSTR(1 , [SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].[Sales Organisation Name] , [zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Sales Organisation]) , 1) >= 1))}"
+}

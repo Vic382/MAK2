@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Customer_Filter_Retail_RHF",
+	"Expression":"{DESCENDANTS([SLS_CUSTOMER].[IC1 - E00095])}"
+}

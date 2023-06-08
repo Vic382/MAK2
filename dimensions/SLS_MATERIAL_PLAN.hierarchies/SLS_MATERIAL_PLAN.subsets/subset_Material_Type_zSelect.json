@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"subset_Material_Type_zSelect",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(DESCENDANTS({STRTOMEMBER(\"[SLS_MATERIAL_PLAN].[\" + [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Division]) + \"]\")}) , 0) , [}ElementAttributes_SLS_MATERIAL_PLAN].([}ElementAttributes_SLS_MATERIAL_PLAN].[Material Type]) = [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Material_Type]))}"
+}

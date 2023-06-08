@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Ship-to-party Hors BoulPat",
+	"Expression":"{EXCEPT(FILTER(TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_CUSTOMER]) , 0) , [SLS_CUSTOMER].[Sales Group Name] = [zSELECT].(STRTOMEMBER((((((((((\"[}Clients].[\" + USERNAME))))))))) + \"]\"),[zSELECT_IND].[Sales Group])) , DESCENDANTS([SLS_CUSTOMER].[IC1 - E00070]))}"
+}

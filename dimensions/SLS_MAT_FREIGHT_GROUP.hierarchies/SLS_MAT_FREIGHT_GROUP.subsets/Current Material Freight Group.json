@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Current Material Freight Group",
+	"Expression":"{STRTOMEMBER((((\"[SLS_MAT_FREIGHT_GROUP].[\" + [zSELECT].(STRTOMEMBER(((((\"[}Clients].[\" + USERNAME)))) + \"]\"),[zSELECT_IND].[Material Freight Group])))) + \"]\")}"
+}

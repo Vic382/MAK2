@@ -1,0 +1,36 @@
+{
+	"@type":"Hierarchy",
+	"Name":"SLS_RESS_PLAN_IND",
+	"Elements":
+	[
+		{
+			"Name":"MAT_EXT",
+			"Type":"String"
+		},
+		{
+			"Name":"SHIP_PT",
+			"Type":"String"
+		},
+		{
+			"Name":"SHIP_PLANT",
+			"Type":"String"
+		},
+		{
+			"Name":"PROD_PLANT",
+			"Type":"String"
+		},
+		{
+			"Name":"VENDOR",
+			"Type":"String"
+		},
+		{
+			"Name":"RESS_VOL",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"DOUBLON",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":[]
+}

@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_MATERIAL_EXT",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_MATERIAL_EXT')/Hierarchies('SLS_MATERIAL_EXT')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_MATERIAL_EXT.hierarchies/SLS_MATERIAL_EXT.json"
+	]
+}

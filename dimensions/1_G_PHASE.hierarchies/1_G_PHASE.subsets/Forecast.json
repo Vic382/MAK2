@@ -1,0 +1,16 @@
+{
+	"@type":"Subset",
+	"Name":"Forecast",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_PHASE')/Hierarchies('1_G_PHASE')/Elements('FC1')"
+		},
+		{
+			"@id":"Dimensions('1_G_PHASE')/Hierarchies('1_G_PHASE')/Elements('FC2')"
+		},
+		{
+			"@id":"Dimensions('1_G_PHASE')/Hierarchies('1_G_PHASE')/Elements('FC3')"
+		}
+	]
+}

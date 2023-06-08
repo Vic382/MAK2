@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_CHA_SAP_IND",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_CHA_SAP_IND')/Hierarchies('SLS_CHA_SAP_IND')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_CHA_SAP_IND.hierarchies/SLS_CHA_SAP_IND.json"
+	]
+}

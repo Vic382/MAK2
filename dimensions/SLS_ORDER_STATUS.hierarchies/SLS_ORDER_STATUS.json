@@ -1,0 +1,33 @@
+{
+	"@type":"Hierarchy",
+	"Name":"SLS_ORDER_STATUS",
+	"Elements":
+	[
+		{
+			"Name":"VAL",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"SHIP",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"TOTAL_ORDER_STATUS",
+			"Type":"Consolidated"
+		}
+	],
+	"Edges":
+	[
+		{
+			"ParentName":"TOTAL_ORDER_STATUS",
+			"ComponentName":"VAL",
+			"Weight":1
+		},
+		{
+			"ParentName":"TOTAL_ORDER_STATUS",
+			"ComponentName":"SHIP",
+			"Weight":1
+		}
+	],
+	"Subsets@Code.links":[]
+}

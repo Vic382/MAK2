@@ -1,0 +1,268 @@
+{
+	"@type":"Hierarchy",
+	"Name":"1_G_PHASE_REP",
+	"Elements":
+	[
+		{
+			"Name":"ACT",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2013",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2014",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2015",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2016",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2017",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2018",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2019",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2020",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2021",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2022",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2023",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2024",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2025",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2026",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2027",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2028",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2029",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC1 2030",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2013",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2014",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2015",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2016",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2017",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2018",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2019",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2020",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2021",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2022",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2023",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2024",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2025",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2026",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2027",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2028",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2029",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC2 2030",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2013",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2014",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2015",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2016",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2017",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2018",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2019",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2020",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2021",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2022",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2023",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2024",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2025",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2026",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2027",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2028",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2029",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"FC3 2030",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"CURR_PHASE",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"CURR_PHASE_SALES",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"CURR_PHASE_CS",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"CURR_PHASE_CS_V1",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"CURR_PHASE_CS_V2",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"RFC_Sales",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"RFC_CS",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"BGT 2020",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":
+	[
+		"1_G_PHASE_REP.subsets/All.json",
+		"1_G_PHASE_REP.subsets/Invit_Copie_Reporting.json",
+		"1_G_PHASE_REP.subsets/Phase_Reporting.json",
+		"1_G_PHASE_REP.subsets/Phase_Reporting_All.json",
+		"1_G_PHASE_REP.subsets/Phase_to_delete.json",
+		"1_G_PHASE_REP.subsets/Source_Phase_Admin.json"
+	]
+}

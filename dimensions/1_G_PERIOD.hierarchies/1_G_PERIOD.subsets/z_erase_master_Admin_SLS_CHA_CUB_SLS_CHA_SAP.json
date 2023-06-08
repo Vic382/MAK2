@@ -1,0 +1,16 @@
+{
+	"@type":"Subset",
+	"Name":"z_erase_master_Admin_SLS_CHA_CUB_SLS_CHA_SAP",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2023.04')"
+		},
+		{
+			"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2023.05')"
+		},
+		{
+			"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2023.06')"
+		}
+	]
+}

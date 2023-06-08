@@ -1,0 +1,12 @@
+{
+	"@type":"Hierarchy",
+	"Name":"SLS_PRICE_INDEXE_IND",
+	"Elements":
+	[
+		{
+			"Name":"BASE_INDEXE",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":[]
+}

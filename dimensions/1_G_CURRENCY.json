@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"1_G_CURRENCY",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('1_G_CURRENCY')/Hierarchies('1_G_CURRENCY')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"1_G_CURRENCY.hierarchies/1_G_CURRENCY.json"
+	]
+}

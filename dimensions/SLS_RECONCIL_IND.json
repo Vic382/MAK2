@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_RECONCIL_IND",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_RECONCIL_IND')/Hierarchies('SLS_RECONCIL_IND')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_RECONCIL_IND.hierarchies/SLS_RECONCIL_IND.json"
+	]
+}

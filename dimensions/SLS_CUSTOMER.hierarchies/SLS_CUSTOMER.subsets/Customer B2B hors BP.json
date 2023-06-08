@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Customer B2B hors BP",
+	"Expression":"{TM1SubsetToSet([SLS_CUSTOMER] , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Customer IC]) = \"\" , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Country]) = \"\" , \"MDX_Sales_Group_level0_hors_BP\" , \"Country hors BP\") , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Country]) = \"\" , \"Customer IC hors BP\" , \"Customer & Country hors BP\")))}"
+}

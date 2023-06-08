@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Current Distrib Channel",
+	"Expression":"{STRTOMEMBER((((((\"[1_G_DISTRIB_CHANNEL].[\" + [zSELECT].(STRTOMEMBER(((((((\"[}Clients].[\" + USERNAME)))))) + \"]\"),[zSELECT_IND].[Distrib Channel])))))) + \"]\")}"
+}

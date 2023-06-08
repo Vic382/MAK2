@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"zVERIF_IMPORT_LOGISTIQUE_IND",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('zVERIF_IMPORT_LOGISTIQUE_IND')/Hierarchies('zVERIF_IMPORT_LOGISTIQUE_IND')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"zVERIF_IMPORT_LOGISTIQUE_IND.hierarchies/zVERIF_IMPORT_LOGISTIQUE_IND.json"
+	]
+}
