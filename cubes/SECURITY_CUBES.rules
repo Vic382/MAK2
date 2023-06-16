@@ -1,1 +1,0 @@
-['SLS_SALES_REPORTING','security'] = S: IF ( DB('SECURITY_CUBES','SLS_SALES_PLAN','security') @= 'Current Phase' , 'Current Phase Sales', 'Current Rolling Forecast Sales') ;

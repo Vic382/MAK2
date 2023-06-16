@@ -1,8 +1,0 @@
-#Region System
-FEEDSTRINGS;
-SKIPCHECK;
-#EndRegion
-
-['DATASOURCE_name_for_server','Comment'] = S: DB('zPROCESS_ADMINISTRATION',!}Processes,'DATASOURCE_INP_FOLDER','Comment') | DB('zPROCESS_ADMINISTRATION',!}Processes,'DATASOURCE_INP_FILE','Comment');
-
-Feeders;
