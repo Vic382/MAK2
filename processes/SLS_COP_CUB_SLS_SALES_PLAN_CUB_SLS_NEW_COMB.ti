@@ -1,0 +1,200 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#****End: Generated Statements*****
+
+###############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   28/03/2019                                                        #
+#                                                                            #
+# Fait par :    Elisabeth Mounier                                                  #
+#                                                                            #
+# Action : Processus de copie des nouvelles combinaisons commerciales 
+#		de SLS_NEW_COMB vers SLS_SALES_PLAN, suite à la saisie en masse des 
+#		commerciaux
+#																			 #
+##############################################################################
+
+
+
+#===========================================#
+#             Déclaration des variables     #
+#===========================================#
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_NEW_COMBINATION';
+C_Cube_Cible = 'SLS_SALES_PLAN';
+C_zPROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+C_zPARAM = 'zPARAM';
+C_zSelect = 'zSELECT';
+
+#--------------------Dimensions--------------------#
+D_CURRENT_PHASE = '1_G_CURRENT_PHASE';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_LINE = '1_G_LINE';
+D_COMB_TYPE = 'SLS_COMB_TYPE';
+D_CURRENCY = '1_G_CURRENCY';
+D_VOLUME_UNIT = '1_G_VOLUME_UNIT';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_MATERIAL = '1_G_MATERIAL';
+D_SALES_PLAN_IND = 'SLS_SALES_PLAN_IND';
+D_NEW_COMB_IND = 'SLS_NEW_COMBINATION_IND';
+
+#--------------------Elements--------------------#
+e_Message_Prolog = '';
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_new_comb_' | vUSER |'_' | vPRO_NAME;
+#view_erase_cible = 'z_erase_sales_plan_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_new_comb_' | vUSER |'_' | vPRO_NAME;
+#subset_erase_cible = 'z_erase_sales_plan' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+
+
+DatasourceASCIIDecimalSeparator='.';
+DatasourceASCIIThousandSeparator='';
+
+P_Sales_Group = CellGetS(C_zSelect,vClient, 'Sales Group');
+P_Phase = CellGetS(C_zSelect, vClient ,'Current Phase Sales');
+
+#la saisie des commerciaux se fait seulement sur les PM de la division sélectionnée
+P_Division = CellGetS(C_zSelect, vClient ,'Division');
+
+e_message_Data = '';
+
+
+#=========================================#
+# Initialisation de la vue à copier/vue source #
+#=========================================#
+
+#pas de restriction sur les périodes à faire car on supprime la vue à la fin de ce process. 
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy(D_CURRENT_PHASE, subset_copy);
+SubsetDestroy(D_SALES_GROUP, subset_copy);
+SubsetDestroy(D_COMB_TYPE, subset_copy);
+SubsetDestroy(D_NEW_COMB_IND, subset_copy);
+
+#--------------------Création des objets--------------------#
+
+ViewCreate(C_Cube_Source,view_copy);
+
+#D_CURRENT_PHASE
+subsetcreate(D_CURRENT_PHASE,subset_copy);
+SubsetElementInsert(D_CURRENT_PHASE, subset_copy, P_Phase, 1);
+
+#D_SALES_GROUP
+subsetcreate(D_SALES_GROUP,subset_copy);
+SubsetElementInsert(D_SALES_GROUP, subset_copy, P_Sales_Group, 1);
+
+#D_COMB_TYPE
+subsetcreate(D_COMB_TYPE, subset_copy);
+SubsetElementInsert(D_COMB_TYPE, subset_copy, 'Sales', 1);
+
+#D_NEW_COMB_IND
+subsetcreate(D_NEW_COMB_IND, subset_copy);
+SubsetElementInsert(D_NEW_COMB_IND, subset_copy, 'Volume', 1);
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CURRENT_PHASE,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_GROUP,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_COMB_TYPE,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_NEW_COMB_IND,subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 1);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+# définition de la vue source#
+
+DatasourceCubeview= view_copy ;
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+New_comb_or_not = 0;
+Customer = CellGetS(C_Cube_Source, vPhase, 'N/A PERIOD', vSalesOrg, vDistrib, vSalesGroup, vLine, vCombType, 'Customer');
+Material_Plan = CellGetS(C_Cube_Source, vPhase, 'N/A PERIOD', vSalesOrg, vDistrib, vSalesGroup, vLine, vCombType, 'Planning Material');
+
+
+#Différents cas d'erreur
+If(Customer @= '' % Material_Plan @= '');
+	If(SCAN(vLine, e_Message_Data) = 0);
+		e_Message_Data = e_Message_Data | 'An error occured on line ' | vLine | ' : Missing Customer or Planning Material. / ';
+#itemskip;
+    	CellPutS(e_Message_Data,'zPROCESS_ADMINISTRATION', vPRO_NAME, 'Message_Echec', 'Comment');
+     EndIf;
+Else;
+	#Unité par défaut de l'activité en cours
+	Division = ELPAR(D_MATERIAL_PLAN, Material_Plan, 1);
+	Default_Unit = AttrS(D_MATERIAL, Division, 'Volume_Unit');
+
+	New_comb_or_not = CellGetN(C_Cube_Cible, vPhase, 'subset_fiscal', vSalesOrg, vDistrib, 'EUR', Default_Unit, Customer, Material_Plan, vSalesGroup, 'SLS_VOL');
+EndIf;
+
+If(New_comb_or_not <> 0 & SCAN(vLine, e_Message_Data) = 0);
+	e_Message_Data = e_Message_Data | 'An error occured on line ' | vLine | ' : New combination already exists. / ' | NumbertoString(New_comb_or_not) |'/customer=' | Customer | '/Material=' | Material_Plan;
+#itemskip;
+    CellPutS(e_Message_Data,'zPROCESS_ADMINISTRATION', vPRO_NAME, 'Message_Echec', 'Comment');
+EndIf;
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+If(e_message_Data @= '');
+	ExecuteProcess('SLS_CAL_CUB_SLS_SALES_PLAN_CUB_SLS_NEW_COMB_ERROR');
+Else;
+itemreject(e_message_Data);
+EndIf;
+
+
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy(D_CURRENT_PHASE, subset_copy);
+SubsetDestroy(D_SALES_GROUP, subset_copy);
+SubsetDestroy(D_COMB_TYPE, subset_copy);
+SubsetDestroy(D_NEW_COMB_IND, subset_copy);
+#endregion

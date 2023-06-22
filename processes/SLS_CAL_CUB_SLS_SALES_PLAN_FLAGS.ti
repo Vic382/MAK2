@@ -1,0 +1,450 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   16/09/2019                                                        #
+#                                                                            #
+# Fait par :    Elisabeth Mounier                                                 #
+#                                                                            #
+# Action : Processus de calcul des flags N/A_PERIOD
+# Processus dupliqué car pb de recalcul lorsque l'init est lancée sur une seule période
+#																			 #
+##############################################################################
+
+
+
+#===========================================#
+#             Déclaration des variables     #
+#===========================================#
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_SALES_PLAN';
+C_Cube_Cible = 'SLS_SALES_PLAN';
+C_zPROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+C_zPARAM = 'zPARAM';
+C_CURRENCY_RATE = 'SLS_CURRENCY_RATE';
+
+#--------------------Dimensions--------------------#
+D_CURRENT_PHASE = '1_G_CURRENT_PHASE';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_MATERIAL = '1_G_MATERIAL';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_VENDOR = 'SLS_VENDOR';
+D_PROD_PLANT='SLS_PROD_PLANT';
+D_SHIP_PLANT = 'SLS_SHIP_PLANT';
+D_SHIP_POINT = 'SLS_SHIP_POINT';
+D_INIT_IND='SLS_INIT_IND';
+
+D_CURRENCY = '1_G_CURRENCY';
+D_VOLUME_UNIT = '1_G_VOLUME_UNIT';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_SALES_PLAN_IND = 'SLS_SALES_PLAN_IND';
+
+#--------------------Elements--------------------#
+e_Message_Prolog = '';
+
+Curr_Phase = CellGetS(C_zPARAM,'Phase','Value');
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+subsetall = 'All';
+SubsetDestroy( D_PERIOD , subsetall );
+
+
+#------------Création d'un subset contenant tous les éléments fins----------
+MDX = '{{[1_G_PERIOD].[Fiscal]},{EXCEPT(
+{FILTER(
+{TM1SORT( {TM1FILTERBYLEVEL( {TM1SUBSETALL( [1_G_PERIOD] )}, 0)}, ASC)},
+[}ElementAttributes_1_G_PERIOD].([}ElementAttributes_1_G_PERIOD].[Index])@<>"T")},
+{TM1FILTERBYPATTERN( {TM1SUBSETALL( [1_G_PERIOD] )}, "*Input")})}}';
+SubsetCreatebyMDX(subsetall, MDX);
+SubsetElementDelete(D_PERIOD,subsetall,1);
+
+
+#------------Remplissage des différents subsets----------#
+SubSize = SubsetGetSize( D_PERIOD, subsetall);
+cpt = SubSize;
+
+
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+# Modif VRT 27/03/2023 : Réduction de la prise en compte des périodes pour les flags
+# on prend la plus grande plage selon les périodes séléectionnées sur les years types ( Campaign/calendar/fiscal)
+#--------------------Récupération période--------------------#
+sFirstCampaign = CellGetS( 'zPARAM', 'Campaign First Display Month' , 'Value' );
+sLastCampaign = CellGetS( 'zPARAM', 'Campaign Last Display Month' , 'Value' );
+sFirstCalendar = CellGetS( 'zPARAM', 'Calendar First Display Month' , 'Value' );
+sLastCalendar = CellGetS( 'zPARAM', 'Calendar Last Display Month' , 'Value' );
+sFirstFiscal = CellGetS( 'zPARAM', 'Fiscal First Display Month' , 'Value' );
+sLastFiscal = CellGetS( 'zPARAM', 'Fiscal Last Display Month' , 'Value' );
+
+# Redéfinition des valeurs du cube zParam pour utiliser la fonction DAYNO
+# Format dans le cube : AAAA.MM
+# Format attendu AAAA-MM-JJ
+# On part du postulat que c'est le 1er du mois
+sFirstCampaign = SUBST ( sFirstCampaign , 1 , 4 ) | '-' | SUBST ( sFirstCampaign , 6 , 2 ) | '-01' ;
+sLastCampaign = SUBST ( sLastCampaign , 1 , 4 ) | '-' | SUBST ( sLastCampaign , 6 , 2 ) | '-01' ;
+sFirstCalendar = SUBST ( sFirstCalendar , 1 , 4 ) | '-' | SUBST ( sFirstCalendar , 6 , 2 ) | '-01' ;
+sLastCalendar = SUBST ( sLastCalendar , 1 , 4 ) | '-' | SUBST ( sLastCalendar , 6 , 2 ) | '-01' ;
+sFirstFiscal = SUBST ( sFirstFiscal , 1 , 4 ) | '-' | SUBST ( sFirstFiscal , 6 , 2 ) | '-01' ;
+sLastFiscal = SUBST ( sLastFiscal , 1 , 4 ) | '-' | SUBST ( sLastFiscal , 6 , 2 ) | '-01' ;
+
+# Transformation en numérique
+nFirstCampaign = DayNo ( sFirstCampaign ) ;
+nLastCampaign = DayNo ( sLastCampaign ) ;
+nFirstCalendar = DayNo ( sFirstCalendar ) ;
+nLastCalendar = DayNo ( sLastCalendar ) ;
+nFirstFiscal = DayNo ( sFirstFiscal ) ;
+nLastFiscal = DayNo ( sLastFiscal ) ;
+
+# Test des First month pour trouver la plus ancienne
+IF ( nFirstCampaign <= nFirstCalendar & nFirstCampaign <= nFirstFiscal ) ;
+  nFirstPeriod = nFirstCampaign ;
+ELSEIF ( nFirstCalendar <= nFirstCampaign & nFirstCalendar <= nFirstFiscal ) ;
+  nFirstPeriod = nFirstCalendar ;
+ELSEIF ( nFirstFiscal <= nFirstCampaign & nFirstFiscal <= nFirstCalendar ) ;
+  nFirstPeriod = nFirstFiscal ;
+ENDIF ;
+
+# Test des Last month pour trouver la plus récente
+IF ( nLastCampaign >= nLastCalendar & nLastCampaign >= nLastFiscal ) ;
+  nLastPeriod = nLastCampaign ;
+ELSEIF ( nLastCalendar >= nLastCampaign & nLastCalendar >= nLastFiscal ) ;
+  nLastPeriod = nLastCalendar ;
+ELSEIF ( nLastFiscal >= nLastCampaign & nLastFiscal >= nLastCalendar ) ;
+  nLastPeriod = nLastFiscal ;
+ENDIF ;
+
+# Retransformation des DAYNO en format date
+sFirstPeriod = DATE(nFirstPeriod , 1) ;
+sLastPeriod = DATE(nLastPeriod , 1) ;
+
+# Retransformation des dates au format AAAA.MM
+sFirstPeriod = SUBST ( sFirstPeriod , 1 , 4 ) | '.' | SUBST ( sFirstPeriod , 6 , 2 ) ;
+sLastPeriod = SUBST ( sLastPeriod , 1 , 4 ) | '.' | SUBST ( sLastPeriod , 6 , 2 ) ;
+
+# Récupération de l'index des éléments dans la dimension 1_G_PERIOD
+nFirstIndex = Dimix ( D_PERIOD , sFirstPeriod ) ;
+nLastIndex = Dimix ( D_PERIOD , sLastPeriod ) ;
+
+# Fin modif VRT 27/03/2023
+
+
+DatasourceASCIIDecimalSeparator='.';
+DatasourceASCIIThousandSeparator='';
+
+#====================================#
+#        Désactivation de la consignation             #
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 0);
+
+#============================================#
+#                  Initialisation de la vue à supprimer                 #
+#============================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Cible,view_erase);
+Subsetdestroy(D_CURRENT_PHASE,subset_erase);
+SubsetDestroy(D_PERIOD, subset_erase);
+
+#--------------------Création des objets--------------------#
+ViewCreate(C_Cube_Cible,view_erase);
+
+#D_PHASE
+subsetcreate(D_CURRENT_PHASE,subset_erase);
+SubsetElementInsert(D_CURRENT_PHASE, subset_erase, Curr_Phase, 1);
+
+
+
+#D_PERIOD
+	SubsetCreate(D_PERIOD, subset_erase);
+	MDX_PERIOD = '{{[1_G_PERIOD].[N/A Period]}}';
+    SubsetMDXSet(D_PERIOD, subset_erase, MDX_PERIOD);
+    
+
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_CURRENT_PHASE,subset_erase);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_PERIOD, subset_erase);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Cible,view_erase,1);
+ViewSetSkipCalcs(C_Cube_Cible,view_erase, 1);
+ViewSetSkipZeroes(C_Cube_Cible,view_erase, 1);
+
+#--------------------Suppression des données--------------------#
+ViewZeroOut(C_Cube_Cible,view_erase);
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Cible,view_erase);
+Subsetdestroy(D_CURRENT_PHASE,subset_erase);
+SubsetDestroy(D_PERIOD, subset_erase);
+
+#=========================================#
+#     Initialisation de la vue à copier/vue source           #
+#=========================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy(D_CURRENT_PHASE, subset_copy);
+SubsetDestroy(D_PERIOD, subset_copy);
+SubsetDestroy(D_SALES_ORG, subset_copy);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_copy);
+SubsetDestroy(D_VOLUME_UNIT, subset_copy);
+SubsetDestroy(D_CUSTOMER, subset_copy);
+SubsetDestroy(D_MATERIAL_PLAN, subset_copy);
+SubsetDestroy(D_SALES_GROUP, subset_copy);
+SubsetDestroy(D_SALES_PLAN_IND, subset_copy);
+
+#--------------------Création des objets--------------------#
+
+ViewCreate(C_Cube_Source,view_copy);
+
+#D_CURRENT_PHASE
+Curr_Phase = DimensionElementPrincipalName( D_CURRENT_PHASE, Curr_Phase );
+subsetcreate(D_CURRENT_PHASE,subset_copy);
+SubsetElementInsert(D_CURRENT_PHASE, subset_copy, Curr_Phase, 1);
+
+
+#D_PERIOD
+#Current Phase Period
+#MDX_PERIOD = '{{[1_G_PERIOD].[Campaign]},{FILTER({EXCEPT({EXCEPT({TM1SUBSETALL( [1_G_PERIOD] )}, {TM1FILTERBYPATTERN( {TM1SUBSETALL( [1_G_PERIOD] )}, "N/A*")})},{TM1FILTERBYPATTERN( {TM1SUBSETALL( [1_G_PERIOD] )}, "CUMUL*")})}, [1_G_PERIOD].[Flag_Tec] = 0.000000)}}';
+    #SubsetCreateByMDX(subset_copy,MDX_PERIOD);
+    #SubsetElementDelete( D_PERIOD, subset_copy, 1 );
+    
+SubsetDestroy( D_PERIOD , subset_copy );
+subsetcreate( D_PERIOD, subset_copy);
+
+#On parcourt tous les niveaux 0
+While( cpt > 0);
+  #On récupère l'élément et son index
+  Elem = SubsetGetElementName( D_PERIOD, subsetall, cpt);
+  Index = DIMIX ( D_PERIOD , Elem ) ;
+  If( Index >= nFirstIndex & Index <= nLastIndex);
+    SubsetElementInsert( D_PERIOD, subset_copy, Elem, 1 );
+  EndIf;
+      
+  #Incrémentation du compteur while sur subsetall
+  cpt = cpt - 1;
+End;
+
+# Ajout des éléments ACT et ACT_N-1
+#SubsetElementInsert( D_PERIOD, subset_copy, 'FISC_ACT_N-1' , 1 );
+#SubsetElementInsert( D_PERIOD, subset_copy, 'FISC_ACT_N' , 1 );
+SubsetElementInsert( D_PERIOD, subset_copy, 'CAMP_ACT_N-1' , 1 ); 
+SubsetElementInsert( D_PERIOD, subset_copy, 'CAMP_ACT_N' , 1 );
+#SubsetElementInsert( D_PERIOD, subset_copy, 'CAL_ACT_N-1' , 1 );
+#SubsetElementInsert( D_PERIOD, subset_copy, 'CAL_ACT_N' , 1 );
+    
+#D_SALES_ORG
+MDX_SALES_ORG = '{{[1_G_SALES_ORG].[TOTAL SALES ORG]},{TM1FILTERBYLEVEL({DESCENDANTS({[1_G_SALES_ORG].[TOTAL SALES ORG]})},0)}}';
+SubsetCreateByMDX(subset_copy,MDX_SALES_ORG);
+SubsetElementDelete(D_SALES_ORG, subset_copy, 1);
+
+#D_DISTRIB_CHANNEL
+MDX_DISTRIB_CHANNEL = '{{[1_G_DISTRIB_CHANNEL].[Total Distribution Channel]},{TM1FILTERBYLEVEL({DESCENDANTS({[1_G_DISTRIB_CHANNEL].[Total Distribution Channel]})},0)}}';
+SubsetCreateByMDX(subset_copy, MDX_DISTRIB_CHANNEL);
+SubsetElementDelete(D_DISTRIB_CHANNEL, subset_copy, 1);
+
+#D_VOLUME_UNIT
+MDX_VOL = '{{[1_G_VOLUME_UNIT].[KG]},{TM1FILTERBYLEVEL({TM1SUBSETALL([1_G_VOLUME_UNIT])},0)}}';
+SubsetCreateByMDX(subset_copy,MDX_VOL);
+SubsetElementDelete(D_VOLUME_UNIT, subset_copy, 1);
+
+#D_CUSTOMER
+MDX_CUSTOMER = '{{[SLS_CUSTOMER].[Total Customer]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_CUSTOMER])},0)}}';
+SubsetCreateByMDX(subset_copy,MDX_CUSTOMER);
+SubsetElementDelete(D_CUSTOMER, subset_copy, 1);
+
+#D_MATERIAL_PLAN
+MDX_DIVISION = '{{[SLS_MATERIAL_PLAN].[Total Planning Material]},{TM1FILTERBYLEVEL({DESCENDANTS({[SLS_MATERIAL_PLAN].[Total Planning Material]})},0)}}';
+SubsetCreateByMDX(subset_copy,MDX_DIVISION);
+SubsetElementDelete(D_MATERIAL_PLAN, subset_copy, 1);
+
+#D_SALES_PLAN_IND
+MDX_SALES_PLAN_IND = '{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_SALES_PLAN_IND])},0)}';
+SubsetCreateByMDX(subset_copy, MDX_SALES_PLAN_IND);
+
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CURRENT_PHASE,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PERIOD,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_ORG,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_DISTRIB_CHANNEL,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_VOLUME_UNIT,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CUSTOMER,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_MATERIAL_PLAN,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_PLAN_IND,subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 1);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+# définition de la vue source#
+
+DatasourceCubeview= view_copy ;
+
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+vELEM_PERIOD_Cap = AttrS(D_PERIOD, vELEM_PERIOD, 'Caption');
+If(vELEM_PERIOD_Cap @<> '');
+	vELEM_PERIOD = vELEM_PERIOD_Cap;
+EndIf;
+
+#On vérifie que l'indicateur existe dans la dim SLS_SALES_PLAN_IND et que ce n'est pas une valo
+If( (DIMIX(D_SALES_PLAN_IND, vELEM_IND) <> 0 & AttrS(D_SALES_PLAN_IND, vELEM_IND, 'Type_Indicateur') @='Valo') % DIMIX(D_SALES_PLAN_IND,vELEM_IND)=0 );
+	ItemSkip;
+EndIf;
+
+#Permet la répartition à l'IC pour le Retail
+#check si Period est un niveau conso et si son N/A existe
+If(ELLEV(D_PERIOD, vELEM_PERIOD) > 0 & (DIMIX(D_PERIOD, vELEM_PERIOD | ' Input') = 0 % (DIMIX(D_PERIOD, vELEM_PERIOD | ' Input') <> 0 & ELLEV(D_PERIOD, vELEM_PERIOD | ' Input') > 0)));
+	Itemskip;
+EndIf;
+
+#On récupère l'unité par défaut du PLanning Material
+Activité = ELPAR(D_MATERIAL, vELEM_MATERIAL_PLAN, 1);
+Unité_Activité = AttrS(D_MATERIAL, Activité, 'Volume_Unit');
+
+#On récupère le sales group associé
+vELEM_Sales_Group = AttrS(D_CUSTOMER, vELEM_CUSTOMER, 'Sales Group');
+
+
+If(ELLEV(D_PERIOD, vELEM_PERIOD) = 0 );
+
+    #------------Flags Prix-----------#
+    If(SubsetElementGetIndex( D_PERIOD, 'Current Phase Periods', vELEM_PERIOD, 1 )<>0 
+    % vELEM_PERIOD @= 'Fiscal_ACT_N-1' % vELEM_PERIOD @= 'Campaign_ACT_N-1' % vELEM_PERIOD @= 'Calendar_ACT_N-1'
+    % vELEM_PERIOD @= 'Fiscal_ACT_N' % vELEM_PERIOD @= 'Campaign_ACT_N' % vELEM_PERIOD @= 'Calendar_ACT_N');
+    
+    
+        # VRT 22/02/2023 : Suite modification de la règle dans le cube SLS_SALES_PLAN
+        # Flag automatique par règle pour les indicateurs prix PREMIUM_UNIT / BASE_UNIT / CUST_REBATE_UNIT / INV_VAL_UNIT / 3NET_UNIT seulement si des volumes sont présents
+        # Ajout d'un contrôle avant chaque cellput pour vérifier si la cellule à flager est calculé par règle ( fonction CellIsUptdateable)
+		
+	    #Ajout d'un flag sur les prix unitaires N/A PERIOD pour permettre le suppress 0
+        IF ( CellIsUpdateable( C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, vELEM_IND ) = 1 );
+          CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, vELEM_IND);
+        ENDIF ;
+	
+		#Flag sur USD pour l'Export #
+		#on flag seulement si différent de volume car on ne veut pas doubler la ligne (EUR + USD) dans le masque Export Sugar Price
+		If(vELEM_DISTRIB_CHANNEL @= '40' & Activité @= 'D_10' & ATTRS(D_SALES_PLAN_IND, vELEM_IND, 'Type_Indicateur') @<> 'Volume');
+          IF ( CellIsUpdateable( C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'USD', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, vELEM_IND ) = 1 );
+			CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'USD', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, vELEM_IND);
+          ENDIF ;
+		EndIf;
+    
+	    #On force le flag sur l'indicateur 'Premium' car c'est un indicateur qui n'est pas alimenté dans SAP, il n'y a pas de réalisé dessus
+        IF ( CellIsUpdateable( C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'PREMIUM_UNIT') = 1 );
+          CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'PREMIUM_UNIT');
+        ENDIF ;
+		If(vELEM_DISTRIB_CHANNEL @= '40' & Activité @= 'D_10');
+          IF ( CellIsUpdateable( C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'USD', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'PREMIUM_UNIT') = 1 );
+			CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'USD', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'PREMIUM_UNIT');
+          ENDIF ;
+		EndIf;
+
+
+        # VRT : Modif du 18/04/23 : mise en commentaire car flag des éléments sans volumes
+		#On force le flag sur l'indicateur 'Unitary Rebates' pour le B2B Alcool car il n'est pas alimenté dans SAP pour le B2B Alcool 
+        #IF ( CellIsUpdateable( C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'CUST_REBATE_UNIT') = 1 );
+          #CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'CUST_REBATE_UNIT');
+          #CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'BASE_UNIT');
+        #ENDIF ;
+        # Fin VRT
+        
+	   #------------Flags Volumes-----------#
+		If(ELPAR(D_INIT_IND, vELEM_IND, 1) @= 'SLS_VOL');	
+			#Ajout d'un flag sur le N/A_PERIOD pour permettre le suppress 0
+			
+    	    If(vELEM_DISTRIB_CHANNEL @= '40' & Activité @= 'D_10');
+    	    	#Ajout d'un flag sur le N/A_PERIOD pour permettre le suppress 0 (même les volumes sont affichés en USD dans le masque)
+                CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'USD', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'CONTR_VOL');
+                CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'USD', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'PROSP_VOL');
+                
+                CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'USD', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'BASE_UNIT');
+                CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'USD', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'PREMIUM_UNIT');
+                CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'USD', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'CUST_REBATE_UNIT');                
+                
+    	    Else;
+            	CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'CONTR_VOL');
+				CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'PROSP_VOL');
+				CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'TO_BE_CONTR_VOL');
+				CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'CURR_VOL');
+				CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'PROMO_VOL');
+				CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'VOL');
+                
+                CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'BASE_UNIT');
+                CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'PREMIUM_UNIT');
+                CellPutN(1, C_Cube_Cible, vELEM_CURRENT_PHASE, 'N/A PERIOD', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, 'EUR', vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, 'CUST_REBATE_UNIT');
+                
+            EndIf;
+		EndIf;
+    EndIf;    
+EndIf;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy(D_CURRENT_PHASE, subset_copy);
+SubsetDestroy(D_PERIOD, subset_copy);
+SubsetDestroy(D_SALES_ORG, subset_copy);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_copy);
+SubsetDestroy(D_CUSTOMER, subset_copy);
+SubsetDestroy(D_MATERIAL_PLAN, subset_copy);
+SubsetDestroy(D_SALES_GROUP, subset_copy);
+SubsetDestroy(D_VOLUME_UNIT, subset_copy);
+SubsetDestroy(D_SALES_PLAN_IND, subset_copy);
+
+#====================================#
+#        Activation de la consignation#
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 1);
+
+
+#endregion

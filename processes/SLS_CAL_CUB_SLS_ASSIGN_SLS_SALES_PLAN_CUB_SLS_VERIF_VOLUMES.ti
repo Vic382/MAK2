@@ -1,0 +1,246 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   02/03/2023                                                        #
+#                                                                            #
+# Fait par :    ELH		                                                     #
+#                                                                            #
+# Action : Processus pour vérfier les volumes dans les cubes SLS_ASSIGN et   #
+#          SLS_SALES_PLAN suite au switch article cas 3 (fait dans Assign)   #
+#			                   												 #
+#           																 #
+#																			 #
+##############################################################################
+
+#===============================#
+#	Déclaration des variables	#
+#===============================#
+
+
+#--------------------Cubes--------------------#
+C_Cube_Sales = 'SLS_SALES_PLAN';
+C_Cube_Assing = 'SLS_ASSIGN' ;
+C_Cube_Verif = 'SLS_VERIF_VOLUMES_ASSIGN_SALES' ;
+
+
+#--------------------Dimensions--------------------#
+D_CURRENT_PHASE = '1_G_CURRENT_PHASE';
+D_VERSION = 'SLS_VERSION' ;
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_CURRENCY = '1_G_CURRENCY';
+D_VOLUME_UNIT = '1_G_VOLUME_UNIT';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_MATERIAL_PLAN =' SLS_MATERIAL_PLAN' ; 
+D_SALES_GROUP= 'SLS_SALES_GROUP';
+D_LINE = '1_G_LINE' ;
+D_SALES_PLAN_IND = 'SLS_SALES_PLAN_IND';
+D_ASSIGN_IND = 'SLS_ASSIGN_IND' ;
+D_VERIF_VOLUMES = 'SLS_VERIF_VOLUMES_ASSIGN_SALES_IND' ;
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+vUser_Name = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vUSER = SUBST(vUser_Name, SCAN('/',vUser_Name)+1, 100);
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+e_message_data = '';
+
+#--------------------Vues--------------------#
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+# Sous-ensemble de la dimension PERIODE
+sTemporaryNamePeriod = 'Period_' | vUSER | '_Verification_Volumes_Assign_Sales_Plan' ;
+
+
+#--------------------Déclaration de la vue source--------------------#
+DataSourceNameForServer = C_Cube_Assing ;
+DatasourceCubeview = view_copy ;
+
+#As_Temporary = 1;
+ViewDestroy ( C_Cube_Assing , view_copy ) ;
+SubsetDestroy ( D_CURRENT_PHASE , subset_copy ) ;
+SubsetDestroy ( D_VERSION , subset_copy ) ;
+SubsetDestroy ( D_SALES_ORG , subset_copy ) ;
+SubsetDestroy ( D_DISTRIB_CHANNEL , subset_copy ) ;
+SubsetDestroy ( D_MATERIAL_PLAN , subset_copy ) ;
+SubsetDestroy ( D_CUSTOMER , subset_copy ) ;
+SubsetDestroy ( D_LINE , subset_copy ) ;
+SubsetDestroy ( D_ASSIGN_IND , subset_copy ) ;
+#--------------------Création des objets Source--------------------#
+ViewCreate(C_Cube_Assing ,view_copy);
+
+# 1_G_CURRENT_PHASE
+subsetcreate(D_CURRENT_PHASE,subset_copy);
+SubsetElementInsert(D_CURRENT_PHASE, subset_copy, 'CURR_PHASE', 1);
+ViewSubsetAssign(C_Cube_Assing,view_copy, D_CURRENT_PHASE,subset_copy);
+
+# SLS_VERSION
+subsetcreate(D_VERSION,subset_copy);
+SubsetElementInsert(D_VERSION, subset_copy, 'FV', 1);
+ViewSubsetAssign(C_Cube_Assing,view_copy, D_VERSION,subset_copy);
+
+# 1_G_PERIOD
+ViewSubsetAssign(C_Cube_Assing,view_copy, D_PERIOD,sTemporaryNamePeriod);
+
+# 1_G_SALES_ORG
+subsetcreate(D_SALES_ORG,subset_copy);
+SubsetElementInsert(D_SALES_ORG, subset_copy, p_Sales_org, 1);
+ViewSubsetAssign(C_Cube_Assing,view_copy, D_SALES_ORG,subset_copy);
+
+# 1_G_DISTRIB_CHANNEL
+subsetcreate(D_DISTRIB_CHANNEL,subset_copy );
+SubsetElementInsert(D_DISTRIB_CHANNEL, subset_copy, p_Distrib_Channel, 1);
+ViewSubsetAssign(C_Cube_Assing,view_copy, D_DISTRIB_CHANNEL,subset_copy);
+
+#SLS_MATERIAL_PLAN
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['| D_MATERIAL_PLAN |'] )}, 0)}' ;
+SubsetCreatebyMDX ( subset_copy , StringMDX ) ;
+ViewSubsetAssign(C_Cube_Assing,view_copy, D_MATERIAL_PLAN,subset_copy);
+
+#SLS_CUSTOMER
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['| D_CUSTOMER |'] )}, 0)}' ;
+SubsetCreatebyMDX ( subset_copy , StringMDX ) ;
+ViewSubsetAssign(C_Cube_Assing,view_copy, D_CUSTOMER,subset_copy);
+
+#1_G_LINE
+subsetcreate(D_LINE,subset_copy );
+SubsetElementInsert(D_LINE, subset_copy, 'Total_Line' , 1);
+ViewSubsetAssign(C_Cube_Assing,view_copy, D_LINE,subset_copy);
+
+#SLS_SALES_PLAN_IND
+subsetcreate(D_ASSIGN_IND,subset_copy );
+SubsetElementInsert(D_ASSIGN_IND, subset_copy, 'SLS_VOL', 1);
+ViewSubsetAssign(C_Cube_Assing,view_copy, D_ASSIGN_IND,subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées pour la vue source--------------------#
+ViewExtractSkipRuleValuesSet (C_Cube_Assing,view_copy,1);
+ViewExtractSkipCalcsSet (C_Cube_Assing,view_copy, 0);
+ViewExtractSkipZeroesSet (C_Cube_Assing,view_copy, 1);
+
+
+#--------------------Déclaration de la vue RAZ--------------------#
+ViewDestroy ( C_Cube_Verif , view_erase ) ;
+SubsetDestroy ( D_DISTRIB_CHANNEL , subset_erase ) ;
+SubsetDestroy ( D_SALES_ORG , subset_erase ) ;
+SubsetDestroy ( D_MATERIAL_PLAN , subset_erase ) ;
+SubsetDestroy ( D_CUSTOMER , subset_erase ) ;
+SubsetDestroy ( D_VERIF_VOLUMES , subset_erase ) ;
+
+#--------------------Création des objets Source--------------------#
+ViewCreate(C_Cube_Verif ,view_erase);
+
+# 1_G_DISTRIB_CHANNEL - NIV0
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['| D_DISTRIB_CHANNEL |'] )}, 0)}' ;
+SubsetCreatebyMDX ( subset_erase , StringMDX ) ;
+ViewSubsetAssign(C_Cube_Verif,view_erase, D_DISTRIB_CHANNEL,subset_erase);
+
+# 1_G_SALES_ORG - NIV0
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['| D_SALES_ORG |'] )}, 0)}' ;
+SubsetCreatebyMDX ( subset_erase , StringMDX ) ;
+ViewSubsetAssign(C_Cube_Verif,view_erase, D_SALES_ORG,subset_erase);
+
+# 1_G_PERIOD - Sous-ensemble pré-défini
+# ViewSubsetAssign(C_Cube_Verif,view_erase, D_PERIOD,sTemporaryNamePeriod) ;
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['| D_PERIOD |'] )}, 0)}' ;
+SubsetCreatebyMDX ( subset_erase , StringMDX ) ;
+ViewSubsetAssign(C_Cube_Verif,view_erase, D_PERIOD ,subset_erase);
+
+#SLS_MATERIAL_PLAN - Niv0
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['| D_MATERIAL_PLAN |'] )}, 0)}' ;
+SubsetCreatebyMDX ( subset_erase , StringMDX ) ;
+ViewSubsetAssign(C_Cube_Verif,view_erase, D_MATERIAL_PLAN,subset_erase);
+
+#SLS_CUSTOMER - Niv0
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['| D_CUSTOMER |'] )}, 0)}' ;
+SubsetCreatebyMDX ( subset_erase , StringMDX ) ;
+ViewSubsetAssign(C_Cube_Verif,view_erase, D_CUSTOMER,subset_erase);
+
+#SLS_VERIF_VOLUMES_SALES_ASSIGN - Niv0
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['| D_VERIF_VOLUMES |'] )}, 0)}' ;
+SubsetCreatebyMDX ( subset_erase , StringMDX ) ;
+ViewSubsetAssign(C_Cube_Verif,view_erase, D_VERIF_VOLUMES,subset_erase);
+
+# Remise à 0 de la vue
+ViewZeroOut ( C_Cube_Verif , view_erase ) ;
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#--Restriction sur Currency et Default Volume Unit
+#-Unité par défaut de la division
+v_division = ELPAR( '1_G_MATERIAL', v_planning_material, 1);
+v_default_unit = ATTRS('1_G_MATERIAL', v_division, 'Volume_Unit');
+
+#-USD si Export Sugar, sinon EUR
+If(DimensionElementPrincipalName(D_DISTRIB_CHANNEL, v_distrib_channel) @= '40' & DimensionElementPrincipalName( '1_G_MATERIAL', v_division ) @= 'D_10');
+ v_currency = 'USD' ;
+Else; 
+ v_currency = 'EUR' ;
+EndIf;
+
+#--Récupération du montant dans le cube SLS_SALES_PLAN
+nVolSales = CellGetN ( C_Cube_Sales , v_phase , v_period , v_sales_org , v_distrib_channel , v_currency , v_default_unit , v_customer , v_planning_material , 'TOTAL_SALES_GROUP' , 'SLS_VOL') ;
+
+IF ( ROUNDP ( nVolSales , 3 ) <> ROUNDP ( Value , 3 ) ) ;
+ CellPutN ( value , C_Cube_Verif , v_distrib_channel , v_sales_org , v_period , v_planning_material , v_customer , 'SLS_ASSIGN' ) ;
+ CellPutN ( nVolSales , C_Cube_Verif , v_distrib_channel , v_sales_org , v_period , v_planning_material , v_customer , 'SLS_SALES_PLAN' ) ;
+ENDIF ;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+# Suppression de la vue Source
+ViewDestroy ( C_Cube_Assing , view_copy ) ;
+# Suppression des sous-ensembles source
+SubsetDestroy ( D_CURRENT_PHASE , subset_copy ) ;
+SubsetDestroy ( D_VERSION , subset_copy ) ;
+SubsetDestroy ( D_SALES_ORG , subset_copy ) ;
+SubsetDestroy ( D_DISTRIB_CHANNEL , subset_copy ) ;
+SubsetDestroy ( D_CUSTOMER , subset_copy ) ;
+SubsetDestroy ( D_MATERIAL_PLAN , subset_copy ) ;
+SubsetDestroy ( D_LINE , subset_copy ) ;
+SubsetDestroy ( D_ASSIGN_IND , subset_copy ) ;
+
+# Suppression de la vue RAZ
+ViewDestroy ( C_Cube_Verif , view_erase ) ;
+# Suppression des sous-ensemble RAZ
+SubsetDestroy ( D_DISTRIB_CHANNEL , subset_erase ) ;
+SubsetDestroy ( D_SALES_ORG , subset_erase ) ;
+SubsetDestroy ( D_PERIOD , subset_erase ) ;
+SubsetDestroy ( D_MATERIAL_PLAN , subset_erase ) ;
+SubsetDestroy ( D_CUSTOMER , subset_erase ) ;
+SubsetDestroy ( D_VERIF_VOLUMES , subset_erase ) ;
+
+# Suppression du sous-ensemble de la dimension PERIODE
+SubsetDestroy ( D_PERIOD , sTemporaryNamePeriod ) ;
+#endregion

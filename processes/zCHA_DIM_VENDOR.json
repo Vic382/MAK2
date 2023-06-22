@@ -1,0 +1,13 @@
+{
+	"@type":"Process",
+	"Name":"zCHA_DIM_VENDOR",
+	"HasSecurityAccess":false,
+	"Code@Code.link":"zCHA_DIM_VENDOR.ti",
+	"UIData":"_ParameterConstraints=e30=€",
+	"DataSource":
+	{
+		"Type":"None"
+	},
+	"Parameters":[],
+	"Variables":[]
+}

@@ -1,0 +1,181 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+############################################################################
+#                         DESCRIPTION DU PROCESSUS                         #
+#                                                                          #
+# Date :   04/04/2019                                                      #
+#                                                                          #
+# Fait par :   Anne BESNARD                                                #
+#                                                                          #
+# Action : Création de tous les groupes de sécurité    					   #
+#									   									   #
+#                                                                          #
+############################################################################
+
+###################################
+#    Décalaration des variables   #
+###################################
+
+#----------Dimensions-------------#
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_Groups = '}Groups';
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+#vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+AttrDelete( D_Groups, 'SAles Group' );
+AttrInsert( D_Groups, 'Sales', 'Sales_Man', 'N' );
+AttrInsert( D_Groups, 'Sales', 'Sales Org Only', 'N' );
+AttrInsert( D_Groups, 'Sales', 'Sales Group', 'N' );
+AttrInsert( D_Groups, 'Sales', 'Sales Org Only', 'N' );
+AttrInsert( D_Groups, 'Sales', 'Sales Group', 'N' );
+AttrInsert( D_Groups, 'Sales', 'Caption', 'A' );
+AttrInsert( D_Groups, 'Sales', 'Code - Caption', 'A' );
+AttrInsert( D_Groups, 'Sales', 'Reporting Only','N');
+
+#--------------------Création des groupes--------------------#
+AddGroup('Functional_Admin_CDG');
+AddGroup('1000');
+AddGroup('1000_20_40');
+AddGroup('1000_10');
+AddGroup('1200');
+AddGroup('1400');
+AddGroup('1200_1400');
+AddGroup('16XX');
+AddGroup('17XX');
+AddGroup('Agents');
+AddGroup('CS');
+AddGroup('Logistics');
+AddGroup('Volume_Only');
+AddGroup('4Net');
+AddGroup('All_but_VPRS');
+AddGroup('All');
+
+
+
+
+
+
+
+################################
+#    Subset Source             #
+################################
+
+SubsetDestroy(D_SALES_GROUP, subset_copy);
+
+MDX = '{{[SLS_SALES_GROUP].[TOTAL_SALES_GROUP]},EXCEPT({TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_SALES_GROUP])},0)},{[SLS_SALES_GROUP].[N/A_SALES_GROUP]})}';
+SubsetCreatebyMDX( subset_copy, MDX, 1 );
+SubsetElementDelete( D_SALES_GROUP, subset_copy, 1 );
+
+DatasourceDimensionSubset= subset_copy;
+#endregion
+#region Metadata
+AddGroup(vELEM_SALES_GROUP);
+
+If(AttrS(D_SALES_GROUP, vELEM_SALES_GROUP, 'Bool_Sales_Manager') @= 'x' % AttrS(D_SALES_GROUP, vELEM_SALES_GROUP, 'Bool_Sales_Director') @= 'x');
+	AddGroup(vELEM_SALES_GROUP|'_Manager');
+EndIf;
+#endregion
+#region Data
+Cap = AttrS(D_SALES_GROUP, vELEM_SALES_GROUP, 'Caption');
+
+#Groups - Sales Groups
+AttrPutS(Cap, D_Groups, vELEM_SALES_GROUP, 'Caption');
+AttrPutS(vELEM_SALES_GROUP | ' - ' | Cap, D_Groups, vELEM_SALES_GROUP, 'Code - Caption');
+AttrPutN(1, D_Groups, vELEM_SALES_GROUP, 'Sales');
+AttrPutN(1, D_Groups, vELEM_SALES_GROUP, 'Sales Group');
+
+#Groups - Sales Manager - Sales Director
+If(AttrS(D_SALES_GROUP, vELEM_SALES_GROUP, 'Bool_Sales_Manager') @= 'x' % AttrS(D_SALES_GROUP, vELEM_SALES_GROUP, 'Bool_Sales_Director') @= 'x');
+	Cap_Manager = Cap|' - Manager';
+	Code_Cap_Manager = vELEM_SALES_GROUP | ' - ' | Cap |' - Manager';
+	AttrPutS(Cap_Manager, D_Groups, vELEM_SALES_GROUP|'_Manager', 'Caption');
+	AttrPutS(Code_Cap_Manager, D_Groups, vELEM_SALES_GROUP|'_Manager', 'Code - Caption');
+	AttrPutN(1, D_Groups, vELEM_SALES_GROUP|'_Manager', 'Sales');
+	AttrPutN(1, D_Groups, vELEM_SALES_GROUP|'_Manager', 'Sales Group');
+    AttrPutN(1, D_Groups, vELEM_SALES_GROUP|'_Manager', 'Sales_Man');
+EndIf;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#--------------------Alias et Attributs--------------------#
+AttrPutS('Functional Adminstrator or CDG', D_Groups,'Functional_Admin_CDG', 'Caption');
+AttrPutS('Functional_Admin_CDG - Functional Adminstrator or CDG', D_Groups,'Functional_Admin_CDG', 'Code - Caption');
+AttrPutS('Cristalco', D_Groups,'1000', 'Caption');
+AttrPutS('1000 - Cristalco', D_Groups,'1000', 'Code - Caption');
+AttrPutN(1, D_Groups, '1000', 'Sales');
+AttrPutN(1, D_Groups, '1000', 'Sales Org Only');
+AttrPutS('B2B & Export Cristalco', D_Groups,'1000_20_40', 'Caption');
+AttrPutS('1000_20_40 - B2B & Export Cristalco', D_Groups,'1000_20_40', 'Code - Caption');
+AttrPutN(1, D_Groups, '1000_20_40', 'Sales');
+AttrPutS('Retail', D_Groups,'1000_10', 'Caption');
+AttrPutS('1000_10 - Retail', D_Groups,'1000_10', 'Code - Caption');
+AttrPutN(1, D_Groups, '1000_10', 'Sales');
+AttrPutS('Ethanol Union', D_Groups,'1200', 'Caption');
+AttrPutS('1200 - Ethanol Union', D_Groups,'1200', 'Code - Caption');
+AttrPutN(1, D_Groups, '1200', 'Sales');
+AttrPutN(1, D_Groups, '1200', 'Sales Org Only');
+AttrPutS('France Alcool', D_Groups,'1400', 'Caption');
+AttrPutS('1400 - France Alcool', D_Groups,'1400', 'Code - Caption');
+AttrPutN(1, D_Groups, '1400', 'Sales');
+AttrPutN(1, D_Groups, '1400', 'Sales Org Only');
+AttrPutS('Ethanol Union & France Alcool', D_Groups, '1200_1400', 'Caption');
+AttrPutS('1200_1400 - Ethanol Union & France Alcool', D_Groups, '1200_1400', 'Code - Caption');
+AttrPutN(1, D_Groups, '1200_1400', 'Sales');
+AttrPutN(1, D_Groups, '1200_1400', 'Sales Org Only');
+AttrPutS('Iberica', D_Groups,'16XX', 'Caption');
+AttrPutS('16XX - Iberica', D_Groups,'16XX', 'Code - Caption');
+AttrPutN(1, D_Groups, '16XX', 'Sales');
+AttrPutN(1, D_Groups, '16XX', 'Sales Org Only');
+AttrPutS('Hellenic', D_Groups,'17XX', 'Caption');
+AttrPutS('17XX - Hellenic', D_Groups,'17XX', 'Code - Caption');
+AttrPutN(1, D_Groups, '17XX', 'Sales');
+AttrPutN(1, D_Groups, '17XX', 'Sales Org Only');
+AttrPutS('Customer Service', D_Groups,'CS', 'Caption');
+AttrPutS('CS - Customer Service', D_Groups,'CS', 'Code - Caption');
+AttrPutS('Logistics', D_Groups,'Logistics', 'Caption');
+AttrPutS('Logistics - Logistics', D_Groups,'Logistics', 'Code - Caption');
+AttrPutS('Volume Only', D_Groups,'Volume_Only', 'Caption');
+AttrPutS('Volume_Only - Volume Only', D_Groups,'Volume_Only', 'Code - Caption');
+AttrPutN(1, D_Groups,'Volume_Only', 'Reporting Only');
+AttrPutS('Agents', D_Groups,'Agents', 'Caption');
+AttrPutS('Agents - Agents', D_Groups,'Agents', 'Code - Caption');
+AttrPutN(1, D_Groups, 'Agents', 'Sales');
+AttrPutS('4Net',  D_Groups,'4Net', 'Caption');
+AttrPutS('4Net - 4Net',  D_Groups,'4Net', 'Code - Caption');
+AttrPutN(1, D_Groups,'4Net', 'Reporting Only');
+AttrPutS('All',  D_Groups,'All', 'Caption');
+AttrPutS('All - All',  D_Groups,'All', 'Code - Caption');
+AttrPutN(1, D_Groups,'All', 'Reporting Only');
+AttrPutS('All But VPRS',  D_Groups,'All_But_VPRS', 'Caption');
+AttrPutS('All_But_VPRS - All But VPRS',  D_Groups,'All_But_VPRS', 'Code - Caption');
+AttrPutN(1, D_Groups,'All_But_VPRS', 'Reporting Only');
+#endregion

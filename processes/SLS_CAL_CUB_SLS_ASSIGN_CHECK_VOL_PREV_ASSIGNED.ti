@@ -1,0 +1,216 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   26/04/2019                                                        #
+#                                                                            #
+# Fait par :    JM 		                                        	         #
+#                                                                            #
+# Action : Processus de vérification que sales vol = assigned vol		  	 #
+#           																 #
+#																			 #
+##############################################################################
+
+#===============================#
+#	Déclaration des variables	#
+#===============================#
+
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_ASSIGN';
+C_Cube_Cible = 'SLS_ASSIGN';
+
+
+#--------------------Dimensions--------------------#
+D_CURRENT_PHASE = '1_G_CURRENT_PHASE';
+D_Version = 'SLS_VERSION';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_LINE = '1_G_LINE';
+D_ASSIGN_IND='SLS_ASSIGN_IND';
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+vUser_Name = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vUSER = SUBST(vUser_Name, SCAN('/',vUser_Name)+1, 100);
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+vClient = AttrS('}Clients',TM1User,'Caption');
+
+#--------------------Vues--------------------#
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+
+####REMISE A ZERO DU FLAG ###
+CellPutS('', 'zPARAM', 'zControl_Assigned_Vol', 'Value');
+
+# Récupération de la phase en cours et des paramètres de cette phase
+P_Phase = CellGetS('zSelect', vClient ,'Current Phase');
+P_Distrib_Channel = CellGetS('zSelect', vClient ,'Distribution Channel');
+P_Sales_Org = CellGetS('zSelect', vClient ,'Sales Org');
+
+#PARAMETRES
+If(p_Sales_org @= ''); 
+	p_Sales_org = 'TOTAL SALES ORG';
+EndIf;
+If(p_Distrib_Channel @= ''); 
+	p_Distrib_Channel = 'TOTAL_DISTRIB_CHANNEL';
+EndIf;
+
+As_Temporary = 1;
+#-------------------Création des objets Source--------------------#
+ViewDestroy( C_Cube_Source, view_copy );
+SubsetDestroy( D_CURRENT_PHASE, subset_copy );
+SubsetDestroy(D_VERSION, subset_copy);
+SubsetDestroy(D_PERIOD, subset_copy);
+SubsetDestroy(D_SALES_ORG, subset_copy);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_copy);
+SubsetDestroy(D_MATERIAL_PLAN, subset_copy);
+SubsetDestroy(D_CUSTOMER, subset_copy);
+SubsetDestroy(D_LINE, subset_copy);
+SubsetDestroy(D_ASSIGN_IND, subset_copy);
+
+
+ViewCreate(C_Cube_Source ,view_copy, As_Temporary );
+
+# 1_G_CURRENT_PHASE
+subsetcreate(D_CURRENT_PHASE,subset_copy ,As_Temporary);
+SubsetElementInsert(D_CURRENT_PHASE, subset_copy, P_Phase, 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CURRENT_PHASE,subset_copy);
+
+# SLS_VERSION
+subsetcreate(D_VERSION,subset_copy ,As_Temporary);
+SubsetElementInsert(D_VERSION, subset_copy, 'FV', 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_VERSION,subset_copy);
+
+#1_G_PERIOD
+SubsetCreate(D_PERIOD, subset_copy, As_Temporary);
+MDX_PERIOD = '{TM1SubsetToSet([1_G_PERIOD] , "Current Phase Periods")}';
+SubsetMDXSet( D_PERIOD, subset_copy, MDX_PERIOD );
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PERIOD,subset_copy);
+
+# 1_G_SALES_ORG
+MDX_SALES_ORG = '{{[1_G_SALES_ORG].[TOTAL SALES ORG]},{TM1FILTERBYLEVEL(DESCENDANTS([1_G_SALES_ORG].[' | p_Sales_org |']), 0)}}';
+SubsetCreatebyMDX( subset_copy, MDX_SALES_ORG, As_Temporary);
+SubsetElementDelete( D_SALES_ORG, subset_copy, 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_ORG,subset_copy);
+
+# 1_G_DISTRIB_CHANNEL
+MDX_DISTRIB_CHANNEL = '{{[1_G_DISTRIB_CHANNEL].[TOTAL_DISTRIB_CHANNEL]},{TM1FILTERBYLEVEL(DESCENDANTS([1_G_DISTRIB_CHANNEL].[' | p_Distrib_Channel |']), 0)}}';
+SubsetCreatebyMDX( subset_copy, MDX_DISTRIB_CHANNEL, As_Temporary);
+SubsetElementDelete( D_DISTRIB_CHANNEL, subset_copy, 1 );
+ViewSubsetAssign(C_Cube_Source,view_copy, D_DISTRIB_CHANNEL,subset_copy);
+
+#SLS_MATERIAL_PLAN
+MDX_MATERIAL_PLAN = 'TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_MATERIAL_PLAN])},0)';
+SubsetCreate( D_MATERIAL_PLAN, subset_copy, As_Temporary );
+SubsetMDXSet( D_MATERIAL_PLAN, subset_copy, MDX_MATERIAL_PLAN );
+ViewSubsetAssign(C_Cube_Source,view_copy, D_MATERIAL_PLAN, subset_copy);
+
+#SLS_CUSTOMER
+MDX_CUSTOMER = 'TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_CUSTOMER])},0)';
+SubsetCreate( D_CUSTOMER, subset_copy, As_Temporary);
+SubsetMDXSet( D_CUSTOMER, subset_copy, MDX_CUSTOMER );
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CUSTOMER,subset_copy);
+
+# 1_G_LINE
+subsetcreate(D_LINE,subset_copy ,As_Temporary);
+SubsetElementInsert(D_LINE, subset_copy, 'TOTAL_LINE', 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_LINE,subset_copy);
+
+#SLS_ASSIGN_IND
+subsetcreate(D_ASSIGN_IND,subset_copy ,As_Temporary);
+SubsetElementInsert(D_ASSIGN_IND, subset_copy, 'SLS_VOL', 1);
+SubsetElementInsert(D_ASSIGN_IND, subset_copy, 'ASSIGN_VOL', 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_ASSIGN_IND,subset_copy);
+
+ 
+#--------------------Suppression des cellules vides, consolidées, calculées pour la vue source--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 0);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+#--------------------Déclaration de la vue source--------------------#
+DataSourceNameForServer=C_Cube_Source;
+DatasourceCubeview=view_copy;
+
+
+#-------------------Création des objets Cible--------------------#
+ViewDestroy( C_Cube_Cible, view_erase );
+ViewCreate(C_Cube_Cible ,view_erase, As_Temporary );
+
+# SLS_LINE
+SubsetDestroy(D_LINE, subset_erase);
+subsetcreate(D_LINE,subset_erase ,As_Temporary);
+MDX_LINE = 'TM1FILTERBYLEVEL({TM1SUBSETALL([1_G_LINE])},0)';
+SubsetMDXSet( D_LINE, subset_erase, MDX_LINE );
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_LINE,subset_erase);
+
+
+#SLS_ASSIGN_IND
+SubsetDestroy(D_ASSIGN_IND, subset_erase);
+subsetcreate(D_ASSIGN_IND,subset_erase ,As_Temporary);
+SubsetElementInsert(D_ASSIGN_IND, subset_erase, 'zAssign_VS_SLSVOL', 1);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_ASSIGN_IND,subset_erase);
+
+ViewZeroOut (C_Cube_Cible,view_erase ) ;
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+# v_AssignTOT = CellGetN( C_Cube_Source,v_Current_Phase ,'FV' ,v_G_Period, v_g_sales_org , v_g_distrib_channel, v_SLS_MATERIAL_PLAN,v_SLS_CUSTOMER,'L1','zASSIGN_VOL_TOT' ) ;
+# Sales_Vol = CellGetN( C_Cube_Source,v_Current_Phase ,'FV' ,v_G_Period, v_g_sales_org , v_g_distrib_channel, v_SLS_MATERIAL_PLAN,v_SLS_CUSTOMER,'L1','SLS_VOL' ) ;
+IF ( v_SLS_ASSIGN_IND @= 'SLS_VOL') ;
+ sMesure = 'ASSIGN_VOL' ;
+ELSE ;
+ sMesure = 'SLS_VOL' ;
+ENDIF ;
+nComparaison = CellGetN ( c_Cube_Source , v_Current_Phase , v_SLS_VERSION , v_G_Period , v_g_sales_org , v_g_distrib_channel , v_SLS_MATERIAL_PLAN , v_SLS_CUSTOMER , v_G_Line , sMesure ) ;
+
+# If(ROUNDP(v_AssignTOT - Sales_Vol, 3) <>0 );
+	# CellputN (ROUNDP(v_AssignTOT - Sales_Vol, 3) , C_Cube_Cible,v_Current_Phase ,'FV' ,v_G_Period, v_g_sales_org , v_g_distrib_channel, v_SLS_MATERIAL_PLAN,v_SLS_CUSTOMER,'L1','zAssign_VS_SLSVOL' ) ;
+# EndIf;
+nComparaisonA = ROUNDP ( nComparaison , 3 ) ;
+nValeur = ROUNDP ( valeur , 3 ) ;
+nDiff = nComparaisonA - nValeur ;
+IF ( nDiff <> 0 ) ;
+ CellputN ( nDiff , C_Cube_Cible,v_Current_Phase , v_SLS_VERSION ,v_G_Period, v_g_sales_org , v_g_distrib_channel, v_SLS_MATERIAL_PLAN,v_SLS_CUSTOMER,'L1','zAssign_VS_SLSVOL' ) ;
+ CellPutS ('Error : please check Assigned vs Sales Volume tab.', 'zPARAM', 'zControl_Assigned_Vol', 'Value');
+ENDIF ;
+
+
+# If(ROUNDP(v_AssignTOT - Sales_Vol, 3) <> 0);
+#	CellPutS('Error : please check Assigned vs Sales Volume tab.', 'zPARAM', 'zControl_Assigned_Vol', 'Value');
+# EndIf;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

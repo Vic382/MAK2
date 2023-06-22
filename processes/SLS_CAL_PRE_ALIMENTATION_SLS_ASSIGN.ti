@@ -1,0 +1,180 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   29/04/2019                                                        #
+#                                                                            #
+# Fait par :    JM 		                                        	         #
+#                                                                            #
+# Action : Processus de pre_ alimebtation des champs  du cube Assign 					  	 #
+#           																 #
+#																			 #
+##############################################################################
+
+#===============================#
+#	Déclaration des variables	#
+#===============================#
+
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_ASSIGN';
+C_zMAT_FR_GRP = 'zMAT_FR_GRP';
+
+
+#--------------------Dimensions--------------------#
+D_CURRENT_PHASE = '1_G_CURRENT_PHASE';
+D_Version = 'SLS_VERSION';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_LINE = '1_G_LINE';
+D_ASSIGN_IND='SLS_ASSIGN_IND';
+D_SHIP_POINT = 'SLS_SHIP_POINT';
+D_SHIP_PLANT = 'SLS_SHIP_PLANT';
+D_PROD_PLANT = 'SLS_PROD_PLANT';
+D_VENDOR = 'SLS_VENDOR';
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+vUser_Name = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vUSER = SUBST(vUser_Name, SCAN('/',vUser_Name)+1, 100);
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+#--------------------Vues--------------------#
+view_copy = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+
+#--------------------Déclaration de la vue source--------------------#
+DataSourceNameForServer=C_Cube_Source;
+DatasourceCubeview=view_copy;
+
+
+# Récupération de la phase en cours et des paramètres de cette phase
+P_Phase = CellGetS('zSelect', vClient ,'Current Phase');
+
+
+As_Temporary = 1 ;
+#--------------------Création des objets Source--------------------#
+ViewCreate(C_Cube_Source ,view_copy, As_Temporary );
+# 1_G_CURRENT_PHASE
+subsetcreate(D_CURRENT_PHASE,subset_copy ,As_Temporary);
+SubsetElementInsert(D_CURRENT_PHASE, subset_copy, P_Phase, 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CURRENT_PHASE,subset_copy);
+
+#SLS_RESS_PLAN_ID
+subsetcreate(D_ASSIGN_IND,subset_copy ,As_Temporary);
+SubsetElementInsert(D_ASSIGN_IND, subset_copy, 'SHIP_PT', 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_ASSIGN_IND,subset_copy);
+
+ 
+#--------------------Suppression des cellules vides, consolidées, calculées pour la vue source--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 1);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+Shipping_Plant = CellGetS(C_Cube_Source, v_Current_Phase, v_SLS_VERSION, v_G_Period, v_G_SALES_ORG, 
+		v_G_DISTRIB_CHANNEL, v_SLS_MATERIAL_PLAN, v_SLS_CUSTOMER, v_G_LINE, 'Shipping Plant');
+Production_Plant = CellGetS(C_Cube_Source, v_Current_Phase, v_SLS_VERSION, v_G_Period, v_G_SALES_ORG, 
+		v_G_DISTRIB_CHANNEL,	v_SLS_MATERIAL_PLAN, v_SLS_CUSTOMER, v_G_LINE, 'Production Plant');
+Vendor = CellGetS(C_Cube_Source, v_Current_Phase, v_SLS_VERSION, v_G_Period, v_G_SALES_ORG,
+		v_G_DISTRIB_CHANNEL, v_SLS_MATERIAL_PLAN, v_SLS_CUSTOMER, v_G_LINE, 'Vendor');
+        
+If(Shipping_Plant @<> '' % Production_Plant @<> '' % Vendor @<> '');
+	ItemSkip;
+EndIf;
+
+#Alimentation du Vendor
+vVendor = CellGETS ( 'zVendor' , v_G_SALES_ORG ,value , 'Vendor' ) ;
+If ( vVendor @<> '' ) ; 
+	CellPUTS( AttrS(D_VENDOR, vVendor, 'Code - Caption') ,C_Cube_Source , v_Current_Phase, v_SLS_VERSION, v_G_Period, v_G_SALES_ORG, 
+    	v_G_DISTRIB_CHANNEL, v_SLS_MATERIAL_PLAN,v_SLS_CUSTOMER,v_G_LINE,'VENDOR' ) ;
+Endif ;
+
+#Alimentation du Shipping Plant
+v_Ship_plt  = ATTRS('SLS_SHIP_POINT',value, 'Ship_Plant' );
+If ( v_Ship_plt  @= '' ) ;
+	Itemskip;
+EndIf ; 
+CellPutS(AttrS(D_SHIP_PLANT,v_Ship_plt, 'Code - Caption'), C_Cube_Source , v_Current_Phase, v_SLS_VERSION, v_G_Period, v_G_SALES_ORG, 
+	v_G_DISTRIB_CHANNEL, v_SLS_MATERIAL_PLAN, v_SLS_CUSTOMER, v_G_LINE, 'SHIP_PLANT' ) ;
+
+#Calcul du production plant
+Shipping_Plant = CellGetS(C_Cube_Source, v_Current_Phase, v_SLS_VERSION, v_G_Period, v_G_SALES_ORG, 
+		v_G_DISTRIB_CHANNEL, v_SLS_MATERIAL_PLAN, v_SLS_CUSTOMER, v_G_LINE, 'Shipping Plant');
+v_attr_type_Appro = CellGetS(C_zMAT_FR_GRP, v_SLS_MATERIAL_PLAN, Shipping_Plant , 'PROCUREMENT_DESC');
+v_attr_cle_Appro_code = CellGetS(C_zMAT_FR_GRP, v_SLS_MATERIAL_PLAN, Shipping_Plant , 'SPEC_PROCUREMENT' );
+v_attr_cle_Appro = CellGetS(C_zMAT_FR_GRP, v_SLS_MATERIAL_PLAN, Shipping_Plant ,'SPEC_PROCUREMENT_DESC' );
+v_Production_Plt = '' ;
+If (v_attr_type_Appro @= 'In-house production' );
+	v_Production_Plt = v_Ship_plt;
+Elseif(v_attr_type_Appro @= 'External procurement' );
+	If(v_attr_cle_Appro_code @= '');
+    	v_Production_Plt = v_Ship_plt;
+    ElseIf(Dimix('SLS_SHIP_PLANT' , v_attr_cle_Appro) > 0 & ATTRS('SLS_SHIP_PLANT', v_attr_cle_Appro ,'Group') @= '1') ;
+ 		v_Production_Plt = v_attr_cle_Appro ; 
+	ElseIf(v_attr_cle_Appro_code @= '30');
+    	v_Production_Plt = v_Ship_plt;     
+    EndIf;
+Else;
+	#Saisie Manuelle du prod plant
+Endif;
+
+#Alimentation du production plant
+If ( v_Production_Plt   @<>'' ) ;
+	CellPUTS( AttrS(D_PROD_PLANT,v_Production_Plt, 'Code - Caption'), C_Cube_Source , v_Current_Phase, v_SLS_VERSION, v_G_Period, v_G_SALES_ORG, 
+    	v_G_DISTRIB_CHANNEL, v_SLS_MATERIAL_PLAN, v_SLS_CUSTOMER, v_G_LINE, 'PROD_PLANT' ) ;
+endif ; 
+
+# ELH - Ajout EVO Commerciaux - Alimentation du Priority Vendor
+sPriority = AttrS ( 'SLS_CUSTOMER' , v_SLS_CUSTOMER , 'Vendor Priority' ) ;
+# Si le Vendor Priority n'est pas vide
+IF ( sPriority @<> '' ) ;
+ # Si le Vendor Priority contient '|'
+ nScan = SCAN ( '|' , sPriority ) ;
+ IF ( nScan > 0 ) ;
+  # Récupération du premier Vendor Priority dans l'attribut
+  sPriority = SubSt ( sPriority , 1 , nScan - 1 ) ; 
+ ENDIF ;
+ # Récupération du code - Libelle du Vendor
+ sPriority = ATTRS ( 'SLS_VENDOR' , sPriority , 'Code-Caption' ) ;
+ # Insertion du Vendor Priority
+ CellPUTS( sPriority , C_Cube_Source , v_Current_Phase, v_SLS_VERSION, v_G_Period, v_G_SALES_ORG, v_G_DISTRIB_CHANNEL, v_SLS_MATERIAL_PLAN, v_SLS_CUSTOMER, v_G_LINE, 'Vendor Priority' ) ;
+ENDIF ;
+# Fin ELH - EVO Commerciaux
+
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

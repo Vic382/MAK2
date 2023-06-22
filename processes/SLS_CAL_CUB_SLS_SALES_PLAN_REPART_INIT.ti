@@ -1,0 +1,175 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+#====================================#
+#       Déclaration des variables	#
+#====================================#
+
+C_zPARAM = 'zPARAM';
+D_PERIOD = '1_G_PERIOD';
+D_PHASE = '1_G_CURRENT_PHASE';
+D_PHASE_CHA_SAP = '1_G_PHASE';
+
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+
+#--------------------Elements--------------------#
+
+e_Message_Prolog = '';
+
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+
+
+
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+Current_Phase = CellGetS('zPARAM','Phase', 'Value'); 
+Phase_Source_Repart= CellGetS('zSelect',vClient,'Phase_Key_Repart');
+
+Phase_Source_Repart = DimensionElementPrincipalName( D_PHASE_CHA_SAP, Phase_Source_Repart );
+
+If(DIMIX( D_PHASE_CHA_SAP, Phase_Source_Repart ) = 0);
+	err_prolog = 1;
+    message_err_prolog = 'Please select a monthly key.';
+    CellPutS(message_err_prolog, C_zPARAM, 'zError_Repart', 'Value');
+    ProcessBreak;
+EndIf;
+
+
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_copy__' |vUser|'_' | vPRO_NAME;
+
+Phase_zPARAM = 'Phase';
+Phase_Source = CellGetS(C_zPARAM, Phase_zPARAM, 'Value'); 
+
+
+v_type_year=CellGetS('zSelect',vClient,'Current_Year_Type');
+v_simulation_period=ATTRS(D_PHASE,Phase_Source,'First simulation month');
+v_Index = ATTRS(D_PERIOD, v_simulation_period, 'Index');
+
+if(v_type_year@='Campaign');
+v_t_year='CAMP';
+v_index_mois_simul=stringtonumber(Attrs(D_PERIOD,v_simulation_period,'Index_Campaign'));
+endif;
+if(v_type_year@='Fiscal');
+v_index_mois_simul=stringtonumber(Attrs(D_PERIOD,v_simulation_period,'Index_Fiscal'));
+v_t_year='FISC';
+endif;
+if(v_type_year@='Calendar');
+v_index_mois_simul=stringtonumber(Attrs(D_PERIOD,v_simulation_period,'Index_Calendar'));
+v_t_year='CAL';
+endif;
+
+
+
+if(v_t_year@='FISC');
+v_Attr_Name_N='FISC_N';
+v_Attr_Name_N_1='FISC_N-1';
+v_Attr_Index='Index_Fiscal';
+endif;
+
+if(v_t_year@='CAMP');
+v_Attr_Name_N='Campaign_N';
+v_Attr_Name_N_1='Campaign_N-1';
+v_Attr_Index='Index_Campaign';
+endif;
+
+if(v_t_year@='CAL');
+v_Attr_Name_N='Calendar_N';
+v_Attr_Name_N_1='Calendar_N-1';
+v_Attr_Index='Index_Calendar';
+endif;
+
+v_Type_Year_N_attr=Attrs(D_PERIOD,v_simulation_period,v_Attr_Name_N);
+
+v_N=subst(v_Type_Year_N_attr,long(v_Type_Year_N_attr)-3,4);
+
+v_period=v_t_year|' '|v_N;
+
+SubsetDestroy( D_PERIOD, subset_copy );
+
+subset_input = v_type_year | ' Input';
+cpt = SubsetGetSize( D_PERIOD, subset_input );
+conso1 = '';
+conso2 = '';
+While( cpt > 0);
+	Elem = SubsetGetElementName( D_PERIOD, subset_input, cpt);
+	If( AttrS(D_PERIOD, Elem, 'Index') @= 'C' & conso1 @= '');
+		conso1 = Elem;
+    ElseIf(AttrS(D_PERIOD, Elem, 'Index') @= 'C' & conso1 @<> '');
+    	conso2 = Elem;
+    EndIf;	
+    cpt = cpt  - 1;
+End;
+
+MDX_PERIOD = '{{[1_G_PERIOD].[N/A PERIOD]}, ';
+If(conso1 @<> '');
+	MDX_PERIOD = MDX_PERIOD | '{TM1FILTERBYLEVEL(DESCENDANTS([1_G_PERIOD].['| conso1 |']) , 0)}';
+EndIf;
+If(conso2 @<> '');
+	MDX_PERIOD = MDX_PERIOD | ',{TM1FILTERBYLEVEL(DESCENDANTS([1_G_PERIOD].['| conso2 |']) , 0)}}';
+EndIf;
+
+MDX_PERIOD = MDX_PERIOD | '}';
+SubsetCreatebyMDX( subset_copy, MDX_PERIOD);
+SubsetElementDelete( D_PERIOD, subset_copy, 1);
+
+
+
+DatasourceDimensionSubset=subset_copy;
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+Index_period = ATTRS(D_PERIOD, v_period, 'Index');
+
+If(stringtonumber(Index_period) < stringtonumber(v_Index));
+	itemskip;
+EndIf;
+
+########## Remise à zéro de toute la période du mois de début de simulation jusqu'au dernier mois de la période en question #####
+
+#Executeprocess('SLS_CAL_CUB_SLS_SALES_PLAN_REPART_RAZ','P_Indicateur',p_indicateur,'P_period',v_period);
+
+
+########## Répartition de la valeur saisie en Input pour chaque mois de la période ( du mois de début de simulation jusqu'au dernier mois de la période en question) #####
+
+Executeprocess('SLS_CAL_CUB_SLS_SALES_PLAN_REPART_INDIC','P_indicateur',P_indicateur,'P_period',v_period);
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+If(err_prolog = 1);
+	itemreject(message_err_prolog);
+EndIf;
+
+subsetdestroy(D_PERIOD,subset_copy);
+#endregion

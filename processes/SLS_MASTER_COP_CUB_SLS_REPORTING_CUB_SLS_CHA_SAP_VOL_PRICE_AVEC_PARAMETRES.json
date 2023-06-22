@@ -1,0 +1,13 @@
+{
+	"@type":"Process",
+	"Name":"SLS_MASTER_COP_CUB_SLS_REPORTING_CUB_SLS_CHA_SAP_VOL_PRICE_AVEC_PARAMETRES",
+	"HasSecurityAccess":false,
+	"Code@Code.link":"SLS_MASTER_COP_CUB_SLS_REPORTING_CUB_SLS_CHA_SAP_VOL_PRICE_AVEC_PARAMETRES.ti",
+	"UIData":"CubeAction=1511€DataAction=1503€CubeLogChanges=0€",
+	"DataSource":
+	{
+		"Type":"None"
+	},
+	"Parameters":[],
+	"Variables":[]
+}

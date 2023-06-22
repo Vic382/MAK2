@@ -1,0 +1,253 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   29/04/2019                                                        #
+#                                                                            #
+# Fait par :    JM 		                                        	         #
+#                                                                            #
+# Action : Processus copie du cube Assign vers SLS_FR_COST_PLAN				 #
+#           																 #
+#																			 #
+##############################################################################
+
+#===============================#
+#	Déclaration des variables	#
+#===============================#
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_ASSIGN';
+C_Cube_Cible = 'SLS_FR_COST_PLAN';
+
+
+#--------------------Dimensions--------------------#
+D_CURRENT_PHASE = '1_G_CURRENT_PHASE';
+D_Version = 'SLS_VERSION';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_LINE = '1_G_LINE';
+D_ASSIGN_IND='SLS_ASSIGN_IND';
+D_MAT_FREIGHT_GROUP='SLS_MAT_FREIGHT_GROUP';
+D_SHIP_POINT = 'SLS_SHIP_POINT';
+D_SHIP_PLANT = 'SLS_SHIP_PLANT';
+D_PROD_PLANT = 'SLS_PROD_PLANT';
+D_VENDOR = 'SLS_VENDOR';
+D_FR_COST_PLAN_IND = 'SLS_FR_COST_PLAN_IND';
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+vUser_Name = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vUSER = SUBST(vUser_Name, SCAN('/',vUser_Name)+1, 100);
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+
+#--------------------Déclaration de la vue source--------------------#
+DataSourceNameForServer=C_Cube_Source;
+DatasourceCubeview=view_copy;
+
+# Récupération de la phase en cours et des paramètres de cette phase
+P_Phase = CellGetS('zSelect', vClient ,'Current Phase');
+#PARAMETRES
+If(P_logistics =1);
+	P_Sales_org = CellGetS('zSelect', vClient ,'Sales Organisation Logistics');
+	P_Distrib_Channel = CellGetS('zSelect', vClient ,'Distribution Channel Logistics');
+Else;
+	P_Sales_org = CellGetS('zSelect', vClient ,'Sales Organisation');
+	P_Distrib_Channel = CellGetS('zSelect', vClient ,'Distribution Channel');
+EndIf;
+
+If(p_Sales_org @= ''); 
+	p_Sales_org = 'TOTAL SALES ORG';
+EndIf;
+If(p_Distrib_Channel @= ''); 
+	p_Distrib_Channel = 'TOTAL_DISTRIB_CHANNEL';
+EndIf;
+
+As_Temporary = 1 ;
+
+#--------------------Création des objets Source--------------------#
+ViewCreate(C_Cube_Source ,view_copy, As_Temporary );
+# 1_G_CURRENT_PHASE
+subsetcreate(D_CURRENT_PHASE,subset_copy ,As_Temporary);
+SubsetElementInsert(D_CURRENT_PHASE, subset_copy, P_Phase, 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CURRENT_PHASE,subset_copy);
+
+# SLS_VERSION
+subsetcreate(D_VERSION,subset_copy ,As_Temporary);
+SubsetElementInsert(D_VERSION, subset_copy, 'FV', 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_VERSION,subset_copy);
+
+# 1_G_SALES_ORG
+MDX_SALES_ORG = '{{[1_G_SALES_ORG].[TOTAL SALES ORG]},{TM1FILTERBYLEVEL(DESCENDANTS([1_G_SALES_ORG].[' | p_Sales_org |']), 0)}}';
+SubsetCreatebyMDX( subset_copy, MDX_SALES_ORG, As_Temporary);
+SubsetElementDelete( D_SALES_ORG, subset_copy, 1);
+
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_ORG,subset_copy);
+
+# 1_G_DISTRIB_CHANNEL
+MDX_DISTRIB_CHANNEL = '{{[1_G_DISTRIB_CHANNEL].[TOTAL_DISTRIB_CHANNEL]},{TM1FILTERBYLEVEL(DESCENDANTS([1_G_DISTRIB_CHANNEL].[' | p_Distrib_Channel |']), 0)}}';
+SubsetCreatebyMDX( subset_copy, MDX_DISTRIB_CHANNEL, As_Temporary);
+SubsetElementDelete( D_DISTRIB_CHANNEL, subset_copy, 1 );
+
+ViewSubsetAssign(C_Cube_Source,view_copy, D_DISTRIB_CHANNEL,subset_copy);
+
+
+# D_Line
+subsetcreate( D_Line,subset_copy ,As_Temporary);
+SubsetElementInsert( D_Line, subset_copy, 'L1', 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_Line,subset_copy);
+
+# D_ASSIGN_IND
+# subsetcreate( D_ASSIGN_IND,subset_copy ,As_Temporary);
+# i=1;
+# while ( i< dimsiz ( D_ASSIGN_IND ) ) ;
+# myitem = dimnm ( D_ASSIGN_IND , i ) ;
+# if( attrs ( D_Assign_IND , myitem , 'type_indicateur' ) @= 'Prix_unit' % attrs ( D_Assign_IND , myitem , 'type_indicateur' ) @= 'valo') ;
+# SubsetElementInsert( D_ASSIGN_IND, subset_copy, myitem , 1);
+# endif ; 
+# i=i+1 ; 
+# end ;
+SubsetDestroy( D_ASSIGN_IND, subset_erase );
+MDX_IND = '{{[SLS_ASSIGN_IND].[SLS_VOL]},
+{TM1FILTERBYLEVEL(FILTER(TM1SUBSETALL([SLS_ASSIGN_IND]) , [SLS_ASSIGN_IND].[type_indicateur] = "Valo") , 0)},
+{TM1FILTERBYLEVEL(FILTER(TM1SUBSETALL([SLS_ASSIGN_IND]) , [SLS_ASSIGN_IND].[type_indicateur] = "prix_unit") , 0)}}';
+SubsetCreatebyMDX( subset_copy, MDX_IND, As_Temporary);
+SubsetElementDelete( D_ASSIGN_IND, subset_copy, 1 );
+ViewSubsetAssign(C_Cube_Source,view_copy, D_ASSIGN_IND,subset_copy);
+
+ 
+#--------------------Suppression des cellules vides, consolidées, calculées pour la vue source--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 1);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+
+
+
+#--------------------Création des objets cible--------------------#
+ViewCreate(C_Cube_cible ,view_erase, As_Temporary );
+# 1_G_CURRENT_PHASE
+subsetcreate(D_CURRENT_PHASE,subset_erase ,As_Temporary);
+SubsetElementInsert(D_CURRENT_PHASE, subset_erase, P_Phase, 1);
+ViewSubsetAssign(C_Cube_cible,view_erase, D_CURRENT_PHASE,subset_erase);
+
+# 1_G_SALES_ORG
+MDX_SALES_ORG = '{{[1_G_SALES_ORG].[TOTAL SALES ORG]},{TM1FILTERBYLEVEL(DESCENDANTS([1_G_SALES_ORG].[' | p_Sales_org |']), 0)}}';
+SubsetCreatebyMDX( subset_erase, MDX_SALES_ORG, As_Temporary);
+SubsetElementDelete( D_SALES_ORG, subset_erase, 1);
+
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_SALES_ORG,subset_erase);
+
+# 1_G_DISTRIB_CHANNEL
+MDX_DISTRIB_CHANNEL = '{{[1_G_DISTRIB_CHANNEL].[TOTAL_DISTRIB_CHANNEL]},{TM1FILTERBYLEVEL(DESCENDANTS([1_G_DISTRIB_CHANNEL].[' | p_Distrib_Channel |']), 0)}}';
+SubsetCreatebyMDX( subset_erase, MDX_DISTRIB_CHANNEL, As_Temporary);
+SubsetElementDelete( D_DISTRIB_CHANNEL, subset_erase, 1 );
+
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_DISTRIB_CHANNEL,subset_erase);
+
+# SLS_MAT_FREIGHT_GROUP
+
+subsetcreate(D_MAT_FREIGHT_GROUP,subset_erase ,As_Temporary);
+SubsetElementInsert(D_MAT_FREIGHT_GROUP, subset_erase, 'N/A_MAT_FR_GROUP', 1);
+ViewSubsetAssign(C_Cube_cible,view_erase,D_MAT_FREIGHT_GROUP,subset_erase);
+
+# SLS_SHIP_POINT
+
+subsetcreate(D_SHIP_POINT,subset_erase ,As_Temporary);
+SubsetElementInsert(D_SHIP_POINT, subset_erase, 'N/A_SHIP_POINT', 1);
+ViewSubsetAssign(C_Cube_cible,view_erase,D_SHIP_POINT,subset_erase);
+
+# SLS_SHIP_PLANT
+
+subsetcreate(D_SHIP_PLANT,subset_erase ,As_Temporary);
+SubsetElementInsert(D_SHIP_PLANT, subset_erase, 'N/A_SHIP_PLANT', 1);
+ViewSubsetAssign(C_Cube_cible,view_erase,D_SHIP_PLANT,subset_erase);
+
+# SLS_PROD_PLANT
+
+subsetcreate(D_PROD_PLANT,subset_erase ,As_Temporary);
+SubsetElementInsert(D_PROD_PLANT, subset_erase, 'N/A_PROD_PLANT', 1);
+ViewSubsetAssign(C_Cube_cible,view_erase,D_PROD_PLANT,subset_erase);
+
+# SLS_VENDOR
+
+subsetcreate(D_VENDOR,subset_erase ,As_Temporary);
+SubsetElementInsert(D_VENDOR, subset_erase, 'N/A_VENDOR', 1);
+ViewSubsetAssign(C_Cube_cible,view_erase,D_VENDOR,subset_erase);
+
+# SLS_FR_COST_PLAN_IND
+subsetcreate(D_FR_COST_PLAN_IND,subset_erase ,As_Temporary);
+# i=1;
+# while ( i< dimsiz ( D_FR_COST_PLAN_IND ) ) ;
+# myitem = dimnm ( D_FR_COST_PLAN_IND , i ) ;
+# if( attrs (D_FR_COST_PLAN_IND , myitem , 'type_indicateur' ) @= 'Prix_Unit' % attrs (D_FR_COST_PLAN_IND , myitem , 'type_indicateur' ) @= 'Valo') ;
+# SubsetElementInsert( D_FR_COST_PLAN_IND, subset_erase, myitem , 1);
+# endif ; 
+# i=i+1 ; 
+# end ; 
+SubsetDestroy( D_FR_COST_PLAN_IND, subset_erase );
+
+MDX_IND = '{{[SLS_FR_COST_PLAN_IND].[SLS_VOL]},{EXCEPT(TM1FILTERBYLEVEL(FILTER(TM1SUBSETALL([SLS_FR_COST_PLAN_IND]) , [SLS_FR_COST_PLAN_IND].[type_indicateur] = "Prix_Unit") , 0) , {[SLS_FR_COST_PLAN_IND].[IMP_FR_COST], [SLS_FR_COST_PLAN_IND].[MAN_FR_COST]})},{TM1FILTERBYLEVEL(FILTER(TM1SUBSETALL([SLS_FR_COST_PLAN_IND]) , [SLS_FR_COST_PLAN_IND].[type_indicateur] = "Valo") , 0)}}';
+SubsetCreatebyMDX( subset_erase, MDX_IND, As_Temporary);
+SubsetElementDelete( D_FR_COST_PLAN_IND, subset_erase, 1 );
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_FR_COST_PLAN_IND,subset_erase);
+
+
+ViewZeroOut( C_Cube_cible,view_erase);
+
+
+
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#itemskip car règle sur cet indicateur
+If(v_SLS_ASSIGN_IND @= 'FR_COST_UNIT' % v_SLS_ASSIGN_IND @= 'FR_COST');
+	itemskip;
+EndIf;
+
+v_ShipPoint = 'N/A_SHIP_POINT' ;
+v_ShipPlant ='N/A_SHIP_PLANT' ;
+v_ProdPlant = 'N/A_PROD_PLANT' ;
+v_Vendor = 'N/A_VENDOR'  ;
+v_SLS_MAT_FREIGHT_GROUP= 'N/A_MAT_FR_GROUP' ; 
+
+CellPutN( Value  ,C_Cube_Cible,v_Current_Phase , v_G_Period,v_g_sales_org , v_g_distrib_channel, v_SLS_MATERIAL_PLAN ,v_SLS_CUSTOMER,v_SLS_MAT_FREIGHT_GROUP,v_ShipPoint,v_ShipPlant,v_ProdPlant ,v_Vendor,v_SLS_ASSIGN_IND);
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

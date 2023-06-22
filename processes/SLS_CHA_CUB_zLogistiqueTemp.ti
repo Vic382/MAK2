@@ -1,0 +1,106 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   03/03/2023                                                        #
+#                                                                            #
+# Fait par :    ELH		                                                     #
+#                                                                            #
+# Action : Processus permettant l'import des données Logistique              #
+#          depuis le fichier exporté via book 09 Admin et modifié par        #
+#		   recherchev. Import dans le cube SLS_FR_COST_PLAN.				 #
+#          Lancer par le processus Master. 																 #
+#																			 #
+##############################################################################
+
+#===============================#
+#	Déclaration des variables	#
+#===============================#
+
+
+#--------------------Cubes--------------------#
+C_Cube_Param = 'zPROCESS_ADMINISTRATION' ;
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+vUser_Name = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vUSER = SUBST(vUser_Name, SCAN('/',vUser_Name)+1, 100);
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+e_message_data = '';
+
+#--------------------Déclaration de la vue source--------------------#
+# Récupération du dossier contenant le fichier
+sDossier = CellGetS ( C_Cube_Param , vPRO_NAME , 'DATASOURCE_INP_FOLDER' , 'Value' ) ;
+
+# Récupération du nom du fichier
+sFichier = CellGetS ( C_Cube_Param , vPRO_NAME , 'DATASOURCE_INP_FILE' , 'Value' ) ;
+
+# Reconstitution du nom complet du fichier
+sFichierSource = sDossier | '/' | sFichier ;
+
+# Déclaration de la source
+DataSourceNameForServer = sFichierSource ;
+DataSourceASCIIDelimiter = ';' ;
+
+# Variables pour récupération des éléments du fichier qui ne varient pas : sales_org, distrib_channel, début et fin période
+nParam = 1 ;
+nDebutPeriode = 1000000 ;
+nFinPeriode = 0 ;
+nNbLignes = 0 ;
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+# Insertion des données du fichier dans le cube LogistiqueTemp (nom du cube en paramètre, dimensions : voir le master ;) -> 'SLS_MAT_FREIGHT_GROUP' , 'SLS_SHIP_POINT' , '1_G_PERIOD' , 'SLS_CUSTOMER' , 'zLogistiqueIND'
+CellPutN (  manuel_freight_cost , p_cube , v_mat_freight_group , v_ship_point , v_period , v_customer , 'Mesure' ) ;
+
+# Nombre de ligne dans le fichier (comptage)
+nNbLignes = nNbLignes + 1 ;
+
+# Insertion, une seule fois, des éléments du fichier qui sont identiques pour toutes les lignes, soit : sales_org, distrib_channel, mat_freight_group
+IF ( nParam = 1 ) ;
+ nParam = 2 ;
+ CellPutS ( v_sales_org , p_param , 'p_sales_org' , 'Value' ) ; 
+ CellPutS ( v_distrib_channel , p_param , 'p_distrib_channel' , 'Value' ) ; 
+ # CellPutS ( v_mat_freight_group , p_param , 'p_mat_freight_group' , 'Value' ) ;
+ENDIF ;
+
+# Récupération de l'index des début et fin de période
+nPeriode = Dimix ( '1_G_PERIOD' , v_period ) ;
+IF ( nPeriode < nDebutPeriode ) ;
+ nDebutPeriode = nPeriode ;
+ CellPutS ( v_period , p_param , 'p_debut_periode' , 'Value' ) ;
+ENDIF ;
+nPeriode = Dimix ( '1_G_PERIOD' , v_period ) ;
+IF ( nPeriode > nFinPeriode ) ;
+ nFinPeriode = nPeriode ;
+ CellPutS ( v_period , p_param , 'p_fin_periode' , 'Value' ) ;
+ENDIF ;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+# Stockage du nombre de lignes dans le fichier
+CellPutN ( nNbLignes , 'zVERIF_IMPORT_LOGISTIQUE' , 'Nombre de lignes dans le fichier' , 'Valeur_N' ) ;
+#endregion

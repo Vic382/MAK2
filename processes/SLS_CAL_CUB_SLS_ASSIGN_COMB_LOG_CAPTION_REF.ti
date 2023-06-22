@@ -1,0 +1,283 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   05/11/2019                                                        #
+#                                                                            #
+# Fait par :    Elisabeth Mounier	                                         #
+#                                                                            #
+# Action : Processus mettant à jour les combinaisons logistiques dans		 #
+#			SLS_ASSIGN avec le référentiel 									 #
+#																			 #
+##############################################################################
+
+#Ce processus est exécuté à la demande par un bouton dans le book 08bis - Customer Service
+#--------------------Cubes--------------------#
+
+C_Cube_SOURCE = 'SLS_ASSIGN';
+#--------------------Dimensions--------------------#
+D_CURRENT_PHASE = '1_G_CURRENT_PHASE';
+D_VERSION = 'SLS_VERSION';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_LINE = '1_G_LINE';
+D_ASSIGN_IND = 'SLS_ASSIGN_IND';
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+vUser_Name = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vUSER = SUBST(vUser_Name, SCAN('/',vUser_Name)+1, 100);
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+
+ 
+#--------------------Vues--------------------#
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+asTemporay = 1;
+
+#--------------------Création des objets--------------------#
+ViewCreate(C_Cube_SOURCE,view_COPY,asTemporay );
+
+# SLS_VERSION
+subsetcreate(D_VERSION,subset_copy,asTemporay);
+SubsetElementInsert(D_VERSION, subset_copy, 'FV', 1);
+
+# 1_G_PERIOD
+#subsetcreate(D_PERIOD, subset_copy,asTemporay);
+#SubsetElementInsert(D_PERIOD, subset_copy, 'Campaign', 1);
+
+#modif CCE pour la MAJ shipping point le 13/04/2021
+# SubsetCreatebyMDX( subset_copy, '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| D_PERIOD |'] )}, 0)}') ;
+MDX_PERIOD = '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| D_PERIOD |'] )}, 0)}' ;
+SubsetCreateByMDX ( subset_copy , MDX_PERIOD , asTemporay ) ;
+
+
+# 1_G_SALES_ORG
+MDX_SALES_ORG = '{{[1_G_SALES_ORG].[Total Sales Organisation]},{TM1FILTERBYLEVEL(TM1SUBSETALL([1_G_SALES_ORG]), 0)}}';
+subsetcreatebyMDX(subset_copy,MDX_SALES_ORG, asTemporay);
+SubsetElementDelete(D_SALES_ORG, subset_copy, 1);
+
+# 1_G_DISTRIB_CHANNEL
+MDX_DISTRIB = '{{[1_G_DISTRIB_CHANNEL].[Total Distribution Channel]},{TM1FILTERBYLEVEL(TM1SUBSETALL([1_G_DISTRIB_CHANNEL]), 0)}}';
+subsetcreatebyMDX(subset_copy,MDX_DISTRIB, asTemporay);
+SubsetElementDelete(D_DISTRIB_CHANNEL, subset_copy, 1);
+
+# SLS_MATERIAL_PLAN
+MDX_MATERIAL_PLAN = '{{[SLS_MATERIAL_PLAN].[Total Planning Material]},{TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_MATERIAL_PLAN]), 0)}}';
+subsetcreatebyMDX(subset_copy,MDX_MATERIAL_PLAN, asTemporay);
+SubsetElementDelete(D_MATERIAL_PLAN, subset_copy, 1);
+
+# SLS_CUSTOMER
+MDX_CUSTOMER = '{{[SLS_CUSTOMER].[Total Customer]},{TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_CUSTOMER]), 0)}}';
+subsetcreatebyMDX(subset_copy,MDX_CUSTOMER, asTemporay);
+SubsetElementDelete(D_CUSTOMER, subset_copy, 1);
+
+# 1_G_LINE
+# MDX_LINE = '{{[1_G_LINE].[Total Line]},{TM1FILTERBYLEVEL(TM1SUBSETALL([1_G_LINE]),0)}}';
+# subsetcreatebyMDX(subset_copy,MDX_LINE, asTemporay);
+# SubsetElementDelete(D_LINE, subset_copy, 1);
+subsetcreate(D_LINE,subset_copy,asTemporay);
+SubsetElementInsert(D_Line, subset_copy, 'Total Line', 1);
+
+# SLS_ASSIGN_IND
+subsetcreate(D_ASSIGN_IND, subset_copy,asTemporay);
+SubsetElementInsert(D_ASSIGN_IND, subset_copy, 'SLS_VOL', 1);
+
+# #--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PERIOD,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_VERSION,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_ORG,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_DISTRIB_CHANNEL,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_MATERIAL_PLAN,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CUSTOMER,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_LINE,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_ASSIGN_IND,subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewExtractSkipZeroesSet(C_Cube_Source,view_copy,1);
+ViewExtractSkipCalcsSet(C_Cube_Source,view_copy, 0);
+ViewExtractSkipZeroesSet(C_Cube_Source,view_copy, 1);
+
+
+ #--------------------Déclaration de la vue source--------------------#
+DataSourceNameForServer=C_Cube_Source;
+DatasourceCubeview=view_copy;
+ 
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+If(P_Indicateur = 1);
+
+Line = 1;
+Shipping_Point = 'start';
+While(Shipping_Point @<> '');
+
+	#Shipping Point
+	Shipping_Point = CellGetS(C_Cube_SOURCE, vPhase, vVersion, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vMaterial_Plan, vCustomer, numbertostring(Line), 'SHIP_PT');
+
+	#On ne fait rien si le Shipping Point n'est pas renseigné
+	If(Shipping_Point @= '');
+		itemskip;
+	EndIf;
+
+	#Il faut que Caption_J-1 soit un alias
+	Code_Shipping_Point = DimensionElementPrincipalName('SLS_SHIP_POINT', Shipping_Point);
+	Old_Caption_Shipping_Point = ATTRS('SLS_SHIP_POINT', Code_Shipping_Point, 'J-1 Caption');
+	New_Caption_Shippint_Point = ATTRS('SLS_SHIP_POINT', Code_Shipping_Point, 'Code - Caption');
+
+	If(Old_Caption_Shipping_Point @= Shipping_Point);
+
+		#remplace l'ancien libellé avec le nouveau
+	    CellPutS(New_Caption_Shippint_Point, C_Cube_SOURCE, vPhase, vVersion, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vMaterial_Plan, vCustomer, numbertostring(Line), 'SHIP_PT');
+    
+	    #Pas de mise à jour de l'attribut ici puisqu'il sera introuvable pour les combinaisons commerciales suivantes.
+	EndIf;
+
+Line = Line + 1;
+End;
+########## P_INDICATEUR = 2 : MAJ DES SHIPPPING_PLANT et PRODUCTION_PLANT ##########################
+ElseIf(P_Indicateur = 2);
+
+Line = 1;
+Ship_Plant = 'start';
+While(Ship_Plant @<> '');
+
+	#Ship_Plant
+	Ship_Plant = CellGetS(C_Cube_SOURCE, vPhase, vVersion, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vMaterial_Plan, vCustomer, numbertostring(Line), 'Ship_Plant');
+
+	#On ne fait rien si le Ship_Plant n'est pas renseigné
+	If(Ship_Plant @= '');
+		itemskip;
+	EndIf;
+
+	#Il faut que Caption_J-1 soit un alias
+	Code_Ship_Plant = DimensionElementPrincipalName('SLS_Ship_Plant', Ship_Plant);
+	Old_Caption_Ship_Plant = ATTRS('SLS_Ship_Plant', Code_Ship_Plant, 'J-1 Caption');
+	New_Caption_Ship_Plant = ATTRS('SLS_Ship_Plant', Code_Ship_Plant, 'Code - Caption');
+
+	If(Old_Caption_Ship_Plant @= Ship_Plant);
+	
+		#remplace l'ancien libellé avec le nouveau
+	    CellPutS(New_Caption_Ship_Plant, C_Cube_SOURCE, vPhase, vVersion, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vMaterial_Plan, vCustomer, numbertostring(Line), 'Ship_Plant');
+
+	    #Pas de mise à jour de l'attribut ici puisqu'il sera introuvable pour les combinaisons commerciales suivantes.
+	EndIf;
+    
+Line = Line + 1;
+End;
+
+Line = 1;
+Prod_Plant = 'start';
+While(Prod_Plant @<> '');
+
+	#Prod_Plant
+	Prod_Plant = CellGetS(C_Cube_SOURCE, vPhase, vVersion, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vMaterial_Plan, vCustomer, numbertostring(Line), 'Prod_Plant');
+
+	#On ne fait rien si le Prod_Plant n'est pas renseigné
+	If(Prod_Plant @= '');
+		itemskip;
+	EndIf;
+
+	#Il faut que Caption_J-1 soit un alias
+	Code_Prod_Plant = DimensionElementPrincipalName('SLS_Prod_Plant', Prod_Plant);
+	Old_Caption_Prod_Plant = ATTRS('SLS_Prod_Plant', Code_Prod_Plant, 'J-1 Caption');
+	New_Caption_Prod_Plant = ATTRS('SLS_Prod_Plant', Code_Prod_Plant, 'Code - Caption');
+
+	If(Old_Caption_Prod_Plant @= Prod_Plant);
+	
+		#remplace l'ancien libellé avec le nouveau
+	    CellPutS(New_Caption_Prod_Plant, C_Cube_SOURCE, vPhase, vVersion, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vMaterial_Plan, vCustomer, numbertostring(Line), 'Prod_Plant');
+
+	    #Pas de mise à jour de l'attribut ici puisqu'il sera introuvable pour les combinaisons commerciales suivantes.
+	EndIf;
+
+Line = Line + 1;
+End;
+
+########## P_INDICATEUR = 3 : MAJ DU VENDOR ##########################
+ElseIf(P_Indicateur = 3);
+
+Line = 1;
+Vendor = 'start';
+While(Vendor @<> '');
+
+	#Vendor
+	Vendor = CellGetS(C_Cube_SOURCE, vPhase, vVersion, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vMaterial_Plan, vCustomer,numbertostring(Line), 'VENDOR');
+
+	#On ne fait rien si le Vendor n'est pas renseigné
+	If(Vendor @= '');
+		itemskip;
+	EndIf;
+
+	#Il faut que Caption_J-1 soit un alias
+	Code_Vendor = DimensionElementPrincipalName('SLS_VENDOR', Vendor);
+	Old_Caption_Vendor = ATTRS('SLS_VENDOR', Code_Vendor, 'J-1 Caption');
+	New_Caption_Vendor = ATTRS('SLS_VENDOR', Code_Vendor, 'Code - Caption');
+
+	If(Old_Caption_Vendor @= Vendor);
+	
+		#remplace l'ancien libellé avec le nouveau
+	    CellPutS(New_Caption_Vendor, C_Cube_SOURCE, vPhase, vVersion, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vMaterial_Plan, vCustomer, numbertostring(Line), 'VENDOR');
+    
+	    #Pas de mise à jour de l'attribut ici puisqu'il sera introuvable pour les combinaisons commerciales suivantes.
+	EndIf;
+
+Line = Line + 1;
+End;
+
+EndIf;
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#Mise à jour de J-1 Caption
+If(P_INDICATEUR = 1);
+	#MAJ SHIP_POINT
+	ExecuteProcess( 'SLS_CAL_DIM_SLS_COMB_LOG_CAPTION', 'P_INDICATEUR', 1);
+ElseIf(P_INDICATEUR = 2);
+	#MAJ_SHIP_PLANT
+	ExecuteProcess( 'SLS_CAL_DIM_SLS_COMB_LOG_CAPTION', 'P_INDICATEUR', 2);
+    #MAJ_PROD_PLANT
+    ExecuteProcess( 'SLS_CAL_DIM_SLS_COMB_LOG_CAPTION', 'P_INDICATEUR', 3);
+ElseIf(P_INDICATEUR = 3);
+	#MAJ_VENDOR
+	ExecuteProcess( 'SLS_CAL_DIM_SLS_COMB_LOG_CAPTION', 'P_INDICATEUR', 4);
+EndIf;
+
+#endregion

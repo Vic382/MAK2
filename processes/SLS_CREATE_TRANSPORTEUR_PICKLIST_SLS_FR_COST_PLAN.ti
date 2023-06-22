@@ -1,0 +1,121 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   17/05/2019                                                        #
+#                                                                            #
+# Fait par :    JM 		                                        	         #
+#                                                                            #
+# Action : Creation d'une pickliste transporteut dans une dimension pour la mesure transporteur			  	 #
+#       a partir d'une chaine de caractere stockée dans l'attribut transporteur dans la dimension Customer     																 #
+#																			 #
+##############################################################################
+
+#===============================#
+#	Déclaration des variables	#
+#===============================#
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+vUser_Name = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vUSER = SUBST(vUser_Name, SCAN('/',vUser_Name)+1, 100);
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_FR_COST_PLAN' ;  
+C_Cube_Cible = 'SLS_FR_COST_PLAN' ;  
+#--------------------Vues--------------------#
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+#--------------------Déclaration de la vue source--------------------#
+DataSourceNameForServer=C_Cube_Source;
+DatasourceCubeview=view_copy;
+
+
+As_Temporary = 1 ; 
+#--------------------Création des objets Source-----------------#
+
+ViewCreate(C_Cube_Source ,view_Copy, As_Temporary );
+
+
+
+
+# SLS_FR_COST_PLAN_IND
+subsetcreate('SLS_FR_COST_PLAN_IND',subset_copy ,As_Temporary);
+SubsetElementInsert('SLS_FR_COST_PLAN_IND', subset_copy, 'SLS_VOL' , 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, 'SLS_FR_COST_PLAN_IND',subset_copy);
+
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 1);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+#--------------------Création des objets Cible-----------------#
+
+ViewCreate(C_Cube_Cible ,view_erase, As_Temporary );
+
+# 1_G_PERIOD
+subsetcreate('1_G_PERIOD',subset_erase ,As_Temporary);
+SubsetElementInsert('1_G_PERIOD', subset_erase, 'N/A PERIOD' , 1);
+ViewSubsetAssign(C_Cube_Cible,view_erase, '1_G_PERIOD',subset_erase);
+
+
+# SLS_FR_COST_PLAN_IND
+subsetcreate('SLS_FR_COST_PLAN_IND',subset_erase ,As_Temporary);
+SubsetElementInsert('SLS_FR_COST_PLAN_IND', subset_erase, 'Transporteur' , 1);
+ViewSubsetAssign(C_Cube_Cible,view_erase, 'SLS_FR_COST_PLAN_IND',subset_erase);
+
+ViewZeroOut ( C_Cube_Cible,view_erase ) ;
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+sTextPicklist = 'Static:' ;
+sFilter = ATTRS ( 'SLS_CUSTOMER' ,  v_SLS_CUSTOMER , 'Transporteur' ) ;
+
+While ( sFilter @<> '' ) ;
+nSepPos = SCAN( '|', sFilter);
+	if( nSepPos = 0) ;
+	sToken = TRIM( sFilter);	
+               sFilter = '';
+	else;			
+               sToken = TRIM( SUBST( sFilter, 1, nSepPos - 1));	
+               If(DIMIX('SLS_VENDOR',sToken)<>0);
+               		sToken = AttrS('SLS_VENDOR', sToken, 'Code - Caption');
+               EndIf;
+               sFilter = TRIM( DELET( sFilter, 1, nSepPos));
+               
+	endif;
+sTextPicklist = sTextPicklist | sToken | ':'  ; 
+end ; 
+
+CellPutS ( sTextPicklist ,'}PickList_SLS_FR_COST_PLAN' , v_G_CURRENT_PHASE , 'N/A PERIOD' , v_G_SALES_ORG , v_G_DISTRIB_CHANNEL, v_SLS_MATERIAL_PLAN , v_SLS_CUSTOMER ,v_SLS_MAT_FREIGHT_GROUP
+,v_SLS_SHIP_POINT , 'N/A Ship Plant' ,  'N/A Prod Plant' , 'N/A Vendor' ,'Transporteur' , 'Value') ;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

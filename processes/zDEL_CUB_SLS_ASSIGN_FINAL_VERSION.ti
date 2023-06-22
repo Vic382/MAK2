@@ -1,0 +1,149 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   16/10/2019                                                        #
+#                                                                            #
+# Fait par :    JM BESNARD                                                  #
+#                                                                            #
+# Action : Processus de réinitialisation du cube SLS_ASSIGN	                 #
+#																			 #
+##############################################################################
+
+#===========================================#
+#             Déclaration des variables     #
+#===========================================#
+
+#--------------------Cubes--------------------#
+C_zPARAM = 'zPARAM';
+C_zSELECT = 'zSELECT';
+
+#--------------------Dimensions--------------------#
+D_CURRENT_PHASE = '1_G_CURRENT_PHASE';
+D_VERSION = 'SLS_VERSION';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_CUSTOMER = 'SLS_CUSTOMER';
+
+#--------------------Variables globales--------------------#
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+If(DIMIX('}Clients',vClient)=0);
+	vClient = 'Admin';
+EndIf;
+vPRO_NAME = GetProcessName();
+
+#--------------------Elements--------------------#
+Curr_Phase = CellGetS(C_zSELECT,vClient,'Current Phase');
+Distrib_Channel = CellGetS(C_zSELECT,vClient,'Distribution Channel');
+If(Distrib_Channel @= '');
+	Distrib_channel = 'Total Distribution Channel';
+EndIf;
+Sales_Org = CellGetS(C_zSELECT,vClient,'Sales Organisation');
+If(Sales_Org @= '');
+	Sales_Org = 'Total Sales Org';
+EndIf;
+Sales_Group = CellGetS(C_zSELECT,vClient,'Sales Group');
+If(Sales_Group @= '');
+	Sales_Group = 'Total Sales Group';
+EndIf;
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+
+#===========================================#
+#        Réinit Assign						#
+#===========================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy('SLS_ASSIGN',view_erase);
+Subsetdestroy(D_CURRENT_PHASE,subset_erase);
+Subsetdestroy(D_VERSION,subset_erase);
+Subsetdestroy(D_DISTRIB_CHANNEL,subset_erase);
+Subsetdestroy(D_SALES_ORG,subset_erase);
+Subsetdestroy(D_CUSTOMER,subset_erase);
+
+#--------------------Création des objets--------------------#
+ViewCreate('SLS_ASSIGN',view_erase);
+
+#D_PHASE
+subsetcreate(D_CURRENT_PHASE,subset_erase);
+SubsetElementInsert(D_CURRENT_PHASE, subset_erase, Curr_Phase, 1);
+
+#D_VERSION
+subsetcreate(D_VERSION,subset_erase);
+SubsetElementInsert(D_VERSION, subset_erase, 'FV', 1);
+
+#D_DISTRIB_CHANNEL
+subsetcreate(D_DISTRIB_CHANNEL,subset_erase);
+MDX = '{TM1FILTERBYLEVEL({DESCENDANTS([' | D_DISTRIB_CHANNEL | '].[' | Distrib_Channel | '])},0)}';
+SubsetMDXSet( D_DISTRIB_CHANNEL, subset_erase, MDX );
+
+#D_SALES_ORG
+subsetcreate(D_SALES_ORG,subset_erase);
+MDX = '{TM1FILTERBYLEVEL({DESCENDANTS([' | D_SALES_ORG | '].[' | Sales_Org | '])},0)}';
+SubsetMDXSet( D_SALES_ORG, subset_erase, MDX );
+
+#D_CUSTOMER - to be continued...
+SubsetCreate( D_CUSTOMER, subset_erase );
+If(Sales_Group @= 'Total Sales Group');
+	MDX = '{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_CUSTOMER])},0)}';
+Else;
+	MDX = 'FILTER({TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_CUSTOMER])},0)},[SLS_CUSTOMER].[Sales Group Name]@= "'|Sales_Group|'")';
+EndIf;
+SubsetMDXSet( D_CUSTOMER, subset_erase, MDX );
+
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign('SLS_ASSIGN',view_erase, D_CURRENT_PHASE,subset_erase);
+ViewSubsetAssign('SLS_ASSIGN',view_erase, D_VERSION,subset_erase);
+ViewSubsetAssign('SLS_ASSIGN',view_erase, D_DISTRIB_CHANNEL,subset_erase);
+ViewSubsetAssign('SLS_ASSIGN',view_erase, D_SALES_ORG,subset_erase);
+ViewSubsetAssign('SLS_ASSIGN',view_erase, D_CUSTOMER,subset_erase);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues('SLS_ASSIGN',view_erase,1);
+ViewSetSkipCalcs('SLS_ASSIGN',view_erase, 1);
+ViewSetSkipZeroes('SLS_ASSIGN',view_erase, 1);
+
+#--------------------Suppression des données--------------------#
+ViewZeroOut('SLS_ASSIGN',view_erase);
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy('SLS_ASSIGN',view_erase);
+Subsetdestroy(D_CURRENT_PHASE,subset_erase);
+Subsetdestroy(D_VERSION,subset_erase);
+Subsetdestroy(D_DISTRIB_CHANNEL,subset_erase);
+Subsetdestroy(D_SALES_ORG,subset_erase);
+Subsetdestroy(D_CUSTOMER,subset_erase);
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

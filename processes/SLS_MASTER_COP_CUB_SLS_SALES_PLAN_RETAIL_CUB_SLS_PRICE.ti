@@ -1,0 +1,38 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+################################################################
+#                                               DESCRIPTION DU PROCESSUS                                              #
+#                                                                                                                                                   #
+# Date :   02/11/2018                                                                                                                  #
+#                                                                                                                                                   #
+# Fait par :    Elisabeth MOUNIER                                                                                                #
+#                                                                                                                                                   #
+# Action : Processus master de copie des prix sur les éléments fins dans Sales Plan	     #
+#	+ calcul des consos					     		      #
+#					                			      #
+#                                                                                                                                                   #
+#################################################################
+
+
+# Copie les différentes conditions commerciales de SLS_SALES_PRICE vers SLS_SALES_PLAN
+
+ExecuteProcess('SLS_COP_CUB_SLS_SALES_PLAN_CUB_SLS_PRICE_RETAIL');
+ExecuteProcess('SLS_COP_CUB_SLS_SALES_PLAN_CUB_SLS_PRICE_PROMO_RATE');
+ExecuteProcess('SLS_MASTER_COP_CUB_SLS_SALES_PLAN_CUB_SLS_PRICE_RPP_CPV');
+ExecuteProcess('SLS_COP_CUB_SLS_SALES_PLAN_CUB_SLS_PRICE_REBATES_RETAIL');
+
+
+ExecuteProcess('SLS_MASTER_COP_CUB_SLS_SALES_PLAN_CUB_SLS_PRICE_NIP');
+
+
+# Calcule dans SLS_SALES_PLAN la condition commerciale unitaire en fonction des taux renseignés
+
+ExecuteProcess('SLS_CAL_CUB_SLS_SALES_PLAN_PRICE_SCH');
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

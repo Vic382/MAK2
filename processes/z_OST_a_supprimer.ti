@@ -1,0 +1,34 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+
+D_VOLUME_UNIT = '1_G_VOLUME_UNIT';
+vPRO_NAME = 'SLS_COP_CUB_SLS_REPORTING_CUB_SLS_SALES_PLAN';
+
+subset_volume_unit = 'subset volume unit' | AttrS ( '}Clients' , TM1USER, 'Caption' ) |'_' | vPRO_NAME;
+
+
+MDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( [1_G_VOLUME_UNIT] )}, 0)}';
+Subsetdestroy(D_VOLUME_UNIT, subset_volume_unit);
+
+SubsetCreatebyMDX(subset_volume_unit, MDX);
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

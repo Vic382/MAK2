@@ -1,0 +1,483 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+################################################################
+#                      DESCRIPTION DU PROCESSUS                #
+#                                                              #
+# Date :   07/05/2019                                          #
+#                                                              #
+# Fait par :   Ann BESNARD                                     #
+#                                                              #
+# Action : Switch Article dans un cube (en paramètre)		   #
+################################################################
+
+
+#====================================#
+#         Déclaration des variables  #
+#====================================#
+
+#--------------------Cubes--------------------#
+C_Cube_Source = P_Cube;
+C_Cube_Cible = P_Cube;
+C_zPARAM = 'zPARAM';
+C_zSELECT = 'zSELECT';
+
+#--------------------Dimensions--------------------#
+#On récupère toutes les dimensions du cube en paramètre et on repère laquelle est SLS_MATERIAL_PLAN
+
+#Dimension que l'on connait
+If(P_Current_Phase_Period = 1);
+	D_PHASE = '1_G_CURRENT_PHASE';
+Else;
+	D_PHASE = '1_G_PHASE_REP';
+EndIf;
+D_PERIOD = '1_G_PERIOD';
+D_MATERIAL = '1_G_MATERIAL';
+D_CHA_SAP_IND = 'SLS_CHA_SAP_IND';
+D_IND = P_Cube|'_IND';
+
+Dim_Planning_Mat = '';
+vELEM_Planning_Mat = '';
+Nb_Dim = 0;
+#Dim1 : Current Phase
+cpt = 2;
+Dim = TabDim(P_Cube, Cpt);
+
+#Tant que la dimension n'est pas vide
+While(Dim @<> '');
+	#On vérifie si c'est Material Plan
+    If(Dim @= 'SLS_MATERIAL_PLAN');
+    	#On garde en mémoire quelle dim est material
+		Dim_PLanning_Mat = Dim;
+        #On garde son index en mémoire
+        Cpt_Mat = Cpt;
+	EndIf;
+    cpt = cpt + 1;
+    Dim = TabDim(P_Cube,cpt);
+End;
+
+#On garde le nombre total de dim dans le cube en mémoire
+Nb_Dim = cpt - 1;
+Cpt_Ind = Cpt - 1;
+
+#--------------------Elements--------------------#
+
+e_Message_Prolog = '';
+#Phase_En_Cours = CellGetS(C_zPARAM, 'Phase', 'Value');
+SLS_VOL = 'SLS_VOL';
+PROMO_VOL = 'PROMO_VOL';
+CURR_VOL = 'CURR_VOL';
+CONTR_VOL = 'CONTR_VOL';
+PROSP_VOL = 'PROSP_VOL';
+TO_BE_CONTR_VOL = 'TO_BE_CONTR_VOL';
+VOL = 'VOL';
+
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+vClients = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+subset_temp = 'z_temp_' | vUSER |'_' | vPRO_NAME;
+
+DatasourceASCIIDecimalSeparator=',';
+DatasourceASCIIThousandSeparator=' ';
+
+#====================================#
+#     Désactivation de la consignation#
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 0);
+
+
+#=========================================#
+#     Initialisation de la vue à copier/vue source           #
+#=========================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+subsetdestroy(D_PHASE, subset_copy);
+subsetdestroy(D_PERIOD, subset_copy);
+subsetdestroy(Dim_Planning_Mat, subset_copy);
+subsetdestroy(D_CHA_SAP_IND, subset_copy);
+subsetdestroy(D_IND, subset_copy);
+
+#--------------------Création des objets--------------------#
+
+ViewCreate(C_Cube_Source,view_copy);
+
+#D_PHASE
+
+SubsetCreate(D_PHASE, subset_copy);
+SubsetElementInsert(D_PHASE, subset_copy, 'CURR_PHASE' , 1);
+
+IF ( P_Cube @= 'SLS_REPORTING');
+   SubsetElementInsert( D_PHASE, subset_copy, 'CURR_PHASE_SALES', 1);
+   SubsetElementInsert( D_PHASE,subset_copy, 'CURR_PHASE_CS', 1);
+   SubsetElementInsert( D_PHASE,subset_copy, 'RFC_Sales', 1);
+ ENDIF ;
+
+IF ( P_Cube @= 'SLS_SALES_PLAN' ) ;
+ SubsetElementInsert( D_PHASE,subset_copy, 'RFC', 1);
+ENDIF ;
+
+#D_PERIOD
+SubsetCreate(D_PERIOD, subset_copy);
+MDX_PERIOD = '{TM1SubsetToSet([1_G_PERIOD] , "Current Phase Periods")}';
+SubsetMDXSet( D_PERIOD, subset_copy, MDX_PERIOD );
+
+#Dim_Planning_Mat
+SubsetCreate(Dim_Planning_Mat, subset_copy);
+MDX_MATERIAL_PLAN = 'FILTER({TM1SUBSETALL([SLS_MATERIAL_PLAN])},[SLS_MATERIAL_PLAN].[Switch_Article_Cas_n2] =1)';
+SubsetMDXSet( Dim_Planning_Mat, subset_copy, MDX_MATERIAL_PLAN );
+
+#D_IND
+SubsetCreate(D_IND, subset_copy);
+
+IF ( P_Cube @= 'SLS_SALES_PLAN');
+
+MDX_IND = '{
+			{FILTER({TM1FILTERBYLEVEL({TM1SUBSETALL(['|D_IND|'])},0)},['|D_IND|'].[Type_Indicateur]@="Volume")},
+			{FILTER({TM1FILTERBYLEVEL({TM1SUBSETALL(['|D_IND|'])},0)},['|D_IND|'].[Type_Indicateur]@="Valo_2")},
+                                                      {FILTER({TM1FILTERBYLEVEL({TM1SUBSETALL(['|D_IND|'])},0)},['|D_IND|'].[Type_Indicateur]@="Flag")}
+            }';
+
+ELSEIF ( P_Cube @= 'SLS_FR_COST_PLAN');
+MDX_IND = '{
+			{FILTER({TM1FILTERBYLEVEL({TM1SUBSETALL(['|D_IND|'])},0)},['|D_IND|'].[Type_Indicateur]@="Volume")},
+			{FILTER({TM1FILTERBYLEVEL({TM1SUBSETALL(['|D_IND|'])},0)},['|D_IND|'].[Type_Indicateur]@="Valo_2")},
+                                                      {FILTER({TM1FILTERBYLEVEL({TM1SUBSETALL(['|D_IND|'])},0)},['|D_IND|'].[Typr_Indicateur]@="SWITCH")}
+            }';
+
+ELSE;
+
+MDX_IND = '{
+			{FILTER({TM1FILTERBYLEVEL({TM1SUBSETALL(['|D_IND|'])},0)},['|D_IND|'].[Type_Indicateur]@="Volume")},
+			{FILTER({TM1FILTERBYLEVEL({TM1SUBSETALL(['|D_IND|'])},0)},['|D_IND|'].[Type_Indicateur]@="Valo_2")}                                              
+            }';
+
+ENDIF;
+
+SubsetMDXSet( D_IND, subset_copy, MDX_IND );
+
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Source,view_copy,D_IND,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy,D_PHASE,subset_copy);
+
+ViewSubsetAssign(C_Cube_Source,view_copy,D_PERIOD, subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy,Dim_Planning_Mat,subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 1);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+# définition de la vue source#
+DatasourceNameForServer = C_Cube_Source;
+DatasourceCubeview= view_copy ;
+
+
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#MODIFICATION CCE
+VELEM_2bis  = VELEM_2 ;
+VELEM_3bis  = VELEM_3 ;
+VELEM_4bis  = VELEM_4 ;
+VELEM_5bis  = VELEM_5 ;
+VELEM_6bis  = VELEM_6 ;
+VELEM_7bis  = VELEM_7 ;
+VELEM_8bis  = VELEM_8 ;
+VELEM_9bis  = VELEM_9 ;
+VELEM_10bis = VELEM_10;
+VELEM_11bis = VELEM_11;
+VELEM_12bis = VELEM_12;
+VELEM_13bis = VELEM_13;
+VELEM_14bis = VELEM_14;
+VELEM_15bis = VELEM_15;
+VELEM_16bis = VELEM_16;
+VELEM_17bis = VELEM_17;
+VELEM_18bis = VELEM_18;
+#fin cce
+
+#On récupère la variable représentant la notion de planning material
+If(Cpt_Mat = 2);
+	vELEM_Planning_Mat = vELEM_2;
+ElseIf(Cpt_Mat = 3);
+   	vELEM_Planning_Mat = vELEM_3;
+ElseIf(Cpt_Mat = 4);
+   	vELEM_Planning_Mat = vELEM_4;
+ElseIf(Cpt_Mat = 5);
+   	vELEM_Planning_Mat = vELEM_5;
+ElseIf(Cpt_Mat = 6);
+	vELEM_Planning_Mat = vELEM_6;
+ElseIf(Cpt_Mat = 7);
+	vELEM_Planning_Mat = vELEM_7;
+ElseIf(Cpt_Mat = 8);
+	vELEM_Planning_Mat = vELEM_8;
+ElseIf(Cpt_Mat = 9);
+	vELEM_Planning_Mat = vELEM_9;
+ElseIf(Cpt_Mat = 10);
+	vELEM_Planning_Mat = vELEM_10;
+ElseIf(Cpt_Mat = 11);
+	vELEM_Planning_Mat = vELEM_11;
+ElseIf(Cpt_Mat = 12);
+  	vELEM_Planning_Mat = vELEM_12;
+ElseIf(Cpt_Mat = 13);
+	vELEM_Planning_Mat = vELEM_13;
+ElseIf(Cpt_Mat = 14);
+	vELEM_Planning_Mat = vELEM_14;
+ElseIf(Cpt_Mat = 15);
+	vELEM_Planning_Mat = vELEM_15;
+ElseIf(Cpt_Mat = 16);
+	vELEM_Planning_Mat = vELEM_16;
+ElseIf(Cpt_Mat = 17);
+	vELEM_Planning_Mat = vELEM_17;
+ElseIf(Cpt_Mat = 18);
+	vELEM_Planning_Mat = vELEM_18;
+EndIf;
+
+#On prend son parent dans la dimension Material
+Nv_PM = ELPAR(D_MATERIAL, vELEM_Planning_Mat|'.', 1);
+
+#On détermine l'indicateur
+If(Cpt_Ind = 2);
+	vELEM_IND = vELEM_2;
+    Value = vELEM_3;
+ElseIf(Cpt_Ind = 3);
+   	vELEM_IND = vELEM_3;
+    Value = vELEM_4;
+ElseIf(Cpt_Ind = 4);
+   	vELEM_IND = vELEM_4;
+    Value = vELEM_5;
+ElseIf(Cpt_Ind = 5);
+   	vELEM_IND = vELEM_5;
+    Value = vELEM_6;
+ElseIf(Cpt_Ind = 6);
+	vELEM_IND = vELEM_6;
+    Value = vELEM_7;
+ElseIf(Cpt_Ind = 7);
+	vELEM_IND = vELEM_7;
+	Value = vELEM_8;
+ElseIf(Cpt_Ind = 8);
+	vELEM_IND = vELEM_8;
+	Value = vELEM_9;
+ElseIf(Cpt_Ind = 9);
+	vELEM_IND = vELEM_9;
+    Value = vELEM_10;
+ElseIf(Cpt_Ind = 10);
+	vELEM_IND = vELEM_10;
+    Value = vELEM_11;
+ElseIf(Cpt_Ind = 11);
+	vELEM_IND = vELEM_11;
+    Value = vELEM_12;
+ElseIf(Cpt_Ind = 12);
+  	vELEM_IND = vELEM_12;
+    Value = vELEM_13;
+ElseIf(Cpt_Ind = 13);
+	vELEM_IND = vELEM_13;
+    Value = vELEM_14;
+ElseIf(Cpt_Ind = 14);
+	vELEM_IND = vELEM_14;
+    Value = vELEM_15;
+ElseIf(Cpt_Ind = 15);
+	vELEM_IND = vELEM_15;
+    Value = vELEM_16;
+ElseIf(Cpt_Ind = 16);
+	vELEM_IND = vELEM_16;
+    Value = vELEM_17;
+ElseIf(Cpt_Ind = 17);
+	vELEM_IND = vELEM_17;
+    Value = vELEM_18;
+ElseIf(Cpt_Ind = 18);
+	vELEM_IND = vELEM_18;
+    Value = vELEM_19;
+EndIf;
+
+#Le cas de assign_vol est propre à une comb log, il est géré via un autre process
+vELEM_IND = DimensionElementPrincipalName(D_IND, vELEM_IND);
+If(vELEM_IND @= 'ASSIGN_VOL');
+# 	ItemReject('test');
+	ItemSkip;
+EndIf;
+
+#On détermine le planning material cible
+If(Cpt_Mat = 2);
+                 VELEM_2bis = VELEM_2 ;
+	vELEM_2 = Nv_PM;
+ElseIf(Cpt_Mat = 3);
+                 VELEM_3bis = VELEM_3;
+   	vELEM_3 = Nv_PM;
+ElseIf(Cpt_Mat = 4);
+                 VELEM_4bis = VELEM_4 ;
+   	vELEM_4 = Nv_PM;
+ElseIf(Cpt_Mat = 5);
+                 VELEM_5bis = VELEM_5 ;
+   	vELEM_5 = Nv_PM;
+ElseIf(Cpt_Mat = 6);
+                 VELEM_6bis = VELEM_6 ;
+	vELEM_6 = Nv_PM;
+ElseIf(Cpt_Mat = 7);
+                 VELEM_7bis = VELEM_7 ;
+	vELEM_7 = Nv_PM;
+ElseIf(Cpt_Mat = 8);
+                 VELEM_8bis = VELEM_8 ;
+	vELEM_8 = Nv_PM;
+ElseIf(Cpt_Mat = 9);
+                 VELEM_9bis = VELEM_9 ;
+	vELEM_9 = Nv_PM;
+ElseIf(Cpt_Mat = 10);
+                 VELEM_10bis = VELEM_10 ;
+	vELEM_10 = Nv_PM;
+ElseIf(Cpt_Mat = 11);
+                 VELEM_11bis = VELEM_11 ;
+	vELEM_11 = Nv_PM;
+ElseIf(Cpt_Mat = 12);
+                 VELEM_12bis = VELEM_12 ;
+  	vELEM_12 = Nv_PM;
+ElseIf(Cpt_Mat = 13);
+                 VELEM_13bis = VELEM_13 ;
+	vELEM_13 = Nv_PM;
+ElseIf(Cpt_Mat = 14);
+                 VELEM_14bis = VELEM_14 ;
+	vELEM_14 = Nv_PM;
+ElseIf(Cpt_Mat = 15);
+                 VELEM_15bis = VELEM_15 ;
+	vELEM_15 = Nv_PM;
+ElseIf(Cpt_Mat = 16);
+                 VELEM_16bis = VELEM_16 ;
+	vELEM_16 = Nv_PM;
+ElseIf(Cpt_Mat = 17);
+                 VELEM_17bis = VELEM_17 ;
+	vELEM_17 = Nv_PM;
+ElseIf(Cpt_Mat = 18);
+                 VELEM_18bis = VELEM_18 ;
+	vELEM_18 = Nv_PM;
+EndIf;
+#modification CCE ajout cellput à 0
+#on alimente le volume (la valo sera automtiquement recalculée)
+If(Nb_Dim = 2);
+	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2);
+                  #CellPutN( 0, P_Cube, vELEM_PHASE, vELEM_2bis);
+ElseIf(Nb_Dim = 3);
+   	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3);
+                  #CellPutN(0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis);
+ElseIf(Nb_Dim    = 4);
+  	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4);
+                  #CellPutN(0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis);
+ElseIf(Nb_Dim = 5);
+   	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4, vELEM_5);
+                  #CellPutN(0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis ,VELEM_5bis);
+ElseIf(Nb_Dim = 6);
+  	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4, vELEM_5, vELEM_6);
+                  #CellPutN(0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis ,VELEM_5bis ,VELEM_6bis);
+ElseIf(Nb_Dim = 7);
+   	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4, vELEM_5, vELEM_6, vELEM_7);
+                  #CellPutN(0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis ,VELEM_5bis ,VELEM_6bis ,VELEM_7bis);
+ElseIf(Nb_Dim = 8);
+  	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4, vELEM_5, vELEM_6, vELEM_7, vELEM_8);
+                  #CellPutN(0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis ,VELEM_5bis ,VELEM_6bis ,VELEM_7bis ,VELEM_8bis);
+ElseIf(Nb_Dim = 9);
+  	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4, vELEM_5, vELEM_6, vELEM_7, vELEM_8, vELEM_9);
+                  #CellPutN(0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis ,VELEM_5bis ,VELEM_6bis ,VELEM_7bis ,VELEM_8bis ,VELEM_9bis);
+ElseIf(Nb_Dim = 10);
+  	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4, vELEM_5, vELEM_6, vELEM_7, vELEM_8, vELEM_9, vELEM_10);
+                  #CellPutN(0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis ,VELEM_5bis ,VELEM_6bis ,VELEM_7bis ,VELEM_8bis ,VELEM_9bis ,VELEM_10bis);
+ElseIf(Nb_Dim = 11);
+   	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4, vELEM_5, vELEM_6, vELEM_7, vELEM_8, vELEM_9, vELEM_10, vELEM_11);
+                  #CellPutN(0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis ,VELEM_5bis ,VELEM_6bis ,VELEM_7bis ,VELEM_8bis ,VELEM_9bis ,VELEM_10bis, VELEM_11bis);
+ElseIf(Nb_Dim = 12);
+   	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4, vELEM_5, vELEM_6, vELEM_7, vELEM_8, vELEM_9, vELEM_10, vELEM_11, 
+    	vELEM_12);
+                  #CellPutN (0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis ,VELEM_5bis ,VELEM_6bis ,VELEM_7bis ,VELEM_8bis ,VELEM_9bis ,VELEM_10bis, VELEM_11bis,VELEM_12bis);
+ElseIf(Nb_Dim = 13);
+  	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4, vELEM_5, vELEM_6, vELEM_7, vELEM_8, vELEM_9, vELEM_10, vELEM_11, 
+       	vELEM_12, vELEM_13);
+                  #CellPutN(0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis ,VELEM_5bis ,VELEM_6bis ,VELEM_7bis ,VELEM_8bis ,VELEM_9bis ,VELEM_10bis, VELEM_11bis,VELEM_12bis,VELEM_13bis);
+ElseIf(Nb_Dim = 14);
+   	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4, vELEM_5, vELEM_6, vELEM_7, vELEM_8, vELEM_9, vELEM_10, vELEM_11, 
+       	vELEM_12, vELEM_13, vELEM_14);
+                  #CellPutN(0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis ,VELEM_5bis ,VELEM_6bis ,VELEM_7bis ,VELEM_8bis ,VELEM_9bis ,VELEM_10bis, VELEM_11bis,VELEM_12bis,VELEM_13bis,VELEM_14bis);
+ElseIf(Nb_Dim = 15);
+   	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4, vELEM_5, vELEM_6, vELEM_7, vELEM_8, vELEM_9, vELEM_10, vELEM_11, 
+      	vELEM_12, vELEM_13, vELEM_14, vELEM_15);
+                  #CellPutN(0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis ,VELEM_5bis ,VELEM_6bis ,VELEM_7bis ,VELEM_8bis ,VELEM_9bis ,VELEM_10bis, VELEM_11bis,VELEM_12bis,VELEM_13bis,VELEM_14bis,VELEM_15bis);
+ElseIf(Nb_Dim = 16);
+   	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4, vELEM_5, vELEM_6, vELEM_7, vELEM_8, vELEM_9, vELEM_10, vELEM_11, 
+      	vELEM_12, vELEM_13, vELEM_14, vELEM_15, vELEM_16);  
+                  #CellPutN (0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis ,VELEM_5bis ,VELEM_6bis ,VELEM_7bis ,VELEM_8bis ,VELEM_9bis ,VELEM_10bis, VELEM_11bis,VELEM_12bis,VELEM_13bis,VELEM_14bis,VELEM_15bis,VELEM_16bis);
+ElseIf(Nb_Dim = 17);
+   	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4, vELEM_5, vELEM_6, vELEM_7, vELEM_8, vELEM_9, vELEM_10, vELEM_11, 
+       vELEM_12, vELEM_13, vELEM_14, vELEM_15, vELEM_16, vELEM_17);
+                  #CellPutN(0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis ,VELEM_5bis ,VELEM_6bis ,VELEM_7bis ,VELEM_8bis ,VELEM_9bis ,VELEM_10bis, VELEM_11bis,VELEM_12bis,VELEM_13bis,VELEM_14bis,VELEM_15bis,VELEM_16bis,VELEM_17bis);
+Else;
+   	CellIncrementN(StringToNumber(Value), P_Cube, vELEM_PHASE, vELEM_2, vELEM_3, vELEM_4, vELEM_5, vELEM_6, vELEM_7, vELEM_8, vELEM_9, vELEM_10, vELEM_11, 
+       	vELEM_12, vELEM_13, vELEM_14, vELEM_15, vELEM_16, vELEM_17, vELEM_18);
+                  #CellPutN(0, P_Cube, vELEM_PHASE,VELEM_2bis ,VELEM_3bis ,VELEM_4bis ,VELEM_5bis ,VELEM_6bis ,VELEM_7bis ,VELEM_8bis ,VELEM_9bis ,VELEM_10bis, VELEM_11bis,VELEM_12bis,VELEM_13bis,VELEM_14bis,VELEM_15bis,VELEM_16bis,VELEM_17bis,VELEM_18bis);
+EndIf;
+
+#fin modif cce
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+ViewZeroOut(C_Cube_Source,view_copy);
+#--------------------Destruction des objets--------------------#
+
+ViewDestroy(C_Cube_Source,view_copy);
+subsetdestroy(D_PHASE, subset_copy);
+subsetdestroy(D_PERIOD, subset_copy);
+subsetdestroy(Dim_Planning_Mat, subset_copy);
+subsetdestroy(D_CHA_SAP_IND, subset_copy);
+subsetdestroy(D_IND, subset_copy);
+SubsetDestroy(D_IND, subset_temp);
+
+#====================================#
+#    Réactivation de la consignation#
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 1);
+#endregion

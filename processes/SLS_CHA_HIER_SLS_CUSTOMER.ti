@@ -1,0 +1,172 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#############################################################################################################################
+#                                               DESCRIPTION DU PROCESSUS                                                    #
+#                                                                                                                           #
+# Date :   14/03/2019                                                                                                       #
+#                                                                                                                           #
+# Fait par :   Ann BESNARD																								    #
+#                                                                                                                           #
+# Action : Processus de mise à jour des hiérarchies virtuelles de SLS_CUSTOMER                                              #
+#																                                                            #
+#				                                  					                                                        #
+#                                                                                                                           #
+#############################################################################################################################
+
+#=============================================#
+#             Déclaration des variables       #
+#=============================================#
+
+#--------------------Cubes--------------------#
+C_Attr_CUSTOMER = '}ElementAttributes_SLS_CUSTOMER';
+
+#--------------------Dimensions--------------------#
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_Attr_CUSTOMER = '}ElementAttributes_SLS_CUSTOMER';
+
+#--------------------Elements--------------------#
+TOT_CUSTOMER = 'TOTAL_CUSTOMER';
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+subset_temp = 'z_temp_' | vUSER |'_' | vPRO_NAME;
+subset_hier = 'z_hier_' | vUSER |'_' | vPRO_NAME;
+
+#-------------------Création ou update des hiérarchies-------#
+#Vérification à partir de quels attributs créé-t-on des hiérarchies
+
+#Création d'un subset avec tous les attributs
+SubsetDestroy(D_Attr_CUSTOMER, subset_temp);
+MDX_Attr = '{{['|D_Attr_CUSTOMER|'].[Caption]},{FILTER( {TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|D_Attr_CUSTOMER|'] )}, 0)}, ['|D_Attr_CUSTOMER|'].[Flag_Hier] = 1.000000)}}}';
+SubsetCreateByMDX(subset_temp, MDX_Attr);
+SubsetElementDelete(D_Attr_CUSTOMER, subset_temp, 1);
+Subsize = SubsetGetSize(D_Attr_CUSTOMER, subset_temp);
+
+#Parcours du subset
+elem_nb = 1;
+While(elem_nb<=Subsize);
+	#Vérification du flag pour chacun des éléments du subset
+    elem = SubsetGetElementName( D_Attr_CUSTOMER, subset_temp, elem_nb);
+    Flag = AttrN(D_Attr_CUSTOMER, elem,'Flag_Hier');
+    #Si l'attr doit être une hiérarchie : création si elle existe pas, update si elle existe
+    If(Flag = 1);
+		CreateHierarchyByAttribute( D_CUSTOMER, elem );
+        SetHierarchyGroupsSecurity( 'READ', D_CUSTOMER, elem );
+	EndIf;    
+    
+    #On créé un subset 'all' dans chacune des hiérachies virtuelles
+    If(HierarchySubsetExists( D_CUSTOMER, Elem, 'All' ) = 0);
+	    HierarchySubsetCreate( D_CUSTOMER, Elem, 'All', 0 );
+	EndIf;
+    MDX = 'TM1SORT(TM1FILTERBYLEVEL({TM1SUBSETALL([' | D_CUSTOMER | ':' | Elem | '])},1), ASC)';
+    HierarchySubsetMDXSet( D_CUSTOMER, Elem, 'All',  MDX);
+    HierarchySubsetAliasSet( D_CUSTOMER, Elem, 'All', 'Caption' );
+    
+    #On créé un subset 'all' avec le total dans chacune des hiérachies virtuelles
+    If(HierarchySubsetExists( D_CUSTOMER, Elem, 'All_and_total' ) = 0);
+	    HierarchySubsetCreate( D_CUSTOMER, Elem, 'All_and_total', 0 );
+	EndIf;
+    MDX = '{{TM1SORT(TM1FILTERBYLEVEL(TM1SUBSETALL([' | D_CUSTOMER | ':' | Elem | ']) , 2) , ASC)},{TM1SORT(TM1FILTERBYLEVEL(TM1SUBSETALL([' | D_CUSTOMER | ':' | Elem | ']) , 1) , ASC)}}';
+    HierarchySubsetMDXSet( D_CUSTOMER, Elem, 'All_and_total',  MDX);
+    HierarchySubsetAliasSet( D_CUSTOMER, Elem, 'All_and_total', 'Caption' );
+
+	elem_nb = elem_nb + 1;
+End;
+
+#Création d'un subset spécifique à la hiérarchie Incoterm : utilisé dans la logistique
+If(HierarchySubsetExists( D_CUSTOMER, 'Incoterm', 'Customer_Incoterm' ) = 0);
+	    HierarchySubsetCreate( D_CUSTOMER, 'Incoterm', 'Customer_Incoterm', 0 );
+EndIf;
+If(HierarchySubsetExists( D_CUSTOMER, 'Incoterm', 'Ship_to_Incoterm' ) = 0);
+	    HierarchySubsetCreate( D_CUSTOMER, 'Incoterm', 'Ship_to_Incoterm', 0 );
+EndIf;
+MDX_INCO = 'DESCENDANTS([SLS_CUSTOMER].[Incoterm].[All Incoterm])';
+MDX_CUST_INCO = 'TM1FILTERBYLEVEL(DESCENDANTS({STRTOMEMBER("[SLS_CUSTOMER].[Incoterm].[" + [zSELECT].(STRTOMEMBER("[}Clients].[" + USERNAME + "]"),[zSELECT_IND].[Incoterm]) + "]")}) , 0)';
+#MDX_INCO = 'TM1FILTERBYLEVEL(DESCENDANTS(STRTOMEMBER("[SLS_CUSTOMER:Incoterm].[" + [zSELECT].(STRTOMEMBER("[}Clients].[" + USERNAME + "]"), [zSELECT_IND].[Incoterm]) + "]")), 0)';
+HierarchySubsetMDXSet( D_CUSTOMER, 'Incoterm', 'Customer_Incoterm',  MDX_INCO);
+HierarchySubsetAliasSet( D_CUSTOMER, 'Incoterm', 'Customer_Incoterm', 'Caption' );
+HierarchySubsetMDXSet( D_CUSTOMER, 'Incoterm', 'Ship_to_Incoterm',  MDX_INCO);
+HierarchySubsetAliasSet( D_CUSTOMER, 'Incoterm', 'Ship_to_Incoterm', 'Caption' );
+
+#--------------------Sources de données--------------------#
+SubsetDestroy(D_CUSTOMER, subset_copy);
+
+MDX = '{{['|D_CUSTOMER|'].['|TOT_CUSTOMER|']},{TM1FILTERBYLEVEL({TM1SUBSETALL(['|D_CUSTOMER|'])},0)}}';
+SubsetCreateByMDX(subset_copy, MDX);
+SubsetElementDelete(D_CUSTOMER, subset_copy, 1);
+
+DatasourceDimensionSubset = subset_copy;
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+Subsize = SubsetGetSize(D_Attr_CUSTOMER, subset_temp);
+
+#Parcours du subset
+elem_nb = 1;
+While(elem_nb<=Subsize);
+	#Vérification du flag pour chacun des éléments du subset
+    Elem_Attr = SubsetGetElementName( D_Attr_CUSTOMER, subset_temp, elem_nb);
+    elem_nb = elem_nb + 1;
+
+    #Existe-t-il une description pour cet attribut?
+    If(DIMIX(D_Attr_CUSTOMER,Elem_Attr|' Name')<>0);
+   
+    	#L'attribut est il renseigné?
+    	Attr_Code = AttrS(D_CUSTOMER, vELEM_CUSTOMER, Elem_Attr);
+		If(Attr_Code @<> '');
+
+			Attr_Name = AttrS(D_CUSTOMER, vELEM_CUSTOMER, Elem_Attr|' Name');
+			AttrPutS(Attr_Code | ' - ' | Attr_Name,D_CUSTOMER|':'|Elem_Attr, Attr_Code,'Code - Caption');
+            While( DIMIX(D_CUSTOMER|':'|Elem_Attr, Attr_Name) <> 0 & DIMIX(D_CUSTOMER|':'|Elem_Attr, Attr_Name) <> DIMIX(D_CUSTOMER|':'|Elem_Attr, Attr_Code) );
+				Attr_Name = Attr_Name|'.';
+			End;
+            AttrPutS(Attr_Name,D_CUSTOMER|':'|Elem_Attr, Attr_Code,'Caption');
+        EndIf;
+    
+   EndIf;
+   
+End;
+
+
+
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+SubsetDestroy(D_Attr_CUSTOMER, subset_temp);
+SubsetDestroy(D_CUSTOMER, subset_copy);
+#endregion
