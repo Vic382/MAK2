@@ -1,0 +1,13 @@
+{
+	"@type":"Process",
+	"Name":"SLS_RAZ_PHASE",
+	"HasSecurityAccess":false,
+	"Code@Code.link":"SLS_RAZ_PHASE.ti",
+	"UIData":"_ParameterConstraints=e30=€",
+	"DataSource":
+	{
+		"Type":"None"
+	},
+	"Parameters":[],
+	"Variables":[]
+}

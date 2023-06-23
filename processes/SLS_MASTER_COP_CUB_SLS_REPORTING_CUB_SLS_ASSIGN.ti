@@ -1,0 +1,22 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#Copie de Assign vers Fr_Cost_Plan (le process de prix est appelé dans l'épilogue de celui-ci)
+ExecuteProcess('SLS_COP_CUB_SLS_FR_COST_PLAN_CUB_SLS_ASSIGN','P_Logistics',0);
+
+# ELH - EVO Commerciaux - Copie vers Reporting
+P_Phase_Rep = DimensionElementPrincipalName ( '1_G_PHASE_REP' , P_Phase ) ;
+IF ( P_Phase_Rep @= '0' ) ;
+ ExecuteProcess('SLS_COP_CUB_SLS_REPORTING_CUB_SLS_FR_COST_PLAN','P_Logistics', 1 , 'P_PHASE_invit' , P_Phase_Rep ) ;
+ELSEIF ( P_Phase_Rep @= 'CURR_PHASE_CS' ) ;
+ ExecuteProcess('SLS_COP_CUB_SLS_REPORTING_CUB_SLS_FR_COST_PLAN','P_Logistics', 2 , 'P_PHASE_invit' , P_Phase_Rep ) ;
+ELSE ;
+  ExecuteProcess('SLS_COP_CUB_SLS_REPORTING_CUB_SLS_FR_COST_PLAN','P_Logistics', 3 , 'P_PHASE_invit' , P_Phase_Rep ) ;
+ENDIF ;
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

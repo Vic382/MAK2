@@ -1,0 +1,52 @@
+{
+	"@type":"Cube",
+	"Name":"SLS_INIT",
+	"Rules@Code.link":"SLS_INIT.rules",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('1_G_CURRENT_PHASE')"
+		},
+		{
+			"@id":"Dimensions('1_G_PERIOD')"
+		},
+		{
+			"@id":"Dimensions('1_G_SALES_ORG')"
+		},
+		{
+			"@id":"Dimensions('1_G_DISTRIB_CHANNEL')"
+		},
+		{
+			"@id":"Dimensions('1_G_VOLUME_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')"
+		},
+		{
+			"@id":"Dimensions('SLS_CUSTOMER')"
+		},
+		{
+			"@id":"Dimensions('SLS_SHIP_POINT')"
+		},
+		{
+			"@id":"Dimensions('SLS_SHIP_PLANT')"
+		},
+		{
+			"@id":"Dimensions('SLS_PROD_PLANT')"
+		},
+		{
+			"@id":"Dimensions('SLS_VENDOR')"
+		},
+		{
+			"@id":"Dimensions('SLS_INIT_IND')"
+		}
+	],
+	"Views@Code.links":
+	[
+		"SLS_INIT.views/All.json",
+		"SLS_INIT.views/view1.json",
+		"SLS_INIT.views/z_copy2_Elisabeth MOUNIER_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel.json",
+		"SLS_INIT.views/z_copy2_Jean-Marc Besnard_SLS_COP_CUB_SLS_ASSIGN_CUB_SLS_INIT_Prev_JMB_20191112_Reel.json",
+		"SLS_INIT.views/VRT_Ctrl_Init.json"
+	]
+}

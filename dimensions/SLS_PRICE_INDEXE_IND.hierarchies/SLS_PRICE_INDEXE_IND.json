@@ -6,6 +6,14 @@
 		{
 			"Name":"BASE_INDEXE",
 			"Type":"Numeric"
+		},
+		{
+			"Name":"BASE_INDEXE_LDN",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"BASE_INDEXE_NY",
+			"Type":"Numeric"
 		}
 	],
 	"Subsets@Code.links":[]

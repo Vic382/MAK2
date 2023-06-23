@@ -1,0 +1,14 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+ExecuteProcess('SLS_CAL_CUB_SLS_GENERAL_HYP_INIT' );
+ExecuteProcess('SLS_CAL_SUBSETS_INIT');
+ExecuteProcess('SLS_CAL_DIM_1_G_PERIOD_SECURITY_READ');
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#endregion

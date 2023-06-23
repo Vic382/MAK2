@@ -1,0 +1,37 @@
+#Region System
+FEEDSTRINGS;
+SKIPCHECK;
+#EndRegion
+
+# Flag permettant de définir si une affectation logistique a été renseignée
+['Final version','N/A PERIOD','1_G_LINE':'1','zASSIGN_PREV'] = N:
+IF(
+	DB('SLS_ASSIGN', !'1_G_CURRENT_PHASE', !SLS_VERSION, !SLS_Q_HQ , !'1_G_PERIOD', !'1_G_SALES_ORG', !'1_G_DISTRIB_CHANNEL', !SLS_MATERIAL_PLAN, !SLS_CUSTOMER, !'1_G_LINE', 'SHIP_PT' ) @<> ''
+	% DB('SLS_ASSIGN', !'1_G_CURRENT_PHASE', !SLS_VERSION, !SLS_Q_HQ , !'1_G_PERIOD', !'1_G_SALES_ORG', !'1_G_DISTRIB_CHANNEL', !SLS_MATERIAL_PLAN, !SLS_CUSTOMER, !'1_G_LINE', 'SHIP_PLANT' ) @<> ''
+	% DB('SLS_ASSIGN', !'1_G_CURRENT_PHASE', !SLS_VERSION, !SLS_Q_HQ , !'1_G_PERIOD', !'1_G_SALES_ORG', !'1_G_DISTRIB_CHANNEL', !SLS_MATERIAL_PLAN, !SLS_CUSTOMER, !'1_G_LINE', 'PROD_PLANT' ) @<> ''
+	% DB('SLS_ASSIGN', !'1_G_CURRENT_PHASE', !SLS_VERSION, !SLS_Q_HQ , !'1_G_PERIOD', !'1_G_SALES_ORG', !'1_G_DISTRIB_CHANNEL', !SLS_MATERIAL_PLAN, !SLS_CUSTOMER, !'1_G_LINE', 'VENDOR' ) @<> '',
+	1,
+	0
+);
+
+# Calcul du volume total affecté pour le format conditionnel qui compare avec SLS_VOL
+['1_G_LINE':'1','zASSIGN_VOL_TOT'] = N:
+DB('SLS_ASSIGN', !'1_G_CURRENT_PHASE', !SLS_VERSION, !SLS_Q_HQ , !'1_G_PERIOD', !'1_G_SALES_ORG', !'1_G_DISTRIB_CHANNEL', !SLS_MATERIAL_PLAN, !SLS_CUSTOMER, 'Total_Line', 'ASSIGN_VOL' );
+
+#Modif DIMO SWITCH ARTICLE CS
+#Calcul des prix unitaires pour les niveaux consolidés
+[] = C:  IF( DB('}ElementAttributes_SLS_CHA_SAP_IND',!SLS_ASSIGN_IND,'Type_Indicateur') @= 'Prix_Unit',
+           DB('SLS_ASSIGN',!1_G_CURRENT_PHASE,!SLS_VERSION, !SLS_Q_HQ ,!1_G_PERIOD,!1_G_SALES_ORG,!1_G_DISTRIB_CHANNEL,!SLS_MATERIAL_PLAN,!SLS_CUSTOMER,!1_G_LINE,DB('}ElementAttributes_SLS_CHA_SAP_IND',!SLS_ASSIGN_IND,'Valo_Associée'))\['SLS_VOL'],
+            CONTINUE);
+
+FEEDERS;
+
+# Flag permettant de définir si une affectation logistique a été renseignée
+['Final version','N/A PERIOD','1_G_LINE':'1','SHIP_PT'] => ['zASSIGN_PREV'];
+['Final version','N/A PERIOD','1_G_LINE':'1','SHIP_PLANT'] => ['zASSIGN_PREV'];
+['Final version','N/A PERIOD','1_G_LINE':'1','PROD_PLANT'] => ['zASSIGN_PREV'];
+['Final version','N/A PERIOD','1_G_LINE':'1','VENDOR'] => ['zASSIGN_PREV'];
+
+# Calcul du volume total affecté pour le format conditionnel qui compare avec SLS_VOL
+['Total_Line','ASSIGN_VOL'] =>
+DB('SLS_ASSIGN', !'1_G_CURRENT_PHASE', !SLS_VERSION, !SLS_Q_HQ , !'1_G_PERIOD', !'1_G_SALES_ORG', !'1_G_DISTRIB_CHANNEL', !SLS_MATERIAL_PLAN, !SLS_CUSTOMER, '1', 'zASSIGN_VOL_TOT' );

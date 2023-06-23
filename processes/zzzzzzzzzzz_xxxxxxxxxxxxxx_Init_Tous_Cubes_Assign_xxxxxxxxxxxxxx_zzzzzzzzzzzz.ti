@@ -1,0 +1,167 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#1_G_CURRENT_PHASE
+MDX_CURRENT_PHASE = '{TM1SUBSETALL([1_G_CURRENT_PHASE])}';
+SubsetDestroy('1_G_CURRENT_PHASE', 'subset_erase_all' );
+SubsetCreate( '1_G_CURRENT_PHASE', 'subset_erase_all', 1 );
+SubsetMDXSet( '1_G_CURRENT_PHASE', 'subset_erase_all', MDX_CURRENT_PHASE );
+
+#1_G_DISTRIB_CHANNEL
+# SubsetDestroy('1_G_DISTRIB_CHANNEL', 'subset_erase_all' );
+# SubsetCreate( '1_G_DISTRIB_CHANNEL', 'subset_erase_all', 1 );
+# SubsetElementInsert( '1_G_DISTRIB_CHANNEL', 'subset_erase_all', '20', 1 );
+
+# #1_G_SALES_ORG
+# SubsetDestroy('1_G_SALES_ORG', 'subset_erase_all' );
+# SubsetCreate( '1_G_SALES_ORG', 'subset_erase_all', 1 );
+# SubsetElementInsert( '1_G_SALES_ORG', 'subset_erase_all', '1200', 1 );
+
+#SLS_COMB_TYPE
+# SubsetDestroy( 'SLS_COMB_TYPE', 'subset_erase_all' );
+# SubsetCreate( 'SLS_COMB_TYPE', 'subset_erase_all', 1 );
+# SubsetElementInsert( 'SLS_COMB_TYPE', 'subset_erase_all', 'CS_Assign', 1 );
+# SubsetElementInsert( 'SLS_COMB_TYPE', 'subset_erase_all', 'CS_Switch', 1 );
+
+#1_G_PHASE_REP
+# SubsetDestroy( '1_G_PHASE_REP', 'subset_erase_all' );
+# SubsetCreate( '1_G_PHASE_REP', 'subset_erase_all', 1 );
+# SubsetElementInsert( '1_G_PHASE_REP', 'subset_erase_all', 'CURR_PHASE_CS', 1 );
+
+#REPORTING
+# CUBESETLOGCHANGES('SLS_REPORTING', 0);
+# ViewDestroy( 'SLS_REPORTING', 'view_erase_all' );
+# ViewCreate( 'SLS_REPORTING', 'view_erase_all', 1 );
+
+# ViewSetSkipRuleValues('SLS_REPORTING','view_erase_all',1);
+# ViewSetSkipCalcs('SLS_REPORTING','view_erase_all', 1);
+# ViewSetSkipZeroes('SLS_REPORTING','view_erase_all', 1);
+
+# ViewSubsetAssign( 'SLS_REPORTING', 'view_erase_all', '1_G_PHASE_REP', 'subset_erase_all' );
+# ViewZeroOut( 'SLS_REPORTING', 'view_erase_all' );
+
+# ViewDestroy( 'SLS_REPORTING', 'view_erase_all' );
+# CUBESETLOGCHANGES('SLS_REPORTING', 1);
+
+# AsciiOutput('..\SLS_REPORTING.csv', 'test');
+
+
+#NEW_COMB - uniquement partie CS
+# CUBESETLOGCHANGES('SLS_NEW_COMBINATION', 0);
+# ViewDestroy( 'SLS_NEW_COMBINATION', 'view_erase_all' );
+# ViewCreate( 'SLS_NEW_COMBINATION', 'view_erase_all', 1 );
+
+# ViewSetSkipRuleValues('SLS_NEW_COMBINATION','view_erase_all',1);
+# ViewSetSkipCalcs('SLS_NEW_COMBINATION','view_erase_all', 1);
+# ViewSetSkipZeroes('SLS_NEW_COMBINATION','view_erase_all', 1);
+
+# ViewSubsetAssign( 'SLS_NEW_COMBINATION', 'view_erase_all', '1_G_CURRENT_PHASE', 'subset_erase_all' );
+# ViewSubsetAssign( 'SLS_NEW_COMBINATION', 'view_erase_all', 'SLS_COMB_TYPE', 'subset_erase_all' );
+# ViewZeroOut( 'SLS_NEW_COMBINATION', 'view_erase_all' );
+
+# ViewDestroy( 'SLS_NEW_COMBINATION', 'view_erase_all' );
+# CUBESETLOGCHANGES('SLS_NEW_COMBINATION', 1);
+
+# AsciiOutput('..\SLS_NEW_COMBINATION.csv', 'test');
+
+
+#ASSIGN
+# CUBESETLOGCHANGES('SLS_ASSIGN', 0);
+# ViewDestroy( 'SLS_ASSIGN', 'view_erase_all' );
+# ViewCreate( 'SLS_ASSIGN', 'view_erase_all', 1 );
+
+# ViewSetSkipRuleValues('SLS_ASSIGN','view_erase_all',1);
+# ViewSetSkipCalcs('SLS_ASSIGN','view_erase_all', 1);
+# ViewSetSkipZeroes('SLS_ASSIGN','view_erase_all', 1);
+
+# ViewSubsetAssign( 'SLS_ASSIGN', 'view_erase_all', '1_G_CURRENT_PHASE', 'subset_erase_all' );
+# ViewSubsetAssign( 'SLS_ASSIGN', 'view_erase_all', '1_G_DISTRIB_CHANNEL', 'subset_erase_all' );
+# ViewSubsetAssign( 'SLS_ASSIGN', 'view_erase_all', '1_G_SALES_ORG', 'subset_erase_all' );
+# ViewZeroOut( 'SLS_ASSIGN', 'view_erase_all' );
+
+# ViewDestroy( 'SLS_ASSIGN', 'view_erase_all' );
+# CUBESETLOGCHANGES('SLS_ASSIGN', 1);
+
+# AsciiOutput('..\SLS_ASSIGN.csv', 'test');
+
+
+#FR_COST_HYP
+# CUBESETLOGCHANGES('SLS_FR_COST_HYP', 0);
+# ViewDestroy( 'SLS_FR_COST_HYP', 'view_erase_all' );
+# ViewCreate( 'SLS_FR_COST_HYP', 'view_erase_all', 1 );
+
+# ViewSetSkipRuleValues('SLS_FR_COST_HYP','view_erase_all',1);
+# ViewSetSkipCalcs('SLS_FR_COST_HYP','view_erase_all', 1);
+# ViewSetSkipZeroes('SLS_FR_COST_HYP','view_erase_all', 1);
+
+# ViewSubsetAssign( 'SLS_FR_COST_HYP', 'view_erase_all', '1_G_CURRENT_PHASE', 'subset_erase_all' );
+# ViewZeroOut( 'SLS_FR_COST_HYP', 'view_erase_all' );
+
+# ViewDestroy( 'SLS_FR_COST_HYP', 'view_erase_all' );
+# CUBESETLOGCHANGES('SLS_FR_COST_HYP', 1);
+
+# AsciiOutput('..\SLS_FR_COST_HYP.csv', 'test');
+
+#FR_COST_PLAN
+CUBESETLOGCHANGES('SLS_FR_COST_PLAN', 0);
+ViewDestroy( 'SLS_FR_COST_PLAN', 'view_erase_all' );
+ViewCreate( 'SLS_FR_COST_PLAN', 'view_erase_all', 1 );
+
+ViewSetSkipRuleValues('SLS_FR_COST_PLAN','view_erase_all',1);
+ViewSetSkipCalcs('SLS_FR_COST_PLAN','view_erase_all', 1);
+ViewSetSkipZeroes('SLS_FR_COST_PLAN','view_erase_all', 1);
+
+ViewSubsetAssign( 'SLS_FR_COST_PLAN', 'view_erase_all', '1_G_CURRENT_PHASE', 'subset_erase_all' );
+ViewZeroOut( 'SLS_FR_COST_PLAN', 'view_erase_all' );
+
+ViewDestroy( 'SLS_FR_COST_PLAN', 'view_erase_all' );
+CUBESETLOGCHANGES('SLS_FR_COST_PLAN', 1);
+
+#AsciiOutput('..\SLS_FR_COST_PLAN.csv', 'test');
+
+#RECONCIL
+# CUBESETLOGCHANGES('SLS_RECONCIL', 0);
+# ViewDestroy( 'SLS_RECONCIL', 'view_erase_all' );
+# ViewCreate( 'SLS_RECONCIL', 'view_erase_all', 1 );
+
+# ViewSetSkipRuleValues('SLS_RECONCIL','view_erase_all',1);
+# ViewSetSkipCalcs('SLS_RECONCIL','view_erase_all', 1);
+# ViewSetSkipZeroes('SLS_RECONCIL','view_erase_all', 1);
+
+# ViewSubsetAssign( 'SLS_RECONCIL', 'view_erase_all', '1_G_CURRENT_PHASE', 'subset_erase_all' );
+# ViewZeroOut( 'SLS_RECONCIL', 'view_erase_all' );
+
+# ViewDestroy( 'SLS_RECONCIL', 'view_erase_all' );
+# CUBESETLOGCHANGES('SLS_RECONCIL', 1);
+
+# AsciiOutput('..\SLS_RECONCIL.csv', 'test');
+
+#RESSOURCES_PLAN
+# CUBESETLOGCHANGES('SLS_RESSOURCES_PLAN', 0);
+# ViewDestroy( 'SLS_RESSOURCES_PLAN', 'view_erase_all' );
+# ViewCreate( 'SLS_RESSOURCES_PLAN', 'view_erase_all', 1 );
+
+# ViewSetSkipRuleValues('SLS_RESSOURCES_PLAN','view_erase_all',1);
+# ViewSetSkipCalcs('SLS_RESSOURCES_PLAN','view_erase_all', 1);
+# ViewSetSkipZeroes('SLS_RESSOURCES_PLAN','view_erase_all', 1);
+
+# ViewSubsetAssign( 'SLS_RESSOURCES_PLAN', 'view_erase_all', '1_G_CURRENT_PHASE', 'subset_erase_all' );
+# ViewZeroOut( 'SLS_RESSOURCES_PLAN', 'view_erase_all' );
+
+# ViewDestroy( 'SLS_RESSOURCES_PLAN', 'view_erase_all' );
+# CUBESETLOGCHANGES('SLS_RESSOURCES_PLAN', 1);
+
+# AsciiOutput('..\SLS_RESSOURCES_PLAN.csv', 'test');
+
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+SubsetDestroy('1_G_CURRENT_PHASE', 'subset_erase_all' );
+# SubsetDestroy('1_G_DISTRIB_CHANNEL', 'subset_erase_all' );
+# SubsetDestroy('1_G_SALES_ORG', 'subset_erase_all' );
+# # SubsetDestroy( 'SLS_COMB_TYPE', 'subset_erase_all' );
+#endregion

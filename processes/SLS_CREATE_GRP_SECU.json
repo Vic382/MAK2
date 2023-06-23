@@ -1,0 +1,25 @@
+{
+	"@type":"Process",
+	"Name":"SLS_CREATE_GRP_SECU",
+	"HasSecurityAccess":true,
+	"Code@Code.link":"SLS_CREATE_GRP_SECU.ti",
+	"UIData":"_ParameterConstraints=e30=€",
+	"DataSource":
+	{
+		"Type":"TM1DimensionSubset",
+		"dataSourceNameForClient":"SLS_SALES_GROUP",
+		"dataSourceNameForServer":"SLS_SALES_GROUP",
+		"subset":"All"
+	},
+	"Parameters":[],
+	"Variables":
+	[
+		{
+			"Name":"vELEM_SALES_GROUP",
+			"Type":"String",
+			"Position":1,
+			"StartByte":0,
+			"EndByte":0
+		}
+	]
+}

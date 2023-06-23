@@ -1,0 +1,466 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+################################################################
+#                                               DESCRIPTION DU PROCESSUS                                 #
+#                                                                                                                                                   #
+# Date :                                                                                                #
+#                                                                                                                                                   #
+# Fait par :                  #
+#                                                                                                                                                   #
+# Action :                                               #
+#							 #
+#                                                                                                                                                   #
+#################################################################
+
+
+#====================================#
+#             Déclaration des variables                   #
+#====================================#
+
+#--------------------Cubes--------------------#
+C_Cube_Sales_Plan = 'SLS_SALES_PLAN';
+C_Cube_Cha_SAP = 'SLS_CHA_SAP';
+C_Cube_Cible = 'SLS_SALES_PLAN';
+C_zPROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+
+#--------------------Dimensions--------------------#
+D_PHASE = '1_G_CURRENT_PHASE';
+D_PHASE_CHA_SAP = '1_G_PHASE';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_CURRENCY = '1_G_CURRENCY';
+D_VOLUME_UNIT = '1_G_VOLUME_UNIT';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_SALES_PLAN_IND='SLS_SALES_PLAN_IND';
+
+D_MATERIAL = '1_G_MATERIAL';
+D_SHIP_POINT = 'SLS_SHIP_POINT';
+D_SHIP_PLANT = 'SLS_SHIP_PLANT';
+D_PROD_PLANT = 'SLS_PROD_PLANT';
+D_VENDOR = 'SLS_VENDOR';
+D_PAYER = 'SLS_PAYER';
+D_SOLD_TO = 'SLS_SOLD_TO';
+D_INCOTERM = 'SLS_INCOTERM';
+D_Q_HQ = 'SLS_Q_HQ';
+D_CHA_SAP_IND = 'SLS_CHA_SAP_IND';
+
+
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vClient_USER = AttrS('}Clients',TM1User,'Caption');
+Current_Phase = CellGetS('zSelect',vClient, 'Current Phase'); 
+Phase_Source_Repart= CellGetS('zSelect',vClient,'Phase_Key_Repart');
+
+Phase_Source_Repart = DimensionElementPrincipalName( D_PHASE_CHA_SAP, Phase_Source_Repart );
+
+If(DIMIX( D_PHASE_CHA_SAP, Phase_Source_Repart ) = 0);
+	err_prolog = 1;
+    message_err_prolog = 'Please select a monthly key.';
+    ProcessBreak;
+EndIf;
+
+#---------------- Cube technique ---------------#
+C_Cube_Hold_Cell = '}Hold_Planning Analytics_' | vClient_USER | '_}}_SLS_SALES_PLAN';
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase__' | vUser|'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUser|'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase__' |vUser|'_' | vPRO_NAME;
+subset_copy = 'z_copy_' |vUser|'_' | vPRO_NAME;
+subset_unit = 'z_unit_' |vUser|'_' | vPRO_NAME;
+
+DatasourceASCIIDecimalSeparator='.';
+DatasourceASCIIThousandSeparator='';
+
+#====================================#
+#        Désactivation de la consignation             #
+#====================================#
+#Modification le 01/07/2019 par Ann BESNARD pour avoir la traçabilité des monthly spread
+# OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+# CUBESETLOGCHANGES(C_Cube_Cible, 0);
+
+
+
+#=========================================#
+#     Initialisation de la vue à copier/vue source           #
+#=========================================#
+#Vue Source = Sales Plan, car saisie de L'Input.
+#Mais Phase Source se trouve dans Cha SAp
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Sales_Plan,view_copy);
+subsetdestroy(D_PHASE,subset_copy);
+subsetdestroy(D_PERIOD,subset_copy);
+subsetdestroy(D_SALES_ORG,subset_copy);
+subsetdestroy(D_DISTRIB_CHANNEL,subset_copy);
+subsetdestroy(D_CUSTOMER,subset_copy);
+subsetdestroy(D_MATERIAL_PLAN,subset_copy);
+subsetdestroy(D_SALES_GROUP,subset_copy);
+subsetdestroy(D_SALES_PLAN_IND,subset_copy);
+
+#--------------------Création des objets pour la vue source (copy)--------------------#
+
+#Dimension D_PHASE
+SubsetCreate(D_PHASE, subset_copy);
+SubsetElementInsert(D_PHASE, subset_copy,Current_Phase, 1);
+
+#Dimension D_PERIOD
+SubsetCreate(D_PERIOD, subset_copy);
+
+v_type_year=CellGetS('zSelect',vClient,'Current_Year_Type');
+
+if(v_type_year@='Campaign');
+v_t_year='CAMP';
+endif;
+if(v_type_year@='Fiscal');
+v_t_year='FISC';
+endif;
+if(v_type_year@='Calendar');
+v_t_year='CAL';
+endif;
+
+#On obtient le premier mois de simulation de la Current Phase dans Sales Plan
+v_simulation_period=ATTRS(D_PHASE,Current_Phase,'First simulation month');
+
+if(v_t_year@='FISC');
+v_Attr_Name_N='FISC_N';
+v_Attr_Name_N_1='FISC_N-1';
+endif;
+
+if(v_t_year@='CAMP');
+v_Attr_Name_N='Campaign_N';
+v_Attr_Name_N_1='Campaign_N-1';
+endif;
+
+if(v_t_year@='CAL');
+v_Attr_Name_N='Calendar_N';
+v_Attr_Name_N_1='Calendar_N-1';
+endif;
+
+#exemple : Campaign 2019 Input
+v_period = ATTRS(D_PERIOD, p_period, v_Attr_Name_N ) | ' Input';
+SubsetElementInsert(D_PERIOD, subset_copy,v_period, 1);
+
+#D_Sales_Group
+Sales_Group_Source= CellGetS('zSelect',vClient,'Sales Group');
+SubsetCreate(D_SALES_GROUP, subset_copy);
+SubsetElementInsert(D_SALES_GROUP, subset_copy,Sales_Group_Source, 1);
+
+#D_Distrib_Chann
+MDX_DISTRIB = '{{[1_G_DISTRIB_CHANNEL].[TOTAL_DISTRIB_CHANNEL]}, {TM1FILTERBYLEVEL({TM1SUBSETALL([1_G_DISTRIB_CHANNEL])},0)}}';
+SubsetCreateByMDX(subset_copy, MDX_DISTRIB);
+SubsetElementDelete(D_DISTRIB_CHANNEL, subset_copy, 1);
+
+#D_Sales_Org
+Sales_Org_Source= CellGetS('zSelect',vClient,'Sales org');
+SubsetCreate(D_SALES_ORG, subset_copy);
+SubsetElementInsert(D_SALES_ORG, subset_copy,Sales_Org_Source, 1);
+
+
+#D_CUSTOMER
+MDX_CUSTOMER = '{{[SLS_CUSTOMER].[TOTAL_CUSTOMER]}, {TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_CUSTOMER])},0)}}';
+SubsetCreateByMDX(subset_copy, MDX_CUSTOMER);
+SubsetElementDelete(D_CUSTOMER, subset_copy, 1);
+
+#D_MATERIAL
+MDX_MATERIAL = '{{[SLS_MATERIAL_PLAN].[TOTAL_PLANNING_MATERIAL]}, {TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_MATERIAL_PLAN])},0)}}';
+SubsetCreateByMDX(subset_copy, MDX_MATERIAL);
+SubsetElementDelete(D_MATERIAL_PLAN, subset_copy, 1);
+
+#D_SALES_PLAN_IND
+SubsetCreate(D_SALES_PLAN_IND, subset_copy);
+SubsetElementInsert(D_SALES_PLAN_IND, subset_copy,P_indicateur, 1);
+
+
+ViewCreate(C_Cube_Sales_Plan,view_copy);
+
+#--------------------Affectation des sous-ensembles à la vue source--------------------#
+
+ViewSubsetAssign(C_Cube_Sales_Plan,view_copy,D_PHASE,subset_copy);
+ViewSubsetAssign(C_Cube_Sales_Plan,view_copy,D_PERIOD,subset_copy);
+ViewSubsetAssign(C_Cube_Sales_Plan,view_copy,D_SALES_ORG,subset_copy);
+ViewSubsetAssign(C_Cube_Sales_Plan,view_copy,D_DISTRIB_CHANNEL,subset_copy);
+ViewSubsetAssign(C_Cube_Sales_Plan,view_copy,D_CUSTOMER,subset_copy);
+ViewSubsetAssign(C_Cube_Sales_Plan,view_copy,D_MATERIAL_PLAN,subset_copy);
+ViewSubsetAssign(C_Cube_Sales_Plan,view_copy,D_SALES_GROUP,subset_copy);
+ViewSubsetAssign(C_Cube_Sales_Plan,view_copy,D_SALES_PLAN_IND,subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Sales_Plan,view_copy,0);
+ViewSetSkipCalcs(C_Cube_Sales_Plan,view_copy, 1);
+ViewSetSkipZeroes(C_Cube_Sales_Plan,view_copy, 1);
+
+
+DatasourceCubeview= view_copy ;
+
+#--------------------Création des objets pour la vue cible--------------------#
+#pas de vue cible, on a fait le RAZ précédemment car attention aux croisement flagués
+
+
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+cpt_holded_cell = 0;
+value_holded_cell = 0;
+Volume_CHA_SAP_holded_cell = 0;
+
+#On veut uniquement l'unité par défaut
+#on parcourt le Planning Material dans Sales Plan
+Division = ELPAR(D_MATERIAL, vELEM_MATERIAL_PLAN, 1);
+Default_Unit = ATTRS('1_G_MATERIAL', Division, 'Volume_Unit');
+If(Default_Unit @<> vELEM_VOLUME_UNIT);
+	itemskip;
+EndIf;
+
+#####################
+
+v_simulation_month=subst(v_simulation_period,6,2);
+v_simulation_Year_N=subst(v_simulation_period, 1,4);
+v_simulation_Year_N_1=Numbertostring(stringtonumber(v_simulation_Year_N)-1);
+
+v_period_month=subst(p_period,6,2);
+v_period_current_year=subst(p_period,1,4);
+v_period_Precedent_Year=numbertostring(stringtonumber(v_period_current_year)-1);
+
+v_simulation_period_N1 = v_simulation_Year_N_1 | '.' | v_simulation_month;
+v_Precedent_Period=v_period_Precedent_Year|'.'|v_period_month;
+v_Current_Period=P_period;
+
+# ###########modif EMO 02/07/2019 : Cellules retenues############
+#on récupère le cpt dans SLS_SALES_PLAN, si différent de 0 il y a une cellule retenue
+#il faut savoir sur quelle conso le récupérer
+If(DimensionElementPrincipalName(D_PERIOD, ATTRS(D_Period, P_PERIOD, v_Attr_Name_N)) @= conso1);
+	cpt_holded_cell = CellGetN('SLS_SALES_PLAN',Current_Phase,'z_cpt_hold_cell_conso1', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+else; 
+	cpt_holded_cell = CellGetN('SLS_SALES_PLAN',Current_Phase,'z_cpt_hold_cell_conso2', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+endif;
+
+#on récupère la valeur totale des cellules retenues, montant à considérer comme du réel (on le soustrait de l'input)
+#il faut savoir sur quelle conso le récupérer
+If(DimensionElementPrincipalName( D_PERIOD,  ATTRS(D_Period, P_PERIOD, v_Attr_Name_N)) @= conso1);
+
+	value_holded_cell = CellGetN('SLS_SALES_PLAN',Current_Phase,'z_value_hold_cell_conso1', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+else; 
+	value_holded_cell = CellGetN('SLS_SALES_PLAN',Current_Phase,'z_value_hold_cell_conso2', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+endif;
+
+#on ne fait rien sur une cellule retenue
+If(CubeExists(C_Cube_Hold_Cell ) = 1);
+	Holded_Cell = CellGetS(C_Cube_Hold_Cell, Current_Phase,P_Period, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur, 'HoldStatus');
+EndIf;
+if(Holded_Cell @= 'H');
+	#avant d'ignorer cette cellule, on récupère ses infos sur l'année précédente si FC, année en cours sinon, dans cha_sap
+	If(DimensionElementPrincipalName(D_PHASE_CHA_SAP, Phase_Source_Repart) @= 'ACT');
+		Volume_CHA_SAP_holded_cell=CellGetN(C_Cube_Cha_SAP,Phase_Source_Repart,v_Precedent_Period, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP,'TOTAL_SHIP_POINT', 'TOTAL_SHIP_PLANT', 'TOTAL_PROD_PLANT', 'TOTAL_VENDOR', 'TOTAL_PAYER', 'TOTAL_SOLD_TO', 'TOTAL_INCOTERM','TOTAL_TYPE_QUOTA',  P_indicateur);
+	Else; 
+		Volume_CHA_SAP_holded_cell=CellGetN(C_Cube_Cha_SAP,Phase_Source_Repart,P_period, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP,'TOTAL_SHIP_POINT', 'TOTAL_SHIP_PLANT', 'TOTAL_PROD_PLANT', 'TOTAL_VENDOR', 'TOTAL_PAYER', 'TOTAL_SOLD_TO', 'TOTAL_INCOTERM','TOTAL_TYPE_QUOTA',  P_indicateur);
+	EndIf;
+	itemskip;
+endif;
+#######fin modif###########""
+####################################################################Calcul de l'année (N et N-1) du mois de début de simulation (attribut de la phase de saisie)####################################################################
+
+
+
+#################################################################### La répartition sera faite pour chaque mois de l'année récupéré en paramètre ##############################################
+
+
+
+
+#####################
+
+##################### Récupération de la valeur du flag (1 pas de répartition pour la ligne en question)#####################
+
+# v_flag=CellGetN(C_Cube_Sales_Plan,Current_Phase,'Tech_flag', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+# if(v_flag<>0);
+# 	itemskip;
+# endif;
+################################################################################################
+
+################################################################### Récupération des Volumes de l'année N###################################################################
+
+#exemple : Campaign 2019
+v_Total_Current_Year=ATTRS(D_PERIOD, p_period, v_Attr_Name_N);
+Current_Year = SUBST( v_Total_Current_Year, LONG( v_Total_Current_Year )-3, 4);
+Last_Year = Numbertostring(Stringtonumber(Current_Year)-1);
+#ex: v_t_year = CAL
+v_year_repart = v_t_year | ' ' | Last_Year;
+v_Current_year = v_t_year | ' ' | Current_Year;
+
+
+######################################################################Récupération du Volume correspondant au moins en paramètre##############################################################
+
+#Sur le Input
+v_valeur=CellGetN(C_Cube_Sales_Plan,Current_Phase,v_period, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+v_valeur_Input = v_valeur;
+
+Cumul_Act = 'CUMUL_ASC_'|v_t_year|'_'|v_simulation_period;
+v_valeur_cumul_act = CellGetN(C_Cube_Sales_Plan,Current_Phase,Cumul_Act, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL,vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+v_valeur_sim_month = CellGetN(C_Cube_Sales_Plan,Current_Phase,v_simulation_period, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL,vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+
+v_valeur_cumul_act_repart_prop = v_valeur_cumul_act - v_valeur_sim_month;
+
+#Si on fait la répartition sur une année partiellement prévisionnelle (réel + prev), on soustrait le cumul pour que le Input soit bien égal au total
+#on soustrait également le montant total des cellules retenues
+If(ATTRS(D_PERIOD, v_period, v_Attr_Name_N) @= ATTRS(D_PERIOD, v_simulation_period, v_Attr_Name_N));
+	v_valeur = v_valeur - v_valeur_Cumul_Act - value_holded_cell;
+Else; 
+	v_valeur = v_valeur - value_holded_cell;
+EndIf;
+####################################################################################################################################
+
+################################################################### Calcul des taux de répartition###################################################################
+
+#Si la phase source est ACT, on prend période N-1
+If(DimensionElementPrincipalName(D_PHASE_CHA_SAP, Phase_Source_Repart) @= 'ACT');
+	v_Volume_Month_Phase_repart=CellGetN(C_Cube_Cha_SAP,Phase_Source_Repart,v_Precedent_Period, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP,'TOTAL_SHIP_POINT', 'TOTAL_SHIP_PLANT', 'TOTAL_PROD_PLANT', 'TOTAL_VENDOR', 'TOTAL_PAYER', 'TOTAL_SOLD_TO', 'TOTAL_INCOTERM','TOTAL_TYPE_QUOTA',  P_indicateur);
+
+	v_Volume_Total_Phase_repart=CellGetN(C_Cube_Cha_SAP,Phase_Source_Repart,v_Year_Repart, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP,'TOTAL_SHIP_POINT', 'TOTAL_SHIP_PLANT', 'TOTAL_PROD_PLANT', 'TOTAL_VENDOR', 'TOTAL_PAYER', 'TOTAL_SOLD_TO', 'TOTAL_INCOTERM','TOTAL_TYPE_QUOTA',  P_indicateur);
+
+	#Si on fait la répartition sur une année partiellement prévisionnelle (réel + prev), on soustrait le cumul pour que le Input soit bien égal au total
+	If(ATTRS(D_PERIOD, v_period, v_Attr_Name_N) @= ATTRS(D_PERIOD, v_simulation_period, v_Attr_Name_N));
+    	Cumul_Act_Precedent = 'CUMUL_ASC_'|v_t_year|'_'|v_simulation_period_N1;
+		v_valeur_cumul_act = CellGetN(C_Cube_Cha_SAP,Phase_Source_Repart,Cumul_Act_Precedent,vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP,'TOTAL_SHIP_POINT', 'TOTAL_SHIP_PLANT', 'TOTAL_PROD_PLANT', 'TOTAL_VENDOR', 'TOTAL_PAYER', 'TOTAL_SOLD_TO', 'TOTAL_INCOTERM','TOTAL_TYPE_QUOTA',  P_indicateur);
+        v_Volume_Total_Phase_Repart = v_Volume_Total_Phase_Repart - v_valeur_Cumul_Act;
+	EndIf;
+
+
+#Sinon on prend la période en cours
+Else; 
+	v_Volume_Month_Phase_repart=CellGetN(C_Cube_Cha_SAP,Phase_Source_Repart,P_period, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP,'TOTAL_SHIP_POINT', 'TOTAL_SHIP_PLANT', 'TOTAL_PROD_PLANT', 'TOTAL_VENDOR', 'TOTAL_PAYER', 'TOTAL_SOLD_TO', 'TOTAL_INCOTERM','TOTAL_TYPE_QUOTA',  P_indicateur);
+
+	v_Volume_Total_Phase_repart=CellGetN(C_Cube_Cha_SAP,Phase_Source_Repart,v_Current_year, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP,'TOTAL_SHIP_POINT', 'TOTAL_SHIP_PLANT', 'TOTAL_PROD_PLANT', 'TOTAL_VENDOR', 'TOTAL_PAYER', 'TOTAL_SOLD_TO', 'TOTAL_INCOTERM','TOTAL_TYPE_QUOTA',  P_indicateur);
+
+	#Si on fait la répartition sur une année partiellement prévisionnelle (réel + prev), on soustrait le cumul pour que le Input soit bien égal au total
+	If(ATTRS(D_PERIOD, v_period, v_Attr_Name_N) @= ATTRS(D_PERIOD, v_simulation_period, v_Attr_Name_N));
+    	#Cumul_Act 
+		v_valeur_cumul_act = CellGetN(C_Cube_Cha_SAp,Phase_Source_Repart,Cumul_Act,  vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP,'TOTAL_SHIP_POINT', 'TOTAL_SHIP_PLANT', 'TOTAL_PROD_PLANT', 'TOTAL_VENDOR', 'TOTAL_PAYER', 'TOTAL_SOLD_TO', 'TOTAL_INCOTERM','TOTAL_TYPE_QUOTA',  P_indicateur);
+		v_Volume_Total_Phase_Repart = v_Volume_Total_Phase_Repart - v_valeur_Cumul_Act;
+	EndIf;
+
+	
+EndIf;
+
+
+
+#################
+#################
+#################
+If(v_Volume_Total_Phase_repart<>0);
+
+v_taux_repart=v_Volume_Month_Phase_repart/(v_Volume_Total_Phase_repart - Volume_CHA_SAP_holded_cell);
+
+
+################################################################################### Calcul du volume réparti ######################################################################################
+
+
+#################
+
+v_Volume_Repati=v_valeur*v_taux_repart;
+#asciioutput('..\Tests\indic.csv', numbertostring(v_valeur), numbertostring(v_taux_repart),numbertostring(v_Volume_Month_Phase_repart), numbertostring(v_Volume_Total_Phase_repart), numbertostring(Volume_CHA_SAP_holded_cell), p_period, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN);
+
+#S'il n'y a pas de données sur la phase source, on répartit par répétition
+Else;
+   #Si c'est une année de réel + prev
+   If(ATTRS(D_PERIOD, v_period, v_Attr_Name_N) @= ATTRS(D_PERIOD, v_simulation_period, v_Attr_Name_N));
+        #besoin	de calculer combien de mois prévisionnels il y a dans la conso correspondante
+        Conso = ATTRS(D_PERIOD, v_period, v_Attr_Name_N);
+        #itemreject(Conso);
+        subset_temp = 'subset_elem_fin';
+        SubsetDestroy( D_PERIOD, subset_temp );
+        MDX_PERIOD = '{{[1_G_PERIOD].[Calendar]}, {TM1FILTERBYLEVEL(DESCENDANTS([1_G_PERIOD].['|Conso|']) , 0)}}';
+        SubsetCreatebyMDX( subset_temp, MDX_PERIOD);
+        SubsetElementDelete( D_PERIOD, subset_temp, 1);
+
+		max = SubsetGetSize( D_PERIOD, subset_temp);
+        cpt = 1;
+        while(cpt <= max);
+        	Elem = SubsetGetElementName( D_PERIOD, subset_temp, cpt);
+			if(Elem @= v_simulation_period);
+            	first_index = cpt;
+            Endif;
+            last_index = cpt;
+            cpt = cpt+1;
+        End;
+		nb_mois_prev = last_index - first_index + 1;
+        #on soustrait également le montant des cellules retenues
+		v_valeur_tot = v_valeur_Input - v_valeur_Cumul_Act_repart_prop - value_holded_cell;
+
+		v_Volume_Repati = v_valeur_tot/(nb_mois_prev-cpt_holded_cell);
+        #v_Volume_Repati = v_valeur_tot/nb_mois_prev;
+		
+
+   #Année seulement prev
+   Else;
+        	v_Volume_Repati = (v_valeur_Input - value_holded_cell)/(12-cpt_holded_cell);
+            #v_Volume_Repati = v_valeur_Input/12;
+   EndIf;
+        
+Endif;
+
+#################
+
+CellputN(v_Volume_Repati,C_Cube_Sales_Plan, Current_Phase,P_period, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#====================================#
+#        Réactivation de la consignation             #
+#====================================#
+#Modification le 01/07/2019 par Ann BESNARD pour avoir la traçabilité des monthly spread
+# OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+# CUBESETLOGCHANGES(C_Cube_Cible, 1);
+
+If(err_prolog = 1);
+	itemreject(message_err_prolog);
+EndIf;
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Sales_Plan,view_copy);
+subsetdestroy(D_PHASE,subset_copy);
+subsetdestroy(D_PERIOD,subset_copy);
+subsetdestroy(D_SALES_ORG,subset_copy);
+subsetdestroy(D_DISTRIB_CHANNEL,subset_copy);
+subsetdestroy(D_CUSTOMER,subset_copy);
+subsetdestroy(D_MATERIAL_PLAN,subset_copy);
+subsetdestroy(D_SALES_GROUP,subset_copy);
+subsetdestroy(D_SALES_PLAN_IND,subset_copy);
+
+SubsetDestroy( D_PERIOD, subset_temp );
+#endregion

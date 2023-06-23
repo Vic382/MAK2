@@ -1,0 +1,14 @@
+{
+	"@type":"Cube",
+	"Name":"zVERIF_IMPORT_LOGISTIQUE",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('zVERIF_IMPORT_LOGISTIQUE')"
+		},
+		{
+			"@id":"Dimensions('zVERIF_IMPORT_LOGISTIQUE_IND')"
+		}
+	],
+	"Views@Code.links":[]
+}

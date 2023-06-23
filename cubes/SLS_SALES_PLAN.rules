@@ -1,0 +1,126 @@
+#Region System
+FEEDSTRINGS;
+SKIPCHECK;
+#EndRegion
+
+# Récupération des prix indexés dans le cube SLS_PRICE_INDEXE
+# Calcul par règle car prix commun à tous les clients/material...
+# VRT ticket 515018 : ajout de la récupération du prix selon l'attribut Indexation Price
+['I_BASE_UNIT'] = N : IF ( !1_G_PERIOD @<> 'N/A PERIOD' & DIMIX ( '1_G_PERIOD' , !1_G_PERIOD ) >= DIMIX ( '1_G_PERIOD' , DB ( '}ElementAttributes_1_G_CURRENT_PHASE' , DB ( 'SECURITY_CUBES' , 'SLS_SALES_PLAN' , 'security' ) , 'First simulation month' )),
+                       IF ( DB( 'SLS_SALES_PLAN', !1_G_CURRENT_PHASE, !1_G_PERIOD, !1_G_SALES_ORG, !1_G_DISTRIB_CHANNEL, !1_G_CURRENCY, !1_G_VOLUME_UNIT, !SLS_CUSTOMER, !SLS_MATERIAL_PLAN, !SLS_SALES_GROUP, 'SLS_VOL_INDEXE' ) <> 0,
+                        DB( 'SLS_PRICE_INDEXE', !1_G_PERIOD, !1_G_CURRENT_PHASE, 'BASE_INDEXE_' | DB('}ElementAttributes_SLS_CUSTOMER', !SLS_CUSTOMER , 'Indexation Price' ) ) ,
+                        STET ), 
+                       STET ) ;                     
+
+#Calcul des valos pour les éléments fins indexé
+['I_SURCH'] = N: ['SLS_VOL_INDEXE']* ['I_SURCH_UNIT'] ;
+['I_PREMIUM'] = N: ['SLS_VOL_INDEXE']* ['I_PREMIUM_UNIT'] ;
+['I_BASE'] = N: ['SLS_VOL_INDEXE']* ['I_BASE_UNIT'] ;
+['I_RPP'] = N: ['SLS_VOL_INDEXE']* ['I_RPP_UNIT'] ;
+['I_CPV'] = N: ['SLS_VOL_INDEXE']* ['I_CPV_UNIT'] ;
+['I_PROMO'] = N: ['SLS_VOL_INDEXE']* ['I_PROMO_UNIT'] ;
+#['I_CUST_REBATE'] = N: ['SLS_VOL_INDEXE']* ['I_CUST_REBATE_UNIT'] ;
+['I_RET_SERV'] = N: ['SLS_VOL_INDEXE']* ['I_RET_SERV_UNIT'] ;
+['I_FR_COST'] = N: ['SLS_VOL_INDEXE']* ['I_FR_COST_UNIT'] ;
+['I_NIP'] = N: ['SLS_VOL_INDEXE']* ['I_NIP_UNIT'] ;
+
+#Calcul des valos pour les éléments fins
+[] = N: IF( DB('}ElementAttributes_SLS_CHA_SAP_IND',!SLS_SALES_PLAN_IND,'Type_Indicateur') @= 'Valo'
+        & SUBST( !SLS_SALES_PLAN_IND , 1 , 2 ) @<> 'I_' ,
+	['SLS_VOL_NON_INDEXE']*DB('SLS_SALES_PLAN',!1_G_CURRENT_PHASE,!1_G_PERIOD,!1_G_SALES_ORG,!1_G_DISTRIB_CHANNEL,!1_G_CURRENCY, !1_G_VOLUME_UNIT,!SLS_CUSTOMER,!SLS_MATERIAL_PLAN,!SLS_SALES_GROUP, DB('}ElementAttributes_SLS_CHA_SAP_IND',!SLS_SALES_PLAN_IND,'Prix_Associé')),
+	STET);
+
+
+#Calcul de la valo Promo
+['PROMO'] = N : If( ELISANC('SLS_CUSTOMER', 'IC1 - E00095', !SLS_CUSTOMER)=1 % ELISANC('SLS_CUSTOMER', 'IC1 - E00070', !SLS_CUSTOMER) =1 ,['SLS_VOL']*['PROMO_UNIT'],['PROMO_VOL']*['PROMO_UNIT']);
+
+
+    
+
+# Mise à 0 des volumes pour les clients inactifs
+[] = N: IF( DB('}ElementAttributes_SLS_SALES_PLAN_IND',!SLS_SALES_PLAN_IND,'Type_Indicateur') @= 'Volume'
+            & ATTRS ( 'SLS_CUSTOMER' , !SLS_CUSTOMER , 'Désactiver Client Forecast' ) @= 'Oui'
+            & DIMIX ( '1_G_PERIOD' , !1_G_PERIOD ) >= DIMIX ( '1_G_PERIOD' , DB ( '}ElementAttributes_1_G_CURRENT_PHASE' , DB ( 'SECURITY_CUBES' , 'SLS_SALES_PLAN' , 'security' ) , 'First simulation month' )),
+	    0,
+	    STET);
+
+
+#Calcul du prix unitaire promo
+['PROMO_UNIT'] = C: If( ELISANC('SLS_CUSTOMER', 'IC1 - E00095', !SLS_CUSTOMER)=1 % ELISANC('SLS_CUSTOMER', 'IC1 - E00070', !SLS_CUSTOMER) =1 ,['PROMO']\['SLS_VOL'],['PROMO']\['PROMO_VOL']);
+
+
+#Calcul des prix unitaires pour les niveaux consolidés exception pour les consolidés de la dimension mesure
+#Les prix ont été doublé pour la gestion des indexés, il faut donc en consolidés (ex 4NET) utilisé SLS_VOL et les prix indexé ET non indexé
+[] = C: IF( DB('}ElementAttributes_SLS_CHA_SAP_IND',!SLS_SALES_PLAN_IND,'Type_Indicateur') @= 'Prix_Unit' & ELLEV ( 'SLS_SALES_PLAN_IND' , !SLS_SALES_PLAN_IND ) > 0 ,
+	DB('SLS_SALES_PLAN',!1_G_CURRENT_PHASE,!1_G_PERIOD,!1_G_SALES_ORG,!1_G_DISTRIB_CHANNEL,!1_G_CURRENCY, !1_G_VOLUME_UNIT,!SLS_CUSTOMER,!SLS_MATERIAL_PLAN,!SLS_SALES_GROUP, 'I_' | DB('}ElementAttributes_SLS_CHA_SAP_IND',SUBST ( !SLS_SALES_PLAN_IND , 3 , 9999 ) , 'Valo_Associée')) +
+    DB('SLS_SALES_PLAN',!1_G_CURRENT_PHASE,!1_G_PERIOD,!1_G_SALES_ORG,!1_G_DISTRIB_CHANNEL,!1_G_CURRENCY, !1_G_VOLUME_UNIT,!SLS_CUSTOMER,!SLS_MATERIAL_PLAN,!SLS_SALES_GROUP, DB('}ElementAttributes_SLS_CHA_SAP_IND',!SLS_SALES_PLAN_IND,'Valo_Associée'))\ ['SLS_VOL'] ,
+	CONTINUE);
+    
+#Calcul des prix unitaires pour les niveaux consolidés
+[] = C:  IF( DB('}ElementAttributes_SLS_CHA_SAP_IND',!SLS_SALES_PLAN_IND,'Type_Indicateur') @= 'Prix_Unit' & SUBST( !SLS_SALES_PLAN_IND , 1 , 2 ) @<> 'I_' ,
+	DB('SLS_SALES_PLAN',!1_G_CURRENT_PHASE,!1_G_PERIOD,!1_G_SALES_ORG,!1_G_DISTRIB_CHANNEL,!1_G_CURRENCY, !1_G_VOLUME_UNIT,!SLS_CUSTOMER,!SLS_MATERIAL_PLAN,!SLS_SALES_GROUP,DB('}ElementAttributes_SLS_CHA_SAP_IND',!SLS_SALES_PLAN_IND,'Valo_Associée'))\['SLS_VOL_NON_INDEXE'],
+        CONTINUE);
+
+#Calcul des prix unitaires pour les niveaux consolidés indexé
+[] = C:  IF( DB('}ElementAttributes_SLS_SALES_PLAN_IND',!SLS_SALES_PLAN_IND,'Type_Indicateur') @= 'Prix_Unit' & SUBST( !SLS_SALES_PLAN_IND , 1 , 2 ) @= 'I_' ,
+	DB('SLS_SALES_PLAN',!1_G_CURRENT_PHASE,!1_G_PERIOD,!1_G_SALES_ORG,!1_G_DISTRIB_CHANNEL,!1_G_CURRENCY, !1_G_VOLUME_UNIT,!SLS_CUSTOMER,!SLS_MATERIAL_PLAN,!SLS_SALES_GROUP,DB('}ElementAttributes_SLS_SALES_PLAN_IND',!SLS_SALES_PLAN_IND,'Valo_Associee'))\['SLS_VOL_INDEXE'],
+        CONTINUE);
+
+
+feeders;
+
+#Calcul des valos à partir des prix unitaires
+['SLS_VOL_NON_INDEXE'] => ['BASE'];
+['SLS_VOL_NON_INDEXE'] => ['PREMIUM'];
+['SLS_VOL_NON_INDEXE'] => ['SURCH'];
+['SLS_VOL_NON_INDEXE'] => ['RPP'];
+['SLS_VOL_NON_INDEXE'] => ['CPV'];
+['PROMO_VOL'] => ['PROMO'];
+['SLS_VOL_NON_INDEXE'] => ['PROMO'];
+['SLS_VOL_NON_INDEXE'] => ['CUST_REBATE'];
+['SLS_VOL_NON_INDEXE'] => ['RET_SERV'];
+['SLS_VOL_NON_INDEXE'] => ['FR_COST'];
+['SLS_VOL_NON_INDEXE'] => ['NIP'];
+
+#Calcul des valos à partir des prix unitaires indéxé
+['SLS_VOL_INDEXE'] => ['I_BASE'];
+['SLS_VOL_INDEXE'] => ['I_PREMIUM'];
+['SLS_VOL_INDEXE'] => ['I_SURCH'];
+['SLS_VOL_INDEXE'] => ['I_RPP'];
+['SLS_VOL_INDEXE'] => ['I_CPV'];
+['SLS_VOL_INDEXE'] => ['I_PROMO'];
+['SLS_VOL_INDEXE'] => ['I_CUST_REBATE'];
+['SLS_VOL_INDEXE'] => ['I_RET_SERV'];
+['SLS_VOL_INDEXE'] => ['I_FR_COST'];
+['SLS_VOL_INDEXE'] => ['I_NIP'];
+
+#Calcul des prix unitaires à partir des valos (conso) indexe
+['I_BASE'] => ['I_BASE_UNIT'];
+['I_PREMIUM'] => ['I_PREMIUM_UNIT'];
+['I_SURCH'] => ['I_SURCH_UNIT'];
+['I_RPP'] => ['I_RPP_UNIT'];
+['I_CPV'] => ['I_CPV_UNIT'];
+['I_PROMO'] => ['I_PROMO_UNIT'];
+#['I_CUST_REBATE'] => ['I_CUST_REBATE_UNIT'];
+['I_RET_SERV'] => ['I_RET_SERV_UNIT'];
+['I_FR_COST'] => ['I_FR_COST_UNIT'];
+['I_NIP'] => ['I_NIP_UNIT'];
+
+#Calcul des prix unitaires à partir des valos (conso)
+['BASE'] => ['BASE_UNIT'];
+['PREMIUM'] => ['PREMIUM_UNIT'];
+['CUST_PRICE'] => ['CUST_PRICE_UNIT'];
+['SURCH'] => ['SURCH_UNIT'];
+#['DISC'] => ['DISC_UNIT'];
+['TOT_DISC'] => ['TOT_DISC_UNIT'];
+['RPP'] => ['RPP_UNIT'];
+['CPV'] => ['CPV_UNIT'];
+['PROMO'] => ['PROMO_UNIT'];
+['INV_VAL'] => ['INV_VAL_UNIT'];
+['CUST_REBATE'] => ['CUST_REBATE_UNIT'];
+['RET_SERV'] => ['RET_SERV_UNIT'];
+['CUST_REBATES'] => ['CUST_REBATES_UNIT'];
+['FR_COST'] => ['FR_COST_UNIT'];
+['3NET'] => ['3NET_UNIT'];
+['NIP'] => ['NIP_UNIT'];
+['4NET'] => ['4NET_UNIT'];

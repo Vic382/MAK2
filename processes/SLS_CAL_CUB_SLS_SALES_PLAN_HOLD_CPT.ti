@@ -1,0 +1,382 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+
+################################################################
+#                                               DESCRIPTION DU PROCESSUS                                 #
+#                                                                                                                                                   #
+# Date :                                                                                                #
+#                                                                                                                                                   #
+# Fait par :                  #
+#                                                                                                                                                   #
+# Action :                                               #
+#							 #
+#                                                                                                                                                   #
+#################################################################
+
+
+#====================================#
+#             Déclaration des variables                   #
+#====================================#
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_SALES_PLAN';
+C_Cube_Cible = 'SLS_SALES_PLAN';
+C_Cub_Select = 'zSELECT';
+C_zPROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+
+
+#--------------------Dimensions--------------------#
+D_PHASE = '1_G_CURRENT_PHASE';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_CURRENCY = '1_G_CURRENCY';
+D_VOLUME_UNIT = '1_G_VOLUME_UNIT';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_MATERIAL = 'SLS_MATERIAL_PLAN';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_SALES_PLAN_IND='SLS_SALES_PLAN_IND';
+
+
+#--------------------Elements--------------------#
+
+e_Message_Prolog = '';
+
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+
+
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vClient_user = AttrS('}Clients',TM1User,'Caption');
+
+#---------------- Cube technique ---------------#
+C_Cube_Hold_Cell = '}Hold_Planning Analytics_' | vClient_USER | '_}}_SLS_SALES_PLAN';
+
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+
+v_Phase= CellGetS('zSelect',vClient,'Current Phase');
+v_Phase_Cap = ATTRS(D_PHASE, v_Phase, 'Caption');
+Sales_Group_Source= CellGetS('zSelect',vClient,'Sales Group');
+Sales_Org_Source= CellGetS('zSelect',vClient,'Sales org');
+
+
+v_type_year=CellGetS('zSelect',vClient,'Current_Year_Type');
+v_simulation_period=ATTRS(D_PHASE,v_Phase,'First simulation month');
+v_Index = ATTRS(D_PERIOD, v_simulation_period, 'Index');
+
+if(v_type_year@='Campaign');
+v_t_year='CAMP';
+v_index_mois_simul=stringtonumber(Attrs(D_PERIOD,v_simulation_period,'Index_Campaign'));
+endif;
+if(v_type_year@='Fiscal');
+v_index_mois_simul=stringtonumber(Attrs(D_PERIOD,v_simulation_period,'Index_Fiscal'));
+v_t_year='FISC';
+endif;
+if(v_type_year@='Calendar');
+v_index_mois_simul=stringtonumber(Attrs(D_PERIOD,v_simulation_period,'Index_Calendar'));
+v_t_year='CAL';
+endif;
+
+
+
+if(v_t_year@='FISC');
+v_Attr_Name_N='FISC_N';
+v_Attr_Name_N_1='FISC_N-1';
+v_Attr_Index='Index_Fiscal';
+endif;
+
+if(v_t_year@='CAMP');
+v_Attr_Name_N='Campaign_N';
+v_Attr_Name_N_1='Campaign_N-1';
+v_Attr_Index='Index_Campaign';
+endif;
+
+if(v_t_year@='CAL');
+v_Attr_Name_N='Calendar_N';
+v_Attr_Name_N_1='Calendar_N-1';
+v_Attr_Index='Index_Calendar';
+endif;
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase__' | vUser|'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUser|'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase__' |vUser|'_' | vPRO_NAME;
+subset_copy = 'z_copy_' |vUser|'_' | vPRO_NAME;
+subset_unit = 'z_unit_' |vUser|'_' | vPRO_NAME;
+subset_prov = 'z_prov_' |vUser|'_' | vPRO_NAME;
+
+DatasourceASCIIDecimalSeparator='.';
+DatasourceASCIIThousandSeparator='';
+
+#=========================================#
+#     Initialisation de la vue à effacer           #
+#=========================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_erase);
+subsetdestroy(D_PHASE,subset_erase);
+subsetdestroy(D_PERIOD,subset_erase);
+subsetdestroy(D_SALES_ORG,subset_erase);
+subsetdestroy(D_DISTRIB_CHANNEL,subset_erase);
+subsetdestroy(D_CUSTOMER,subset_erase);
+subsetdestroy(D_MATERIAL,subset_erase);
+subsetdestroy(D_SALES_GROUP,subset_erase);
+subsetdestroy(D_SALES_PLAN_IND,subset_erase);
+
+
+#--------------------Création des objets pour la vue cible (erase)--------------------#
+
+#Dimension D_PHASE
+SubsetCreate(D_PHASE, subset_erase);
+SubsetElementInsert(D_PHASE, subset_erase,v_Phase, 1);
+
+#D_Sales_Group
+SubsetCreate(D_SALES_GROUP, subset_erase);
+SubsetElementInsert(D_SALES_GROUP, subset_erase,Sales_Group_Source, 1);
+
+#D_Distrib
+MDX_DISTRIB = '{{[1_G_DISTRIB_CHANNEL].[TOTAL_DISTRIB_CHANNEL]}, {TM1FILTERBYLEVEL({TM1SUBSETALL([1_G_DISTRIB_CHANNEL])},0)}}';
+SubsetCreateByMDX(subset_erase, MDX_DISTRIB);
+SubsetElementDelete(D_DISTRIB_CHANNEL, subset_erase, 1);
+
+#D_Sales_Org
+SubsetCreate(D_SALES_ORG, subset_erase);
+SubsetElementInsert(D_SALES_ORG, subset_erase,Sales_Org_Source, 1);
+
+#D_CUSTOMER
+MDX ='{{[SLS_CUSTOMER].[TOTAL_CUSTOMER]},{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_CUSTOMER] )}, 0)}}';
+SubsetCreateByMDX(subset_erase, MDX);
+SubsetElementDelete( D_CUSTOMER, subset_erase, 1);
+
+
+#D_SLS_MATERIAL_PLAN
+MDX ='{{[SLS_MATERIAL_PLAN].[TOTAL_PLANNING_MATERIAL]},{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_MATERIAL_PLAN] )}, 0)}}';
+SubsetCreateByMDX(subset_erase, MDX);
+SubsetElementDelete( D_MATERIAL, subset_erase, 1);
+
+#D_PERIOD
+SubsetCreate( D_PERIOD,subset_erase );
+SubsetElementInsert( D_PERIOD,subset_erase, 'z_cpt_hold_cell_conso1', 1 );
+SubsetElementInsert( D_PERIOD,subset_erase, 'z_cpt_hold_cell_conso2', 1 );
+SubsetElementInsert( D_PERIOD,subset_erase, 'z_value_hold_cell_conso1', 1 );
+SubsetElementInsert( D_PERIOD,subset_erase, 'z_value_hold_cell_conso2', 1 );
+
+#D_SALES_PLAN_IND
+SubsetCreate(D_SALES_PLAN_IND, subset_erase);
+SubsetElementInsert(D_SALES_PLAN_IND, subset_erase,P_Indicateur, 1);
+
+
+ViewCreate(C_Cube_Source,view_erase);
+
+#--------------------Affectation des sous-ensembles à la vue cible--------------------#
+
+ViewSubsetAssign(C_Cube_Source,view_erase,D_PHASE,subset_erase);
+ViewSubsetAssign(C_Cube_Source,view_erase,D_PERIOD,subset_erase);
+ViewSubsetAssign(C_Cube_Source,view_erase,D_SALES_ORG,subset_erase);
+ViewSubsetAssign(C_Cube_Source,view_erase,D_DISTRIB_CHANNEL,subset_erase);
+ViewSubsetAssign(C_Cube_Source,view_erase,D_CUSTOMER,subset_erase);
+ViewSubsetAssign(C_Cube_Source,view_erase,D_MATERIAL,subset_erase);
+ViewSubsetAssign(C_Cube_Source,view_erase,D_SALES_GROUP,subset_erase);
+ViewSubsetAssign(C_Cube_Source,view_erase,D_SALES_PLAN_IND,subset_erase);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_erase,1);
+ViewSetSkipCalcs(C_Cube_Source,view_erase, 1);
+ViewSetSkipZeroes(C_Cube_Source,view_erase, 1);
+
+ViewZeroOut( C_Cube_Source, view_erase );
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_erase);
+subsetdestroy(D_PHASE,subset_erase);
+subsetdestroy(D_PERIOD,subset_erase);
+subsetdestroy(D_SALES_ORG,subset_erase);
+subsetdestroy(D_DISTRIB_CHANNEL,subset_erase);
+subsetdestroy(D_CUSTOMER,subset_erase);
+subsetdestroy(D_MATERIAL,subset_erase);
+subsetdestroy(D_SALES_GROUP,subset_erase);
+subsetdestroy(D_SALES_PLAN_IND,subset_erase);
+
+
+#=========================================#
+#     Initialisation de la vue à copier/vue source           #
+#=========================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+subsetdestroy(D_PHASE,subset_copy);
+subsetdestroy(D_PERIOD,subset_copy);
+subsetdestroy(D_SALES_ORG,subset_copy);
+subsetdestroy(D_DISTRIB_CHANNEL,subset_copy);
+subsetdestroy(D_CUSTOMER,subset_copy);
+subsetdestroy(D_MATERIAL,subset_copy);
+subsetdestroy(D_SALES_GROUP,subset_copy);
+subsetdestroy(D_SALES_PLAN_IND,subset_copy);
+
+
+#--------------------Création des objets pour la vue source (copy)--------------------#
+
+#Dimension D_PHASE
+SubsetCreate(D_PHASE, subset_copy);
+SubsetElementInsert(D_PHASE, subset_copy,v_Phase, 1);
+
+#D_Sales_Group
+SubsetCreate(D_SALES_GROUP, subset_copy);
+SubsetElementInsert(D_SALES_GROUP, subset_copy,Sales_Group_Source, 1);
+
+#D_DISTRIB
+MDX_DISTRIB = '{{[1_G_DISTRIB_CHANNEL].[TOTAL_DISTRIB_CHANNEL]}, {TM1FILTERBYLEVEL({TM1SUBSETALL([1_G_DISTRIB_CHANNEL])},0)}}';
+SubsetCreateByMDX(subset_copy, MDX_DISTRIB);
+SubsetElementDelete(D_DISTRIB_CHANNEL, subset_copy, 1);
+
+#D_Sales_Org
+SubsetCreate(D_SALES_ORG, subset_copy);
+SubsetElementInsert(D_SALES_ORG, subset_copy,Sales_Org_Source, 1);
+
+#D_CUSTOMER
+MDX ='{{[SLS_CUSTOMER].[TOTAL_CUSTOMER]},{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_CUSTOMER] )}, 0)}}';
+SubsetCreateByMDX(subset_copy, MDX);
+SubsetElementDelete( D_CUSTOMER, subset_copy, 1);
+
+
+#D_SLS_MATERIAL_PLAN
+MDX ='{{[SLS_MATERIAL_PLAN].[TOTAL_PLANNING_MATERIAL]},{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_MATERIAL_PLAN] )}, 0)}}';
+SubsetCreateByMDX(subset_copy, MDX);
+SubsetElementDelete( D_MATERIAL, subset_copy, 1);
+
+#D_PERIOD
+SubsetCreate( D_PERIOD,subset_copy );
+SubsetElementInsert( D_PERIOD,subset_copy, 'N/A PERIOD', 1 );
+
+
+#D_SALES_PLAN_IND
+SubsetCreate(D_SALES_PLAN_IND, subset_copy);
+SubsetElementInsert(D_SALES_PLAN_IND, subset_copy,P_Indicateur, 1);
+
+
+ViewCreate(C_Cube_Source,view_copy);
+
+#--------------------Affectation des sous-ensembles à la vue source--------------------#
+
+ViewSubsetAssign(C_Cube_Source,view_copy,D_PHASE,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy,D_PERIOD,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy,D_SALES_ORG,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy,D_DISTRIB_CHANNEL,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy,D_CUSTOMER,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy,D_MATERIAL,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy,D_SALES_GROUP,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy,D_SALES_PLAN_IND,subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 1);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+
+#Création d'un subset période provisoire pour la boucle while dans les data
+
+MDX_PERIOD = '{{[1_G_PERIOD].[N/A PERIOD]}, ';
+If(conso1 @<> '');
+	MDX_PERIOD = MDX_PERIOD | '{TM1FILTERBYLEVEL(DESCENDANTS([1_G_PERIOD].['| conso1 |']) , 0)}';
+EndIf;
+If(conso2 @<> '');
+	MDX_PERIOD = MDX_PERIOD | ',{TM1FILTERBYLEVEL(DESCENDANTS([1_G_PERIOD].['| conso2 |']) , 0)}}';
+EndIf;
+
+MDX_PERIOD = MDX_PERIOD | '}';
+
+If(conso1 @= '' & conso2 @= '');
+	MDX_PERIOD = '{{[1_G_PERIOD].[N/A PERIOD]}}';
+EndIf;
+
+subsetdestroy(D_PERIOD,subset_prov);
+SubsetCreatebyMDX( subset_prov, MDX_PERIOD);
+SubsetElementDelete( D_PERIOD, subset_prov, 1);
+
+
+subset_size = SubsetGetSize( D_PERIOD, subset_prov );
+
+#--------------------Création des objets pour la vue cible--------------------#
+
+# définition de la vue source#
+
+DatasourceCubeview= view_copy ;
+#endregion
+#region Data
+cpt = 0;
+value = 0;
+cpt_while = 1;
+while(cpt_while < subset_size);
+
+vELEM_period = SubsetGetElementName( D_PERIOD, subset_prov, cpt_while );
+
+Holded_Cell = CellGetS(C_Cube_Hold_Cell, v_Phase,vELEM_period, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur, 'HoldStatus');
+
+#Si la cellule est retenue
+if(Holded_Cell @= 'H');
+	cpt = cpt + 1;
+    If(DimensionElementPrincipalName(D_PERIOD, ATTRS(D_PERIOD, vELEM_PERIOD, v_Attr_Name_N )) @= conso1);
+		#cpt : le nombre de cellules retenues
+		CellPutN(cpt, 'SLS_SALES_PLAN',v_Phase,'z_cpt_hold_cell_conso1', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+
+		#value : le montant totla à soustraire de l'Input
+    	value = CellGetN('SLS_SALES_PLAN',v_Phase,vELEM_PERIOD, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+		CellIncrementN(value, 'SLS_SALES_PLAN',v_Phase,'z_value_hold_cell_conso1', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+    
+    Else;
+    	#cpt
+		CellPutN(cpt, 'SLS_SALES_PLAN',v_Phase,'z_cpt_hold_cell_conso2', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+		
+        #value : le montant totla à soustraire de l'Input
+    	value = CellGetN('SLS_SALES_PLAN',v_Phase,vELEM_PERIOD, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+		CellincrementN(value, 'SLS_SALES_PLAN',v_Phase,'z_value_hold_cell_conso2', vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY,vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, vELEM_SALES_GROUP, P_indicateur);
+
+    EndIf;
+
+endif;
+
+
+	cpt_while = cpt_while + 1;
+End;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+subsetdestroy(D_PHASE,subset_copy);
+subsetdestroy(D_SALES_ORG,subset_copy);
+subsetdestroy(D_DISTRIB_CHANNEL,subset_copy);
+subsetdestroy(D_CUSTOMER,subset_copy);
+subsetdestroy(D_MATERIAL,subset_copy);
+subsetdestroy(D_SALES_GROUP,subset_copy);
+subsetdestroy(D_SALES_PLAN_IND,subset_copy);
+subsetdestroy(D_PERIOD,subset_copy);
+subsetdestroy(D_PERIOD,subset_prov);
+#endregion

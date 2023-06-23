@@ -1,0 +1,13 @@
+{
+	"@type":"Process",
+	"Name":"zCHA_DIM_MATERIAL_SALES",
+	"HasSecurityAccess":false,
+	"Code@Code.link":"zCHA_DIM_MATERIAL_SALES.ti",
+	"UIData":"_ParameterConstraints=e30=€",
+	"DataSource":
+	{
+		"Type":"None"
+	},
+	"Parameters":[],
+	"Variables":[]
+}

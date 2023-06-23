@@ -1,0 +1,212 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   17/05/2022                                                        #
+#                                                                            #
+# Fait par :    VRT Dimo Software                                                  #
+#                                                                            #
+# Action : Processus de réinitialisation du cube SLS_FR_COST_PLAN	                 #
+#																			 #
+##############################################################################
+
+#===========================================#
+#             Déclaration des variables     #
+#===========================================#
+
+#--------------------Cubes--------------------#
+C_zPARAM = 'zPARAM';
+C_zSELECT = 'zSELECT';
+
+#--------------------Dimensions--------------------#
+D_CURRENT_PHASE = '1_G_CURRENT_PHASE';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_CUSTOMER = 'SLS_CUSTOMER';
+
+#--------------------Variables globales--------------------#
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+If(DIMIX('}Clients',vClient)=0);
+	vClient = 'Admin';
+EndIf;
+
+#--------------------Elements--------------------#
+Curr_Phase = CellGetS(C_zSELECT,vClient,'Current Phase');
+Distrib_Channel = CellGetS(C_zSELECT,vClient,'Distribution Channel');
+If(Distrib_Channel @= '');
+	Distrib_channel = 'Total Distribution Channel';
+EndIf;
+Sales_Org = CellGetS(C_zSELECT,vClient,'Sales Organisation');
+If(Sales_Org @= '');
+	Sales_Org = 'Total Sales Org';
+EndIf;
+
+cMainProcName = GetProcessName();
+nDebug = 1 ; 
+
+
+#===========================================#
+#             Définition de la vue de RAZ                   #
+#===========================================#
+
+sCubeCible = 'SLS_FR_COST_PLAN' ; 
+
+sDimCible1 = '1_G_CURRENT_PHASE' ;
+sDimCible1Bis = 'SLS_Q_HQ' ;
+sDimCible2 = '1_G_PERIOD' ;
+sDimCible3 = '1_G_SALES_ORG' ;
+sDimCible4 = '1_G_DISTRIB_CHANNEL' ;
+sDimCible5 = 'SLS_MATERIAL_PLAN' ;
+sDimCible6 = 'SLS_CUSTOMER' ;
+sDimCible7 = 'SLS_MAT_FREIGHT_GROUP' ;
+sDimCible8 = 'SLS_SHIP_POINT' ;
+sDimCible9 = 'SLS_SHIP_PLANT' ;
+sDimCible10 = 'SLS_PROD_PLANT' ;
+sDimCible11 = 'SLS_VENDOR' ;
+sDimCible = 'SLS_FR_COST_PLAN_IND' ;
+
+sVueCible = 'zTI_' | cMainProcName | '_Cible';
+
+IF( ViewExists( sCubeCible , sVueCible ) = 1 );                              
+    ViewDestroy( sCubeCible , sVueCible );
+ENDIF;
+
+ViewCreate( sCubeCible , sVueCible , nDebug );
+
+# '1_G_CURRENT_PHASE' 
+IF( SubsetExists( sDimCible1 , sVueCible ) = 1 );
+    SubsetDestroy( sDimCible1 , sVueCible );
+ENDIF;
+SubsetCreate ( sDimCible1 , sVueCible , nDebug ) ;
+SubsetElementInsert ( sDimCible1 , sVueCible , 'CURR_PHASE' , 1 ) ;
+ViewSubsetAssign( sCubeCible, sVueCible , sDimCible1 , sVueCible );
+
+# 'Contrat STANDARD / INDEXE' 
+IF( SubsetExists( sDimCible1Bis , sVueCible ) = 1 );
+    SubsetDestroy( sDimCible1Bis , sVueCible );
+ENDIF;
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimCible1Bis|'] )}, 0)}';
+SubsetCreatebyMDX( sVueCible , StringMDX , nDebug );
+ViewSubsetAssign( sCubeCible, sVueCible , sDimCible1Bis , sVueCible );
+
+# '1_G_PERIOD' 
+IF( SubsetExists( sDimCible2 , sVueCible ) = 1 );
+    SubsetDestroy( sDimCible2 , sVueCible );
+ENDIF;
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimCible2|'] )}, 0)}';
+SubsetCreatebyMDX( sVueCible , StringMDX , nDebug );
+ViewSubsetAssign( sCubeCible, sVueCible , sDimCible2 , sVueCible );
+
+# '1_G_SALES_ORG' 
+IF( SubsetExists( sDimCible3 , sVueCible ) = 1 );
+    SubsetDestroy( sDimCible3 , sVueCible );
+ENDIF;
+StringMDX = '{TM1FILTERBYLEVEL({DESCENDANTS([' | D_SALES_ORG | '].[' | Sales_Org | '])},0)}' ;
+SubsetCreatebyMDX( sVueCible , StringMDX , nDebug );
+ViewSubsetAssign( sCubeCible, sVueCible , sDimCible3 , sVueCible );
+
+# '1_G_DISTRIB_CHANNEL' 
+IF( SubsetExists( sDimCible4 , sVueCible ) = 1 );
+    SubsetDestroy( sDimCible4 , sVueCible );
+ENDIF;
+StringMDX = '{TM1FILTERBYLEVEL({DESCENDANTS([' | D_DISTRIB_CHANNEL | '].[' | Distrib_Channel | '])},0)}' ;
+SubsetCreatebyMDX( sVueCible , StringMDX , nDebug );
+ViewSubsetAssign( sCubeCible, sVueCible , sDimCible4 , sVueCible );
+
+# 'SLS_MATERIAL_PLAN' 
+IF( SubsetExists( sDimCible5 , sVueCible ) = 1 );
+    SubsetDestroy( sDimCible5 , sVueCible );
+ENDIF;
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimCible5|'] )}, 0)}';
+SubsetCreatebyMDX( sVueCible , StringMDX , nDebug );
+ViewSubsetAssign( sCubeCible, sVueCible , sDimCible5 , sVueCible );
+
+# 'SLS_CUSTOMER' 
+IF( SubsetExists( sDimCible6 , sVueCible ) = 1 );
+    SubsetDestroy( sDimCible6 , sVueCible );
+ENDIF;
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimCible6|'] )}, 0)}';
+SubsetCreatebyMDX( sVueCible , StringMDX , nDebug );
+ViewSubsetAssign( sCubeCible, sVueCible , sDimCible6 , sVueCible );
+
+# 'SLS_MAT_FREIGHT_GROUP' 
+IF( SubsetExists( sDimCible7 , sVueCible ) = 1 );
+    SubsetDestroy( sDimCible7 , sVueCible );
+ENDIF;
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimCible7|'] )}, 0)}';
+SubsetCreatebyMDX( sVueCible , StringMDX , nDebug );
+ViewSubsetAssign( sCubeCible, sVueCible , sDimCible7 , sVueCible );
+
+# 'SLS_SHIP_POINT' 
+IF( SubsetExists( sDimCible8 , sVueCible ) = 1 );
+    SubsetDestroy( sDimCible8 , sVueCible );
+ENDIF;
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimCible8|'] )}, 0)}';
+SubsetCreatebyMDX( sVueCible , StringMDX , nDebug );
+ViewSubsetAssign( sCubeCible, sVueCible , sDimCible8 , sVueCible );
+
+# 'SLS_SHIP_PLANT' 
+IF( SubsetExists( sDimCible9 , sVueCible ) = 1 );
+    SubsetDestroy( sDimCible9 , sVueCible );
+ENDIF;
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimCible9|'] )}, 0)}';
+SubsetCreatebyMDX( sVueCible , StringMDX , nDebug );
+ViewSubsetAssign( sCubeCible, sVueCible , sDimCible9 , sVueCible );
+
+# 'SLS_PROD_PLANT' 
+IF( SubsetExists( sDimCible10 , sVueCible ) = 1 );
+    SubsetDestroy( sDimCible10 , sVueCible );
+ENDIF;
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimCible10|'] )}, 0)}';
+SubsetCreatebyMDX( sVueCible , StringMDX , nDebug );
+ViewSubsetAssign( sCubeCible, sVueCible , sDimCible10 , sVueCible );
+
+# 'SLS_VENDOR' 
+IF( SubsetExists( sDimCible11 , sVueCible ) = 1 );
+    SubsetDestroy( sDimCible11 , sVueCible );
+ENDIF;
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimCible11|'] )}, 0)}';
+SubsetCreatebyMDX( sVueCible , StringMDX , nDebug );
+ViewSubsetAssign( sCubeCible, sVueCible , sDimCible11 , sVueCible );
+
+# 'SLS_FR_COST_PLAN_IND' 
+IF( SubsetExists( sDimCible , sVueCible ) = 1 );
+    SubsetDestroy( sDimCible , sVueCible );
+ENDIF;
+StringMDX = '{TM1FILTERBYLEVEL( {TM1SUBSETALL( ['|sDimCible|'] )}, 0)}';
+SubsetCreatebyMDX( sVueCible , StringMDX , nDebug );
+ViewSubsetAssign( sCubeCible , sVueCible , sDimCible , sVueCible );
+
+ViewSetSkipRuleValues( sCubeCible , sVueCible ,1);
+ViewSetSkipCalcs( sCubeCible , sVueCible , 1);
+ViewSetSkipZeroes( sCubeCible , sVueCible , 1);
+
+ViewZeroOut( sCubeCible , sVueCible );
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

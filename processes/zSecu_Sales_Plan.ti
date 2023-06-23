@@ -1,0 +1,192 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+################################################################
+#                 DESCRIPTION DU PROCESSUS                     #
+#                                                              #
+# Date :   11/04/2019                                          #
+#                                                              #
+# Fait par :   Anne BESNARD                                    #
+#                                                              #
+# Action : Sécurité sur le cube Sales Plan - Gestion de 	   #
+#		l'exception José Muguiro (1610 entier + 1000 ES + PORT)#
+#                                                              #
+################################################################
+
+#====================================#
+#     Déclaration des variables      #
+#====================================#
+
+#--------------------Cubes--------------------#
+C_CellSecurity_Sales_Plan = '}CellSecurity_SLS_Sales_Plan';
+
+#--------------------Dimensions--------------------#
+D_Curr_Phase = '1_G_CURRENT_PHASE';
+D_Period = '1_G_PERIOD';
+D_Sales_Org = '1_G_SALES_ORG';
+D_Distrib_Channel = '1_G_DISTRIB_CHANNEL';
+D_Currency = '1_G_CURRENCY';
+D_Volume_Unit = '1_G_VOLUME_UNIT';
+D_Customer = 'SLS_CUSTOMER';
+D_Mat_Plan = 'SLS_MATERIAL_PLAN';
+D_Sales_Group = 'SLS_SALES_GROUP';
+D_Sales_Plan_Ind = 'SLS_SALES_PLAN_IND';
+D_Groups = '}Groups';
+
+#--------------------Elements--------------------#
+
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#=========================================#
+#   Initialisation du subset à supprimer  #
+#=========================================#
+
+#-----------Destruction des objets--------#
+ViewDestroy( C_CellSecurity_Sales_Plan, view_erase );
+SubsetDestroy(D_Groups, subset_erase);
+SubsetDestroy(D_Sales_Group, subset_erase);
+SubsetDestroy(D_Sales_Org, subset_erase);
+
+#-----------Création des objets-----------#
+#Vue
+ViewCreate( C_CellSecurity_Sales_Plan, view_erase, 1 );
+
+#D_Groups
+SubsetCreate( D_Groups, subset_erase, 1 );
+SubsetElementInsert( D_Groups, subset_erase, '810', 1 );
+
+#D_Sales_Group
+SubsetCreate( D_Sales_Group, subset_erase, 1 );
+SubsetElementInsert( D_Sales_Group, subset_erase, '810', 1 );
+
+#D_Sales_Org
+SubsetCreate( D_Sales_Org, subset_erase, 1 );
+SubsetElementInsert( D_Sales_Org, subset_erase, '1000', 1 );
+SubsetElementInsert( D_Sales_Org, subset_erase, '1610', 1 );
+
+#-----Affectation des sous-ensembles à la vue---#
+ViewSubsetAssign(C_CellSecurity_Sales_Plan, view_erase, D_Groups, subset_erase);
+ViewSubsetAssign(C_CellSecurity_Sales_Plan, view_erase, D_Sales_Group, subset_erase);
+ViewSubsetAssign(C_CellSecurity_Sales_Plan, view_erase, D_Sales_Org, subset_erase);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_CellSecurity_Sales_Plan, view_erase,1);
+ViewSetSkipCalcs(C_CellSecurity_Sales_Plan,view_erase, 1);
+ViewSetSkipZeroes(C_CellSecurity_Sales_Plan,view_erase, 0);
+
+#-------définition du subset source-------#
+ViewZeroOut( C_CellSecurity_Sales_Plan, view_erase );
+
+#-----------Destruction des objets--------#
+ViewDestroy( C_CellSecurity_Sales_Plan, view_erase );
+SubsetDestroy(D_Groups, subset_erase);
+SubsetDestroy(D_Sales_Group, subset_erase);
+SubsetDestroy(D_Sales_Org, subset_erase);
+
+
+#=========================================#
+#   Initialisation du subset à copier     #
+#=========================================#
+
+#-----------Destruction des objets--------#
+ViewDestroy( C_CellSecurity_Sales_Plan, view_copy );
+SubsetDestroy(D_Groups, subset_copy);
+SubsetDestroy(D_Sales_Group, subset_copy);
+SubsetDestroy(D_Sales_Org, subset_copy);
+
+#-----------Création des objets-----------#
+#Vue
+ViewCreate( C_CellSecurity_Sales_Plan, view_copy, 1 );
+
+#D_Groups
+SubsetCreate(D_Groups, subset_copy, 0 );
+SubsetElementInsert( D_Groups, subset_copy, '810', 1 );
+
+#D_Sales_Group
+SubsetCreate(D_Sales_Group, subset_copy, 0 );
+SubsetElementInsert( D_Sales_Group, subset_copy, '810', 1 );
+
+#D_Sales_Org
+SubsetCreate(D_Sales_Org, subset_copy, 0 );
+SubsetElementInsert( D_Sales_Org, subset_copy, '1000', 1 );
+SubsetElementInsert( D_Sales_Org, subset_copy, '1610', 1 );
+
+#-----Affectation des sous-ensembles à la vue---#
+ViewSubsetAssign(C_CellSecurity_Sales_Plan, view_copy, D_Groups, subset_copy);
+ViewSubsetAssign(C_CellSecurity_Sales_Plan, view_copy, D_Sales_Group, subset_copy);
+ViewSubsetAssign(C_CellSecurity_Sales_Plan, view_copy, D_Sales_Org, subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_CellSecurity_Sales_Plan, view_copy,1);
+ViewSetSkipCalcs(C_CellSecurity_Sales_Plan,view_copy, 1);
+ViewSetSkipZeroes(C_CellSecurity_Sales_Plan,view_copy, 0);
+
+#-------définition du subset source-------#
+DatasourceCubeview = view_copy;
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+vELEM_SALES_ORG = DimensionElementPrincipalName( D_Sales_Org, vELEM_SALES_ORG );
+vELEM_Groups = DimensionElementPrincipalName( D_Groups, vELEM_Groups );
+
+If(vELEM_SALES_ORG @= '1000' & AttrS(D_CUSTOMER, vELEM_CUSTOMER, 'Country') @<> 'ES' & AttrS(D_CUSTOMER, vELEM_CUSTOMER, 'Country') @<> 'PT');
+	CellPutS('NONE', C_CellSecurity_Sales_Plan, vELEM_CURR_PHASE, vELEM_PERIOD, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY, vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, VELEM_SALES_GROUP, VELEM_SALES_PLAN_IND, vELEM_Groups);
+Else;
+	CellPutS('WRITE', C_CellSecurity_Sales_Plan, vELEM_CURR_PHASE, vELEM_PERIOD, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_CURRENCY, vELEM_VOLUME_UNIT, vELEM_CUSTOMER, vELEM_MATERIAL_PLAN, VELEM_SALES_GROUP, VELEM_SALES_PLAN_IND, vELEM_Groups);
+EndIf;
+
+
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#-----------Destruction des objets--------#
+ViewDestroy( C_CellSecurity_Sales_Plan, view_copy );
+SubsetDestroy(D_Groups, subset_copy);
+SubsetDestroy(D_Sales_Group, subset_copy);
+SubsetDestroy(D_Sales_Org, subset_copy);
+
+
+#endregion

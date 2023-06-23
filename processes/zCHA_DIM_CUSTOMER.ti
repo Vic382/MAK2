@@ -1,0 +1,132 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#################################################################
+#                                               DESCRIPTION DU PROCESSUS                                              #
+#                                                                                                                                                   #
+# Date :   16/05/2019                                                                                                                  #
+#                                                                                                                                                   #
+# Fait par :  Elisabeth MOUNIER                                                                                                       #
+#                                                                                                                                                   #
+# Action : Processus de chargement des fichiers					     #
+#                                                                                                                                                    #
+#                                                                                                                                                   #
+#################################################################
+
+#appel du Master
+#on déplace donc le chemin du sous process SLS_CHA_DIM_SLS_CUSTOMER
+
+#--------------------Cubes--------------------#
+C_zPROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+
+#--------------------Process--------------------#
+Process = 'SLS_MASTER_CHA_DIM_SLS_CUSTOMER';
+
+#--------------------Process--------------------#
+INP_FOLDER = 'DATASOURCE_INP_FOLDER';
+INP_FILE = 'DATASOURCE_INP_FILE';
+SOURCE = 'DATASOURCE_name_for_server';
+
+
+#--------------------Eléments--------------------#
+e_message = '';
+
+
+Sous_Process = 'SLS_CHA_DIM_SLS_CUSTOMER';
+Folder = CellGetS(C_zPROCESS_ADMINISTRATION, Sous_Process, INP_FOLDER, 'Comment');
+
+######## Nom variabilisé du fichier #################
+Customer_1 = 'NEWBEX_CUSTOMER';
+
+FIRST_FOLDER = Folder | '..\1_Receive\';
+INPUT_FOLDER = Folder | '..\2_Input\';
+SAVE_FOLDER = Folder | '..\3.1_Save\';
+ERROR_FOLDER = Folder | '..\3.2_Error\';
+
+
+
+Fic_Customer_1 = Customer_1 | '.csv';
+Fic_Customer_1_Temoin = Customer_1 | '.OK';
+
+############ Fichier Timestampé #############################"
+Timestp_Fic_Customer_1 = Customer_1 | '_' | TIMST(NOW(), '\Y\m\d', 1)  | '_' | TIMST(NOW(), '\h.\i', 1) | '.csv';
+
+
+FIRST_INP= FIRST_FOLDER|Fic_Customer_1;
+FIRST_TEMOIN= FIRST_FOLDER|Fic_Customer_1_Temoin;
+
+FIC_INPUT = INPUT_FOLDER | Fic_Customer_1;
+
+TIMESTAMP_INP = INPUT_FOLDER | Timestp_Fic_Customer_1;
+
+#Si le témoin existe dans 1_Receive
+If( FileExists(FIRST_TEMOIN) <> 0);
+
+	#Vérifier si le fichier existe déja dans Input
+	If( FileExists( FIC_INPUT ) <> 0);
+		##################On le timestamp puis déplace dans Input/old######################
+
+		#renomme le fichier
+		Cmd_ren = 'cmd /c ren ' | FIC_INPUT | ' ' | Timestp_Fic_Customer_1;
+		ExecuteCommand(Cmd_ren, 1);
+
+		#Déplace le fichier dans old
+		Command = 'cmd /c  move '| TIMESTAMP_INP | ' ' | INPUT_FOLDER | 'old\';
+		ExecuteCommand(Command, 1);  
+
+	EndIf; 
+
+	########### Déplace le fichier de 1_Receive à 2_Input #################################
+ 	Command = 'cmd /c  move '| FIRST_INP | ' ' | INPUT_FOLDER;
+	ExecuteCommand(Command, 1);  
+
+	CellPutS( INPUT_FOLDER, C_zPROCESS_ADMINISTRATION, Sous_Process, INP_FOLDER, 'Comment');
+	CellPutS( Fic_Customer_1, C_zPROCESS_ADMINISTRATION, Sous_Process, INP_FILE, 'Comment');
+
+
+	########## Execution du process Chargement #####################################
+	return_value = ExecuteProcess(Process);
+
+
+	########## Déplacement du Fichier horodaté dans 3.1_Save ou 3.2_Error #########################
+	
+	If(return_value = ProcessExitNormal());
+
+		#on le timestamp puis déplace dans 3.1_Save
+		Cmd_ren = 'cmd /c ren ' | FIC_INPUT | ' ' | Timestp_Fic_Customer_1;
+		ExecuteCommand(Cmd_ren, 1);
+
+		Command = 'cmd /c move '| TIMESTAMP_INP | ' ' | SAVE_FOLDER;
+		ExecuteCommand(Command, 1);
+
+	Else; 
+
+		#on le timestamp puis déplace dans 3.1_Save
+		Cmd_ren = 'cmd /c ren ' | FIC_INPUT | ' ' | Timestp_Fic_Customer_1;
+		ExecuteCommand(Cmd_ren, 1);
+
+		Command = 'cmd /c  move '| TIMESTAMP_INP | ' ' | ERROR_FOLDER;
+		ExecuteCommand(Command, 1);
+
+	Endif; 
+    
+    #On remet le chemin initial
+	CellPutS(Folder, C_zPROCESS_ADMINISTRATION, Sous_Process, INP_FOLDER, 'Comment');
+
+    #supprime le fichier témoin
+	Command = 'cmd /c  del '| FIRST_TEMOIN;
+	ExecuteCommand(Command, 1);
+
+Else;
+	e_message = 'Fichier témoin non trouvé';
+    itemreject(e_message);
+EndIf;
+
+
+
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

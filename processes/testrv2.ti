@@ -1,0 +1,19 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#subsetaliasset('SLS_MATERIAL_PLAN:Material Type','All','Code');
+HierarchySubsetAliasSet ( 'SLS_MATERIAL_PLAN' , 'Material Type',  'All', 'Code_Retail' );
+
+smdx = '{FILTER(TM1FILTERBYLEVEL(DESCENDANTS({STRTOMEMBER("[SLS_MATERIAL_PLAN].[" + [zSELECT].(STRTOMEMBER("[}Clients].[" + USERNAME + "]"),[zSELECT_IND].[Division]) + "]")}) , 0) , [}ElementAttributes_SLS_MATERIAL_PLAN].([}ElementAttributes_SLS_MATERIAL_PLAN].[Material Type]) = [zSELECT].(STRTOMEMBER("[}Clients].[" + USERNAME + "]"),[zSELECT_IND].[Material_Type]))}';
+
+#subsetMdxSet('SLS_MATERIAL_PLAN',smdx,'subset_Material_Type_zSelect');
+
+sDim = 'SLS_MATERIAL_PLAN' ;
+subsetdestroy ( sdim , 'subset_Material_Type_zSelect' ) ;
+
+subsetcreatebymdx('subset_Material_Type_zSelect',smdx);
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

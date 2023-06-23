@@ -1,0 +1,62 @@
+{
+	"@type":"NativeView",
+	"Name":"View1",
+	"Columns":
+	[
+		{
+			"Subset":
+			{
+				"Hierarchy":
+				{
+					"@id":"Dimensions('zSELECT_IND')/Hierarchies('zSELECT_IND')"
+				},
+				"Elements":
+				[
+					{
+						"@id":"Dimensions('zSELECT_IND')/Hierarchies('zSELECT_IND')/Elements('Current Phase')"
+					},
+					{
+						"@id":"Dimensions('zSELECT_IND')/Hierarchies('zSELECT_IND')/Elements('Phase_Key_Repart')"
+					},
+					{
+						"@id":"Dimensions('zSELECT_IND')/Hierarchies('zSELECT_IND')/Elements('Source Phase')"
+					},
+					{
+						"@id":"Dimensions('zSELECT_IND')/Hierarchies('zSELECT_IND')/Elements('Target Phase')"
+					},
+					{
+						"@id":"Dimensions('zSELECT_IND')/Hierarchies('zSELECT_IND')/Elements('Phase_Export')"
+					},
+					{
+						"@id":"Dimensions('zSELECT_IND')/Hierarchies('zSELECT_IND')/Elements('Source Phase Admin')"
+					}
+				]
+			}
+		}
+	],
+	"Rows":
+	[
+		{
+			"Subset":
+			{
+				"Hierarchy":
+				{
+					"@id":"Dimensions('}Clients')/Hierarchies('}Clients')"
+				},
+				"Elements":
+				[
+					{
+						"@id":"Dimensions('}Clients')/Hierarchies('}Clients')/Elements('CAMID(\"pans:u:ndevit@cristal-union.fr\")')"
+					},
+					{
+						"@id":"Dimensions('}Clients')/Hierarchies('}Clients')/Elements('CAMID(\"pans:u:eloutsch@dimosoftware.com\")')"
+					}
+				]
+			}
+		}
+	],
+	"Titles":[],
+	"SuppressEmptyColumns":false,
+	"SuppressEmptyRows":false,
+	"FormatString":"0.#########"
+}

@@ -1,0 +1,29 @@
+{
+	"@type":"Process",
+	"Name":"Z_MAJ_CUBE_LOGGING",
+	"HasSecurityAccess":false,
+	"Code@Code.link":"Z_MAJ_CUBE_LOGGING.ti",
+	"UIData":"CubeAction=1511€DataAction=1503€CubeLogChanges=0€_ParameterConstraints=e30€",
+	"VariablesUIData":
+	[
+		"VarType=32€ColType=827€"
+	],
+	"DataSource":
+	{
+		"Type":"TM1DimensionSubset",
+		"dataSourceNameForClient":"}Cubes",
+		"dataSourceNameForServer":"}Cubes",
+		"subset":"All"
+	},
+	"Parameters":[],
+	"Variables":
+	[
+		{
+			"Name":"vELEM_CUBE",
+			"Type":"String",
+			"Position":1,
+			"StartByte":0,
+			"EndByte":0
+		}
+	]
+}

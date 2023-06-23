@@ -1,0 +1,13 @@
+{
+	"@type":"Process",
+	"Name":"SLS_MASTER_COP_CUB_SLS_REPORTING_CURRENT_PHASE",
+	"HasSecurityAccess":false,
+	"Code@Code.link":"SLS_MASTER_COP_CUB_SLS_REPORTING_CURRENT_PHASE.ti",
+	"UIData":"CubeAction=1511€DataAction=1503€CubeLogChanges=0€",
+	"DataSource":
+	{
+		"Type":"None"
+	},
+	"Parameters":[],
+	"Variables":[]
+}

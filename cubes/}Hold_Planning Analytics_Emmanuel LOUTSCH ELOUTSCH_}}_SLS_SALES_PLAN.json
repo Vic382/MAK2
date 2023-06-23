@@ -1,0 +1,41 @@
+{
+	"@type":"Cube",
+	"Name":"}Hold_Planning Analytics_Emmanuel LOUTSCH ELOUTSCH_}}_SLS_SALES_PLAN",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('1_G_CURRENT_PHASE')"
+		},
+		{
+			"@id":"Dimensions('1_G_PERIOD')"
+		},
+		{
+			"@id":"Dimensions('1_G_SALES_ORG')"
+		},
+		{
+			"@id":"Dimensions('1_G_DISTRIB_CHANNEL')"
+		},
+		{
+			"@id":"Dimensions('1_G_CURRENCY')"
+		},
+		{
+			"@id":"Dimensions('1_G_VOLUME_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_CUSTOMER')"
+		},
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_GROUP')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')"
+		},
+		{
+			"@id":"Dimensions('}Hold')"
+		}
+	],
+	"Views@Code.links":[]
+}

@@ -1,0 +1,369 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+################################################################
+#                                               DESCRIPTION DU PROCESSUS                                              #
+#                                                                                                                                                   #
+# Date :   16/11/2018                                                                                                                  #
+#                                                                                                                                                   #
+# Fait par :    Elisabeth MOUNIER                                                                                                #
+#                                                                                                                                                   #
+# Action : Mise en place d'un flag sur les croisements Customer/Product ayant un volume 	      
+#	mais non un prix de renseigné                                                                                	      
+#									      
+#  Modif le 26/03/2019 par Elisabeth mounier. Action : refonte du modèle.                                                                                                                                                 #
+#################################################################
+
+
+#====================================#
+#             Déclaration des variables                   #
+#====================================#
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_SALES_PLAN';
+C_Cube_Cible = 'SLS_SALES_PLAN';
+C_zPROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+C_Cube_Select = 'zSELECT'; 
+
+#--------------------Dimensions--------------------#
+D_PHASE = '1_G_CURRENT_PHASE';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_SALES_PLAN_IND='SLS_SALES_PLAN_IND';
+D_VOLUME_UNIT = '1_G_VOLUME_UNIT';
+D_CURRENCY = '1_G_CURRENCY'; 
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN'; 
+
+#--------------------Elements--------------------#
+
+e_Message_Prolog = '';
+
+
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'); 
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+DatasourceASCIIDecimalSeparator='.';
+DatasourceASCIIThousandSeparator='';
+
+#====================================#
+#    Désactivation de la consignation#
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 0);
+
+
+
+# P_PHASE = CellGetS(C_Cube_Select, vClient, 'Current Phase');
+
+P_PHASE = CellGetS ( 'SECURITY_CUBES', 'SLS_SALES_PLAN', 'security' ) ;
+P_SALES_GROUP = CellGetS(C_Cube_Select, vClient, 'Sales Group');
+
+If(P_SALES_GROUP @= '');
+	P_SALES_GROUP = 'TOTAL_SALES_GROUP';
+EndIf;
+
+
+
+#============================================#
+#          Initialisation de la vue à supprimer #
+#============================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Cible,view_erase);
+Subsetdestroy(D_PHASE,subset_erase);
+Subsetdestroy(D_SALES_GROUP,subset_erase);
+#Subsetdestroy(D_CURRENCY,subset_erase);
+Subsetdestroy(D_SALES_PLAN_IND,subset_erase);
+Subsetdestroy(D_MATERIAL_PLAN,subset_erase);
+Subsetdestroy(D_CUSTOMER,subset_erase);
+
+#--------------------Création des objets--------------------#
+ViewCreate(C_Cube_Cible,view_erase);
+
+#D_PHASE
+subsetcreate(D_PHASE,subset_erase);
+SubsetElementInsert(D_PHASE, subset_erase, P_PHASE, 1);
+
+#D_SALES_GROUP
+subsetcreate(D_SALES_GROUP,subset_erase);
+SubsetElementInsert(D_SALES_GROUP, subset_erase, P_SALES_GROUP, 1);
+
+#D_CUSTOMER
+MDX_CUSTOMER = '{{[SLS_CUSTOMER].[TOTAL_CUSTOMER]}, {EXCEPT({TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_CUSTOMER] )}, 0)}, {TM1FILTERBYPATTERN( {TM1SUBSETALL( [SLS_CUSTOMER] )}, "N/A*")})}}';
+SubsetCreateByMDX(subset_erase, MDX_CUSTOMER);
+SubsetElementDelete( D_CUSTOMER, subset_erase, 1);
+
+#D_MATERIAL_PLAN
+MDX_MATERIAL_PLAN = '{{[SLS_MATERIAL_PLAN].[TOTAL_PLANNING_MATERIAL]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_MATERIAL_PLAN])},0)}}';
+SubsetCreateByMDX(subset_erase, MDX_MATERIAL_PLAN);
+SubsetElementDelete( D_MATERIAL_PLAN, subset_erase, 1);
+
+#D_CURRENCY
+# subsetcreate(D_CURRENCY,subset_erase);
+# SubsetElementInsert(D_CURRENCY, subset_erase, 'EUR', 1);
+
+#D_SALES_PLAN_IND
+subsetcreate(D_SALES_PLAN_IND,subset_erase);
+SubsetElementInsert(D_SALES_PLAN_IND, subset_erase, 'Tech_control', 1);
+SubsetElementInsert(D_SALES_PLAN_IND, subset_erase, 'Vol_Neg', 1);
+SubsetElementInsert(D_SALES_PLAN_IND, subset_erase, 'Prix_Neg', 1);
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_PHASE,subset_erase);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_SALES_GROUP,subset_erase);
+#ViewSubsetAssign(C_Cube_Cible,view_erase, D_CURRENCY,subset_erase);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_SALES_PLAN_IND,subset_erase);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_PERIOD,'Current Phase Periods');
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_MATERIAL_PLAN,subset_erase);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_CUSTOMER,subset_erase);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Cible,view_erase,1);
+ViewSetSkipCalcs(C_Cube_Cible,view_erase, 1);
+ViewSetSkipZeroes(C_Cube_Cible,view_erase, 1);
+
+#--------------------Suppression des données--------------------#
+ViewZeroOut(C_Cube_Cible,view_erase);
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Cible,view_erase);
+Subsetdestroy(D_PHASE,subset_erase);
+Subsetdestroy(D_SALES_GROUP,subset_erase);
+#Subsetdestroy(D_CURRENCY,subset_erase);
+Subsetdestroy(D_SALES_PLAN_IND,subset_erase);
+Subsetdestroy(D_MATERIAL_PLAN,subset_erase);
+Subsetdestroy(D_CUSTOMER,subset_erase);
+
+
+
+#=========================================#
+#     Initialisation de la vue à copier/vue source           #
+#=========================================#
+
+# on veut avoir accès aux consos de la dim Customer
+# mais la vue doit commencer aux éléments ShipTO
+# donc on ne prend pas les consos dans la vue source, on accèdera au parent depuis le ShipTO
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+Subsetdestroy(D_PHASE,subset_copy);
+Subsetdestroy(D_SALES_GROUP,subset_copy);
+Subsetdestroy(D_MATERIAL_PLAN,subset_copy);
+Subsetdestroy(D_CUSTOMER,subset_copy);
+#Subsetdestroy(D_CURRENCY,subset_copy);
+Subsetdestroy(D_VOLUME_UNIT,subset_copy);
+Subsetdestroy(D_SALES_PLAN_IND,subset_copy);
+
+
+#--------------------Création des objets--------------------#
+
+ViewCreate(C_Cube_Source,view_copy);
+
+#D_PHASE
+subsetcreate(D_PHASE,subset_copy);
+SubsetElementInsert(D_PHASE, subset_copy, P_PHASE, 1);
+
+#D_MATERIAL_PLAN
+MDX_MATERIAL_PLAN = '{{[SLS_MATERIAL_PLAN].[TOTAL_PLANNING_MATERIAL]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_MATERIAL_PLAN])},0)}}';
+SubsetCreateByMDX(subset_copy, MDX_MATERIAL_PLAN);
+SubsetElementDelete( D_MATERIAL_PLAN, subset_copy, 1);
+
+#D_SALES_GROUP
+subsetcreate(D_SALES_GROUP,subset_copy);
+SubsetElementInsert(D_SALES_GROUP, subset_copy, P_SALES_GROUP, 1);
+
+#D_CUSTOMER
+MDX_CUSTOMER = '{{[SLS_CUSTOMER].[TOTAL_CUSTOMER]}, {EXCEPT({TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_CUSTOMER] )}, 0)}, {TM1FILTERBYPATTERN( {TM1SUBSETALL( [SLS_CUSTOMER] )}, "N/A*")})}}';
+SubsetCreateByMDX(subset_copy, MDX_CUSTOMER);
+SubsetElementDelete( D_CUSTOMER, subset_copy, 1 );
+
+#D_CURRENCY
+# subsetcreate(D_CURRENCY,subset_copy);
+# SubsetElementInsert(D_CURRENCY, subset_copy, 'EUR', 1);
+
+#D_SALES_PLAN_IND
+MDX_SALES_PLAN_IND = '{{[SLS_SALES_PLAN_IND].[SLS_VOL]}, {TM1FILTERBYLEVEL( {TM1DRILLDOWNMEMBER({[SLS_SALES_PLAN_IND].[SLS_VOL]}, ALL, RECURSIVE )}, 0)}}'; 
+SubsetCreateByMDX(subset_copy, MDX_SALES_PLAN_IND);
+SubsetElementDelete( D_SALES_PLAN_IND, subset_copy, 1 );
+
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PHASE,subset_copy);
+ViewSubsetAssign(C_Cube_Cible,view_copy, D_PERIOD,'Current Phase Periods');
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_GROUP,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_MATERIAL_PLAN,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CUSTOMER,subset_copy);
+#ViewSubsetAssign(C_Cube_Source,view_copy, D_CURRENCY,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_PLAN_IND,subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 1);
+
+
+# définition de la vue source#
+
+DatasourceCubeview= view_copy;
+
+
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+Division = ELPAR( D_MATERIAL_PLAN, vMaterial_Plan, 1);
+
+#USD pour Export Sugar
+If(vDistrib @= '40' & Division @= 'D_10');
+	Currency = 'USD';
+Else;
+	Currency = 'EUR';
+EndIf;
+
+#Les croisements que l'on parcoure ont un volume de renseigné
+#Check si le prix est renseigné
+
+vPhase = P_PHASE;
+
+# Si la somme des volumes est à 0, la ligne source est ignorée
+Value = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'SLS_VOL');
+If(Value = 0);
+	ItemSkip;
+EndIf;
+
+##- Non_Indexé
+# Récupération des volumes non indexés
+ni_Value = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'SLS_VOL_NON_INDEXE');
+# Si les volumes non indexés sont différents de 0
+IF ( ni_Value <> 0 ) ;
+ # Récupération de SURCH_UNIT
+ Surch_Unit = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'SURCH_UNIT');
+ # Récupération de PREMIUM_UNIT
+ Premium_Unit = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'PREMIUM_UNIT');
+ # Récupération de BASE_UNIT
+ Base_Unit = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'BASE_UNIT');
+ # Récupération de RPP_UNIT
+ Rpp_Unit = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'RPP_UNIT');
+ # Récupération de CPV_UNIT
+ Cpv_Unit = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'CPV_UNIT');
+ # Récupération de PROMO_UNIT
+ Promo_Unit = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'PROMO_UNIT');
+ # Reconstitution de la somme INV_VAL_UNIT
+ Invoiced_Price = Surch_Unit + Premium_Unit + Base_Unit - Rpp_Unit - Cpv_Unit - Promo_Unit ;
+ 
+ # Si INV_VAL_UNIT = 0, mise à jour de l'élément Tech_control
+ IF ( Invoiced_Price = 0 ) ;
+  CellPutN(1, C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'Tech_control');
+ ENDIF ;
+ 
+ # Si INV_VAL_UNIT < 0, mise à jour de l'élément Prix_neg
+ IF ( Invoiced_Price < 0 ) ;
+  CellPutN(1, C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'Prix_Neg');
+ ENDIF ;
+ 
+ # Si les volumes non indexés < 0, mise à jour de l'élément Vol_Neg
+ IF ( ni_Value < 0 ) ;
+  CellPutN(1, C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'Vol_Neg');
+ ENDIF ;
+ENDIF ;
+
+##- Indexé
+# Récupération des volumes indexés
+i_Value = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'SLS_VOL_INDEXE');
+# Si les volumes indexés sont différents de 0
+IF ( i_Value <> 0 ) ;
+ # Récupération de I_SURCH_UNIT
+ i_Surch_Unit = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'I_SURCH_UNIT');
+ # Récupération de I_PREMIUM_UNIT
+ i_Premium_Unit = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'I_PREMIUM_UNIT');
+ # Récupération de I_BASE_UNIT
+ i_Base_Unit = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'I_BASE_UNIT');
+ # Récupération de I_RPP_UNIT
+ i_Rpp_Unit = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'I_RPP_UNIT');
+ # Récupération de I_CPV_UNIT
+ i_Cpv_Unit = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'I_CPV_UNIT');
+ # Récupération de I_PROMO_UNIT
+ i_Promo_Unit = CellGetN(C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'I_PROMO_UNIT');
+ # Reconstitution de la somme INV_VAL_UNIT
+ i_Invoiced_Price = i_Surch_Unit + i_Premium_Unit + i_Base_Unit - i_Rpp_Unit - i_Cpv_Unit - i_Promo_Unit ;
+ 
+ # Si INV_VAL_UNIT = 0, mise à jour de l'élément I_Tech_control
+ IF ( i_Invoiced_Price = 0 ) ;
+  CellPutN(1, C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'I_Tech_control');
+ ENDIF ;
+ 
+ # Si INV_VAL_UNIT < 0, mise à jour de l'élément I_Prix_neg
+ IF ( i_Invoiced_Price < 0 ) ;
+  CellPutN(1, C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'I_Prix_Neg');
+ ENDIF ;
+ 
+ # Si les volumes indexés < 0, mise à jour de l'élément I_Vol_Neg
+ IF ( i_Value < 0 ) ;
+  CellPutN(1, C_Cube_Source, vPhase, vPeriod, vSales_Org, vDistrib, Currency, vVol_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'I_Vol_Neg');
+ ENDIF ;
+ENDIF ;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+Subsetdestroy(D_PHASE,subset_copy);
+Subsetdestroy(D_SALES_GROUP,subset_copy);
+Subsetdestroy(D_SALES_ORG,subset_copy);
+Subsetdestroy(D_DISTRIB_CHANNEL,subset_copy);
+Subsetdestroy(D_MATERIAL_PLAN,subset_copy);
+Subsetdestroy(D_CUSTOMER,subset_copy);
+#Subsetdestroy(D_CURRENCY,subset_copy);
+Subsetdestroy(D_SALES_PLAN_IND,subset_copy);
+
+#====================================#
+#     Activation de la consignation  #
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 1);
+#endregion
