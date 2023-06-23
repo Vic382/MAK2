@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Division_Associated_With_Sales_Org_Logistics",
+	"Expression":"{FILTER(TM1SUBSETALL([SLS_MATERIAL_PLAN]) , [}ElementAttributes_SLS_MATERIAL_PLAN].(STRTOMEMBER(\"[}ElementAttributes_SLS_MATERIAL_PLAN].[\" + [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Sales Org Logistics Code]) + \"]\")) = 1)}"
+}

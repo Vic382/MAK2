@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"All",
+	"Expression":"{TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_SALES_GROUP].[SLS_SALES_GROUP]) , 0)}"
+}

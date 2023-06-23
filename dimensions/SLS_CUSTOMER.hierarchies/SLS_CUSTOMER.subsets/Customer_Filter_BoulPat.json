@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Customer_Filter_BoulPat",
+	"Expression":" {TM1SubsetToSet([SLS_CUSTOMER], [zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Level Customer BoulPat]))}"
+}

@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"MDX_Sales_Group_Domaine_Co_level0",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_CUSTOMER]) , 0) , ((([SLS_CUSTOMER].[Sales Group Name] = [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Sales Group])) AND ([SLS_CUSTOMER].[Distribution Channel Name] = [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Distribution Channel]))) AND ([SLS_CUSTOMER].[Sales Organisation Name] = [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Sales Organisation]))) AND ([SLS_CUSTOMER].[Division Name] = [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Division])))}"
+}

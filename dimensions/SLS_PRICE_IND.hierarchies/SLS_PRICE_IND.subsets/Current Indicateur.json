@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Current Indicateur",
+	"Expression":"{STRTOMEMBER((((((((((\"[SLS_PRICE_IND].[\" + [zSELECT].(STRTOMEMBER(((((((((((\"[}Clients].[\" + USERNAME)))))))))) + \"]\"),[zSELECT_IND].[Indicateurs])))))))))) + \"]\")}"
+}

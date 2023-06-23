@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Current Customer RHF",
+	"Expression":"{STRTOMEMBER((((((\"[SLS_CUSTOMER_PRICE].[\" + [zSELECT].(STRTOMEMBER(((((((\"[}Clients].[\" + USERNAME)))))) + \"]\"),[zSELECT_IND].[Customer_Price_RHF])))))) + \"]\")}"
+}

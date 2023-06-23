@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Customer Export Sugar Prix",
+	"Expression":"{TM1SubsetToSet([SLS_CUSTOMER] , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Indexed Customer]) = \"\" , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Customer IC]) = \"\" , \"MDX_Sales_Group_level0\" , \"Customer IC\") , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Customer IC]) = \"\" , \"Indexed Customer only\" , \"Indexed Customer IC\")))}"
+}

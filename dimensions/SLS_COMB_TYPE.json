@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_COMB_TYPE",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_COMB_TYPE')/Hierarchies('SLS_COMB_TYPE')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_COMB_TYPE.hierarchies/SLS_COMB_TYPE.json"
+	]
+}

@@ -1,0 +1,21 @@
+{
+	"@type":"Cube",
+	"Name":"zVendor",
+	"Rules@Code.link":"zVendor.rules",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('1_G_SALES_ORG')"
+		},
+		{
+			"@id":"Dimensions('SLS_SHIP_POINT')"
+		},
+		{
+			"@id":"Dimensions('zVendor_IND')"
+		}
+	],
+	"Views@Code.links":
+	[
+		"zVendor.views/All.json"
+	]
+}

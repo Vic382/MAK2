@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_Q_HQ",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_Q_HQ')/Hierarchies('SLS_Q_HQ')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_Q_HQ.hierarchies/SLS_Q_HQ.json"
+	]
+}

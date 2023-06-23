@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Ship-to-party Filtre GMS",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(DESCENDANTS(STRTOMEMBER(\"[SLS_CUSTOMER].[\" + [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Customer Retail GMS/RHF]) + \"]\")) , 0) , [SLS_CUSTOMER].[Sales Group Name] = [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Sales Group])),FILTER(TM1FILTERBYLEVEL(DESCENDANTS(STRTOMEMBER(\"[SLS_CUSTOMER].[\" + [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Customer Retail GMS/RHF]) + \"]\")) , 0) , [SLS_CUSTOMER].[Sales Group Name] = \"Multiple Sales Group\")}"
+}

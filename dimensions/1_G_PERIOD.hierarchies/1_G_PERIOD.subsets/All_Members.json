@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"All_Members",
+	"Expression":"{EXCEPT(FILTER(TM1SUBSETALL([1_G_PERIOD]) , [1_G_PERIOD].[Flag_Tec] <> 1) , TM1FILTERBYPATTERN(TM1SUBSETALL([1_G_PERIOD]) , \"*ACT*\"))}"
+}

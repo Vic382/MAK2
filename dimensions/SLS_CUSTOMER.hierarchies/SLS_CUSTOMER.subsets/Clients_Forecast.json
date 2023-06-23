@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Clients_Forecast",
+	"Expression":"TM1SubsetToSet([SLS_CUSTOMER],IIF([zPARAM].([zPARAM_IND].[Clients_Forecast],[1_G_VALUE].[Value])=\"Activés\",\"Clients_Forecast_Actives\",IIF([zPARAM].([zPARAM_IND].[Clients_Forecast],[1_G_VALUE].[Value])=\"Désactivés\",\"Clients_Forecast_Desactives\",\"Level 0\")))"
+}

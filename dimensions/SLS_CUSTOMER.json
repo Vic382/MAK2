@@ -1,0 +1,32 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_CUSTOMER",
+	"AllLeavesHierarchyName":"Leaves",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_CUSTOMER.hierarchies/SLS_CUSTOMER.json",
+		"SLS_CUSTOMER.hierarchies/Country.json",
+		"SLS_CUSTOMER.hierarchies/Currency.json",
+		"SLS_CUSTOMER.hierarchies/Customer status.json",
+		"SLS_CUSTOMER.hierarchies/Distribution Channel.json",
+		"SLS_CUSTOMER.hierarchies/Expertise.json",
+		"SLS_CUSTOMER.hierarchies/IC.json",
+		"SLS_CUSTOMER.hierarchies/IC1.json",
+		"SLS_CUSTOMER.hierarchies/IC2.json",
+		"SLS_CUSTOMER.hierarchies/IC3.json",
+		"SLS_CUSTOMER.hierarchies/Incoterm.json",
+		"SLS_CUSTOMER.hierarchies/Payer.json",
+		"SLS_CUSTOMER.hierarchies/Payment terms.json",
+		"SLS_CUSTOMER.hierarchies/Potential volume.json",
+		"SLS_CUSTOMER.hierarchies/Sales District.json",
+		"SLS_CUSTOMER.hierarchies/Sales Group.json",
+		"SLS_CUSTOMER.hierarchies/Sales Office.json",
+		"SLS_CUSTOMER.hierarchies/Shipping conditions.json",
+		"SLS_CUSTOMER.hierarchies/Sold-to.json",
+		"SLS_CUSTOMER.hierarchies/Typology.json"
+	]
+}

@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"z_copy_Admin_SLS_CAL_FLAG_CUB_SLS_SALES_PLAN_CUB_SLS_INIT",
+	"Expression":"{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_INIT_IND])},0)}"
+}

@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Rates GMS",
+	"Expression":"{STRTOMEMBER((((((\"[SLS_PRICE_IND].[\" + [zSELECT].(STRTOMEMBER(((((((\"[}Clients].[\" + USERNAME)))))) + \"]\"),[zSELECT_IND].[Rates GMS])))))) + \"]\")}"
+}

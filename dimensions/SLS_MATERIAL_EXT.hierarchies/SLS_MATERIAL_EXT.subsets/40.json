@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"40",
+	"Expression":"{FILTER(TM1SUBSETALL([SLS_MATERIAL_EXT]) , [SLS_MATERIAL_EXT].[Division] = \"40\")}"
+}

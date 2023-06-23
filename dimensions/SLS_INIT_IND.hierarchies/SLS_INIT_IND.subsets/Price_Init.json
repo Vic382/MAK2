@@ -1,0 +1,13 @@
+{
+	"@type":"Subset",
+	"Name":"Price_Init",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_INIT_IND')/Hierarchies('SLS_INIT_IND')/Elements('BASE_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_INIT_IND')/Hierarchies('SLS_INIT_IND')/Elements('CUST_REBATE_UNIT')"
+		}
+	]
+}

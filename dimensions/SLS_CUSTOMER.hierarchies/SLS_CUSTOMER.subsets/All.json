@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"All",
+	"Expression":"{EXCEPT(TM1SUBSETALL([SLS_CUSTOMER]) , {[SLS_CUSTOMER].[N/A_CUSTOMER]})}"
+}

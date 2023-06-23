@@ -1,0 +1,13 @@
+{
+	"@type":"Subset",
+	"Name":"Rebates & Retail services",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_PRICE_IND')/Hierarchies('SLS_PRICE_IND')/Elements('RET_SERV_PER')"
+		},
+		{
+			"@id":"Dimensions('SLS_PRICE_IND')/Hierarchies('SLS_PRICE_IND')/Elements('REB_PER')"
+		}
+	]
+}

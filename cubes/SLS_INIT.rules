@@ -1,0 +1,120 @@
+#Region System
+FEEDSTRINGS;
+SKIPCHECK;
+#EndRegion
+
+#Calcul de la valo Promo indéxé
+['I_PROMO'] = N : If( ELISANC('SLS_CUSTOMER', 'IC1 - E00095', !SLS_CUSTOMER)=1 % ELISANC('SLS_CUSTOMER', 'IC1 - E00070', !SLS_CUSTOMER) =1 ,( ['I_SLS_VOL'] ) *['I_PROMO_UNIT'],['I_PROMO_VOL']*['I_PROMO_UNIT']);
+
+#Calcul de la valo Promo
+['PROMO'] = N : If( ELISANC('SLS_CUSTOMER', 'IC1 - E00095', !SLS_CUSTOMER)=1 % ELISANC('SLS_CUSTOMER', 'IC1 - E00070', !SLS_CUSTOMER) =1 ,( ['SLS_VOL'] - ['I_SLS_VOL'] ) *['PROMO_UNIT'],['PROMO_VOL']*['PROMO_UNIT']);
+
+
+
+
+#Calcul des valos pour les éléments fins indéxé
+[] = N: IF ( SUBST ( !SLS_INIT_IND , 1 , 2 ) @= 'I_' ,
+	IF(  DB('}ElementAttributes_SLS_CHA_SAP_IND',SUBST ( !SLS_INIT_IND , 3 , 9999 ) ,'Type_Indicateur') @= 'Valo' ,
+
+	['I_SLS_VOL']* DB('SLS_INIT',!1_G_CURRENT_PHASE,!1_G_PERIOD,!1_G_SALES_ORG,!1_G_DISTRIB_CHANNEL,!1_G_VOLUME_UNIT,!SLS_MATERIAL_PLAN,!SLS_CUSTOMER,!SLS_SHIP_POINT,!SLS_SHIP_PLANT,!SLS_PROD_PLANT,!SLS_VENDOR, 'I_' | DB('}ElementAttributes_SLS_CHA_SAP_IND',SUBST ( !SLS_INIT_IND , 3 , 9999 ) , 'Prix_Associé')),
+	CONTINUE), CONTINUE ) ;
+
+
+#Calcul des valos pour les éléments fins
+[] = N: IF( DB('}ElementAttributes_SLS_CHA_SAP_IND',!SLS_INIT_IND,'Type_Indicateur') @= 'Valo',
+	( ['SLS_VOL']-['I_SLS_VOL']) *DB('SLS_INIT',!1_G_CURRENT_PHASE,!1_G_PERIOD,!1_G_SALES_ORG,!1_G_DISTRIB_CHANNEL,!1_G_VOLUME_UNIT,!SLS_MATERIAL_PLAN,!SLS_CUSTOMER,!SLS_SHIP_POINT,!SLS_SHIP_PLANT,!SLS_PROD_PLANT,!SLS_VENDOR, DB('}ElementAttributes_SLS_CHA_SAP_IND',!SLS_INIT_IND,'Prix_Associé')),
+	CONTINUE);
+
+#Calcul du prix unitaire promo indexé
+['I_PROMO_UNIT'] = C: If( ELISANC('SLS_CUSTOMER', 'IC1 - E00095', !SLS_CUSTOMER)=1 % ELISANC('SLS_CUSTOMER', 'IC1 - E00070', !SLS_CUSTOMER) =1 ,['I_PROMO']\['I_SLS_VOL'],['I_PROMO']\['I_PROMO_VOL']);
+
+#Calcul du prix unitaire promo
+['PROMO_UNIT'] = C: If( ELISANC('SLS_CUSTOMER', 'IC1 - E00095', !SLS_CUSTOMER)=1 % ELISANC('SLS_CUSTOMER', 'IC1 - E00070', !SLS_CUSTOMER) =1 ,['PROMO']\( ['SLS_VOL'] - ['I_SLS_VOL'] ) ,['PROMO']\['PROMO_VOL']);
+
+
+#Calcul des prix unitaires pour les niveaux consolidés exception pour les consolidés de la dimension mesure
+#Les prix ont été doublé pour la gestion des indexés, il faut donc en consolidés (ex 4NET) utilisé SLS_VOL et les prix indexé ET non indexé
+[] = C: IF( DB('}ElementAttributes_SLS_CHA_SAP_IND',!SLS_INIT_IND,'Type_Indicateur') @= 'Prix_Unit' & ELLEV ( 'SLS_INIT_IND' , !SLS_INIT_IND ) > 0 ,
+	DB('SLS_INIT',!1_G_CURRENT_PHASE,!1_G_PERIOD,!1_G_SALES_ORG,!1_G_DISTRIB_CHANNEL, !1_G_VOLUME_UNIT,!SLS_MATERIAL_PLAN,!SLS_CUSTOMER,!SLS_SHIP_POINT,!SLS_SHIP_PLANT,!SLS_PROD_PLANT,!SLS_VENDOR, 'I_' | DB('}ElementAttributes_SLS_CHA_SAP_IND',SUBST ( !SLS_INIT_IND , 3 , 9999 ) , 'Valo_Associée')) +
+    DB('SLS_INIT',!1_G_CURRENT_PHASE,!1_G_PERIOD,!1_G_SALES_ORG,!1_G_DISTRIB_CHANNEL, !1_G_VOLUME_UNIT,!SLS_MATERIAL_PLAN,!SLS_CUSTOMER,!SLS_SHIP_POINT,!SLS_SHIP_PLANT,!SLS_PROD_PLANT,!SLS_VENDOR, DB('}ElementAttributes_SLS_CHA_SAP_IND',!SLS_INIT_IND,'Valo_Associée'))\ ['SLS_VOL'] ,
+	CONTINUE);
+    
+#Calcul des prix unitaires pour les niveaux consolidés indéxé
+[] = C: IF (  SUBST ( !SLS_INIT_IND , 1 , 2 ) @= 'I_' ,
+	IF( DB('}ElementAttributes_SLS_CHA_SAP_IND',SUBST ( !SLS_INIT_IND , 3 , 9999 ) ,'Type_Indicateur') @= 'Prix_Unit',
+	DB('SLS_INIT',!1_G_CURRENT_PHASE,!1_G_PERIOD,!1_G_SALES_ORG,!1_G_DISTRIB_CHANNEL, !1_G_VOLUME_UNIT,!SLS_MATERIAL_PLAN,!SLS_CUSTOMER,!SLS_SHIP_POINT,!SLS_SHIP_PLANT,!SLS_PROD_PLANT,!SLS_VENDOR, 'I_' | DB('}ElementAttributes_SLS_CHA_SAP_IND',SUBST ( !SLS_INIT_IND , 3 , 9999 ) , 'Valo_Associée'))\ ['I_SLS_VOL'] ,
+	CONTINUE) , CONTINUE ) ;
+
+#Calcul des prix unitaires pour les niveaux consolidés
+[] = C: IF( DB('}ElementAttributes_SLS_CHA_SAP_IND',!SLS_INIT_IND,'Type_Indicateur') @= 'Prix_Unit',
+	DB('SLS_INIT',!1_G_CURRENT_PHASE,!1_G_PERIOD,!1_G_SALES_ORG,!1_G_DISTRIB_CHANNEL, !1_G_VOLUME_UNIT,!SLS_MATERIAL_PLAN,!SLS_CUSTOMER,!SLS_SHIP_POINT,!SLS_SHIP_PLANT,!SLS_PROD_PLANT,!SLS_VENDOR, DB('}ElementAttributes_SLS_CHA_SAP_IND',!SLS_INIT_IND,'Valo_Associée'))\( ['SLS_VOL'] - ['I_SLS_VOL'] ) ,
+	CONTINUE);
+    
+
+
+
+feeders;
+
+#Calcul des valos à partir des prix unitaires
+['I_SLS_VOL'] => ['I_BASE'];
+['I_SLS_VOL'] => ['I_PREMIUM'];
+['I_SLS_VOL'] => ['I_SURCH'];
+['I_SLS_VOL'] => ['I_RPP'];
+['I_SLS_VOL'] => ['I_CPV'];
+['I_PROMO_VOL'] => ['I_PROMO'];
+['I_SLS_VOL'] => ['I_PROMO'];
+['I_SLS_VOL'] => ['I_CUST_REBATE'];
+['I_SLS_VOL'] => ['I_RET_SERV'];
+['I_SLS_VOL'] => ['I_FR_COST'];
+['I_SLS_VOL'] => ['I_NIP'];
+
+#Calcul des prix unitaires à partir des valos (conso)
+
+['I_BASE'] => ['I_BASE_UNIT'];
+['I_PREMIUM'] => ['I_PREMIUM_UNIT'];
+['I_SURCH'] => ['I_SURCH_UNIT'];
+['I_RPP'] => ['I_RPP_UNIT'];
+['I_CPV'] => ['I_CPV_UNIT'];
+['I_PROMO'] => ['I_PROMO_UNIT'];
+['I_CUST_REBATE'] => ['I_CUST_REBATE_UNIT'];
+['I_RET_SERV'] => ['I_RET_SERV_UNIT'];
+['I_FR_COST'] => ['I_FR_COST_UNIT'];
+['I_NIP'] => ['I_NIP_UNIT'];
+
+
+
+
+
+
+#Calcul des valos à partir des prix unitaires
+['SLS_VOL'] => ['BASE'];
+['SLS_VOL'] => ['PREMIUM'];
+['SLS_VOL'] => ['SURCH'];
+['SLS_VOL'] => ['RPP'];
+['SLS_VOL'] => ['CPV'];
+['PROMO_VOL'] => ['PROMO'];
+['SLS_VOL'] => ['PROMO'];
+['SLS_VOL'] => ['CUST_REBATE'];
+['SLS_VOL'] => ['RET_SERV'];
+['SLS_VOL'] => ['FR_COST'];
+['SLS_VOL'] => ['NIP'];
+
+#Calcul des prix unitaires à partir des valos (conso)
+
+['BASE'] => ['BASE_UNIT'];
+['PREMIUM'] => ['PREMIUM_UNIT'];
+['CUST_PRICE'] => ['CUST_PRICE_UNIT'];
+['SURCH'] => ['SURCH_UNIT'];
+#['DISC'] => ['DISC_UNIT'];
+['TOT_DISC'] => ['TOT_DISC_UNIT'];
+['RPP'] => ['RPP_UNIT'];
+['CPV'] => ['CPV_UNIT'];
+['PROMO'] => ['PROMO_UNIT'];
+['INV_VAL'] => ['INV_VAL_UNIT'];
+['CUST_REBATE'] => ['CUST_REBATE_UNIT'];
+['RET_SERV'] => ['RET_SERV_UNIT'];
+['CUST_REBATES'] => ['CUST_REBATES_UNIT'];
+['FR_COST'] => ['FR_COST_UNIT'];
+['3NET'] => ['3NET_UNIT'];
+['NIP'] => ['NIP_UNIT'];
+['4NET'] => ['4NET_UNIT'];

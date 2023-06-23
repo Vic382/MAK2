@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Indexed Customer IC hors BP",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(EXCEPT(DESCENDANTS(STRTOMEMBER(\"[SLS_CUSTOMER].[\" + [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Customer IC]) + \"]\")) , DESCENDANTS([SLS_CUSTOMER].[IC1 - E00070])) , 0) , ((([SLS_CUSTOMER].[Sales Group Name] = [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Sales Group])))) AND ((([SLS_CUSTOMER].[Indexed Customer] = [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[zIndexed_Customer])))))}"
+}

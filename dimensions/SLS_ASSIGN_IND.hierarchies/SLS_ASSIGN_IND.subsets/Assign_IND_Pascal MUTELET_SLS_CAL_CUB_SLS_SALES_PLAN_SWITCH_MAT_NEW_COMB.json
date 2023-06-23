@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Assign_IND_Pascal MUTELET_SLS_CAL_CUB_SLS_SALES_PLAN_SWITCH_MAT_NEW_COMB",
+	"Expression":"{TM1FILTERBYLEVEL( {FILTER( {TM1SUBSETALL( [SLS_ASSIGN_IND] )}, [SLS_ASSIGN_IND].[Type_indicateur] = 'Prix_Unit' )}, 0)}"
+}

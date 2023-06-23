@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"New_Comb_CS",
+	"Expression":"{TM1FILTERBYLEVEL(FILTER(DESCENDANTS(STRTOMEMBER((((\"[SLS_MATERIAL_PLAN].[\" + [zSELECT].(STRTOMEMBER((((\"[}Clients].[\" + USERNAME))) + \"]\"),[zSELECT_IND].[Division])))) + \"]\")) , (((INSTR(1 , [SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].[Distribution Channel Name] , [zSELECT].(STRTOMEMBER((((\"[}Clients].[\" + USERNAME))) + \"]\"),[zSELECT_IND].[Distrib Channel]) , 1) >= 1))) AND (((INSTR(1 , [SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].[Sales Organisation Name] , [zSELECT].(STRTOMEMBER((((\"[}Clients].[\" + USERNAME))) + \"]\"),[zSELECT_IND].[Sales Org]) , 1) >= 1)))) , 0)}"
+}

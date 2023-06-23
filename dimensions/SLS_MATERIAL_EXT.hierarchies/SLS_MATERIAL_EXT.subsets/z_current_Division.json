@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"z_current_Division",
+	"Expression":"{TM1SubsetToSet([SLS_MATERIAL_EXT] , [zSELECT].(STRTOMEMBER(((((((((((\"[}Clients].[\" + USERNAME)))))))))) + \"]\"),[zSELECT_IND].[Division_ID]))}"
+}

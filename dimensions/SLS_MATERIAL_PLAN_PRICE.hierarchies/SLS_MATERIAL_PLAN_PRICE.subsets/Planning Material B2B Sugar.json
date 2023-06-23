@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Planning Material B2B Sugar",
+	"Expression":"{GENERATE(FILTER(TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_MATERIAL_PLAN]) , 0) , (((((((([SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].[Status] <> \"OBS\")))) AND (((([SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].[Status] <> \"INA\")))))))) AND (((([SLS_SALES_PLAN].([1_G_CURRENT_PHASE].[Current Phase],[1_G_PERIOD].[CAMP YEAR],STRTOMEMBER(((((\"[1_G_SALES_ORG].[\" + [zSELECT].(STRTOMEMBER(((((\"[}Clients].[\" + USERNAME)))) + \"]\"),[zSELECT_IND].[Sales org]))))) + \"]\"),[1_G_DISTRIB_CHANNEL].[Industry (B2B)],[1_G_CURRENCY].[EUR],[1_G_VOLUME_UNIT].[TO],STRTOMEMBER(((((\"[SLS_CUSTOMER].[\" + [zSELECT].(STRTOMEMBER(((((\"[}Clients].[\" + USERNAME)))) + \"]\"),[zSELECT_IND].[Customer_Price_BoulPat]))))) + \"]\"),STRTOMEMBER(((((\"[SLS_SALES_GROUP].[\" + [zSELECT].(STRTOMEMBER(((((\"[}Clients].[\" + USERNAME)))) + \"]\"),[zSELECT_IND].[Sales_Group_Security]))))) + \"]\"),[SLS_SALES_PLAN_IND].[SLS_VOL]) <> 0))))) , {STRTOMEMBER(((((\"[SLS_MATERIAL_PLAN_PRICE].[\" + [SLS_MATERIAL_PLAN].CURRENTMEMBER.NAME)))) + \"]\")})}"
+}

@@ -1,0 +1,12 @@
+{
+	"@type":"Hierarchy",
+	"Name":"SLS_COUT_APPROCHE_IND",
+	"Elements":
+	[
+		{
+			"Name":"Cout_Approche",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":[]
+}

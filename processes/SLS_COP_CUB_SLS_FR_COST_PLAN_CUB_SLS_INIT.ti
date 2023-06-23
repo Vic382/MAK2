@@ -1,0 +1,356 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   14/06/2019                                                        #
+#                                                                            #
+# Fait par :    Elisabeth Mounier                                                #
+#                                                                            #
+# Action : Processus d'initialisation des couts de transport.                 #
+#																			 #
+##############################################################################
+
+
+
+#===========================================#
+#             Déclaration des variables     #
+#===========================================#
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_FR_COST_PLAN';
+C_Cube_Cible = 'SLS_FR_COST_PLAN';
+C_Cube_Hyp = 'SLS_FR_COST_HYP';
+C_zSELECT = 'zSELECT';
+
+#--------------------Dimensions--------------------#
+D_CURRENT_PHASE = '1_G_CURRENT_PHASE';
+D_STANDARD_INDEXE = 'SLS_Q_HQ' ;
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_MATERIAL = '1_G_MATERIAL';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_VENDOR = 'SLS_VENDOR';
+D_PROD_PLANT='SLS_PROD_PLANT';
+D_SHIP_PLANT = 'SLS_SHIP_PLANT';
+D_SHIP_POINT = 'SLS_SHIP_POINT';
+D_INIT_IND='SLS_INIT_IND';
+
+D_VOLUME_UNIT = '1_G_VOLUME_UNIT';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_FR_COST_PLAN_IND = 'SLS_FR_COST_PLAN_IND';
+
+#--------------------Elements--------------------#
+e_Message_Prolog = '';
+
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'zz_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'zz_copy_' | vUSER |'_' | vPRO_NAME;
+
+
+
+DatasourceASCIIDecimalSeparator='.';
+DatasourceASCIIThousandSeparator='';
+
+#====================================#
+#        Désactivation de la consignation             #
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 0);
+
+
+
+#============================================#
+#                  Vérification des paramètres                #
+#============================================#
+
+#Phase
+Curr_Phase = CellGetS(C_zSELECT,vClient, 'Current Phase');
+
+#Distrib_Channel
+P_Distrib_Channel = CellGetS(C_zSELECT, vClient, 'Distribution Channel Logistics');
+
+
+If( P_Distrib_Channel @= '');
+	P_Distrib_Channel = 'Total Distribution Channel';
+EndIf;
+
+If( DIMIX(D_DISTRIB_CHANNEL, P_Distrib_Channel) = 0);
+	err_prolog = 1;
+    message_err_prolog = 'La distribution channel '|P_Distrib_channel|' n''appartient pas à la dimension ' | D_distrib_channel;
+EndIf;
+
+P_Distrib_Channel = DimensionElementPrincipalName( D_DISTRIB_CHANNEL, P_Distrib_Channel );
+
+
+#Sales Org
+P_Sales_Org = CellGetS(C_zSELECT, vClient, 'Sales Organisation Logistics');
+
+If( P_Sales_Org @= '');
+	P_Sales_Org = 'TOTAL SALES ORG';
+EndIf;
+
+If( DIMIX(D_Sales_Org, P_Sales_Org) = 0);
+	err_prolog = 1;
+    message_err_prolog = 'L''élément '|P_SAles_Org|' n''appartient pas à la dimension ' | D_Sales_Org;
+EndIf;
+
+P_SAles_Org = DimensionElementPrincipalName( D_DISTRIB_CHANNEL, P_Sales_Org );
+
+
+#Division
+P_Division = CellGetS(C_zSelect, vClient, 'Division');
+
+If( P_Division @= '');
+	P_Division = 'Total Planning Material';
+EndIf;
+
+If( DIMIX(D_MATERIAL_PLAN, P_Division) = 0 % ELLEV(D_MATERIAL_PLAN, P_Division)<2 );
+	err_prolog = 1;
+    message_err_prolog = 'L''élément '|P_Division|' n''est pas un élément de niveau supérieur à 2 de la dimension ' | D_MATERIAL_PLAN;
+EndIf;
+
+P_Division = DimensionElementPrincipalName( D_MATERIAL_PLAN, P_Division );
+
+
+#============================================#
+#                  Initialisation de la vue à supprimer                 #
+#============================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Cible,view_erase);
+Subsetdestroy(D_CURRENT_PHASE,subset_erase);
+Subsetdestroy(D_DISTRIB_CHANNEL,subset_erase);
+Subsetdestroy(D_SALES_ORG,subset_erase);
+SubsetDestroy(D_PERIOD, subset_erase);
+Subsetdestroy(D_MATERIAL_PLAN,subset_erase);
+Subsetdestroy(D_CUSTOMER,subset_erase);
+Subsetdestroy(D_FR_COST_PLAN_IND,subset_erase);
+
+#--------------------Création des objets--------------------#
+ViewCreate(C_Cube_Cible,view_erase);
+
+#D_PHASE
+subsetcreate(D_CURRENT_PHASE,subset_erase);
+SubsetElementInsert(D_CURRENT_PHASE, subset_erase, Curr_Phase, 1);
+
+#D_DISTRIB_CHANNEL
+MDX_DISTRIB_CHANNEL = '{{[1_G_DISTRIB_CHANNEL].[Total Distribution Channel]},{TM1FILTERBYLEVEL({DESCENDANTS({[1_G_DISTRIB_CHANNEL].['|P_Distrib_Channel|']})},0)}}';
+SubsetCreateByMDX(subset_erase,MDX_DISTRIB_CHANNEL);
+SubsetElementDelete(D_DISTRIB_CHANNEL, subset_erase, 1);
+
+#D_SALES_ORG
+MDX_SALES_ORG = '{{[1_G_SALES_ORG].[TOTAL SALES ORG]},{TM1FILTERBYLEVEL({DESCENDANTS({[1_G_SALES_ORG].['|P_Sales_Org|']})},0)}}';
+SubsetCreateByMDX(subset_erase,MDX_SALES_ORG);
+SubsetElementDelete(D_SALES_ORG, subset_erase, 1);
+
+#D_MATERIAL_PLAN
+MDX_DIVISION = '{{[SLS_MATERIAL_PLAN].[Total Planning Material]},{TM1FILTERBYLEVEL({DESCENDANTS({[SLS_MATERIAL_PLAN].['|P_Division|']})},0)}}';
+SubsetCreateByMDX(subset_erase,MDX_DIVISION);
+SubsetElementDelete(D_MATERIAL_PLAN, subset_erase, 1);
+
+#D_CUSTOMER
+MDX_CUSTOMER = '{{[SLS_CUSTOMER].[TOTAL_CUSTOMER]},{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_CUSTOMER])},0)}}';
+SubsetCreateByMDX(subset_erase,MDX_CUSTOMER);
+SubsetElementDelete(D_CUSTOMER, subset_erase, 1);
+
+#D_INDICATEUR
+subsetcreate(D_FR_COST_PLAN_IND,subset_erase);
+SubsetElementInsert(D_FR_COST_PLAN_IND, subset_erase, 'IMP_FR_COST', 1);
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_CURRENT_PHASE,subset_erase);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_DISTRIB_CHANNEL,subset_erase);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_SALES_ORG,subset_erase);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_PERIOD, 'Current Phase Periods');
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_MATERIAL_PLAN,subset_erase);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_CUSTOMER,subset_erase);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_FR_COST_PLAN_IND,subset_erase);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Cible,view_erase,1);
+ViewSetSkipCalcs(C_Cube_Cible,view_erase, 1);
+ViewSetSkipZeroes(C_Cube_Cible,view_erase, 1);
+
+#--------------------Suppression des données--------------------#
+ViewZeroOut(C_Cube_Cible,view_erase);
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Cible,view_erase);
+Subsetdestroy(D_CURRENT_PHASE,subset_erase);
+Subsetdestroy(D_DISTRIB_CHANNEL,subset_erase);
+Subsetdestroy(D_SALES_ORG,subset_erase);
+SubsetDestroy(D_PERIOD, subset_erase);
+Subsetdestroy(D_MATERIAL_PLAN,subset_erase);
+Subsetdestroy(D_CUSTOMER,subset_erase);
+Subsetdestroy(D_FR_COST_PLAN_IND,subset_erase);
+
+#=========================================#
+#     Initialisation de la vue à copier/vue source           #
+#=========================================#
+#Vue source = Cube Cible car on veut seulement les croisements où il y a un volume
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy(D_CURRENT_PHASE, subset_copy);
+SubsetDestroy(D_PERIOD, subset_copy);
+SubsetDestroy(D_SALES_ORG, subset_copy);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_copy);
+SubsetDestroy(D_CUSTOMER, subset_copy);
+SubsetDestroy(D_MATERIAL_PLAN, subset_copy);
+SubsetDestroy(D_FR_COST_PLAN_IND, subset_copy);
+
+#--------------------Création des objets--------------------#
+
+ViewCreate(C_Cube_Source,view_copy);
+
+#D_CURRENT_PHASE
+Curr_Phase = DimensionElementPrincipalName( D_CURRENT_PHASE, Curr_Phase );
+subsetcreate(D_CURRENT_PHASE,subset_copy);
+SubsetElementInsert(D_CURRENT_PHASE, subset_copy, Curr_Phase, 1);
+
+#D_DISTRIB_CHANNEL
+MDX_DISTRIB_CHANNEL = '{{[1_G_DISTRIB_CHANNEL].[Total Distribution Channel]},{TM1FILTERBYLEVEL({DESCENDANTS({[1_G_DISTRIB_CHANNEL].['|P_Distrib_Channel|']})},0)}}';
+SubsetCreateByMDX(subset_copy, MDX_DISTRIB_CHANNEL);
+SubsetElementDelete(D_DISTRIB_CHANNEL, subset_copy, 1);
+
+#D_SALES_ORG
+MDX_SALES_ORG = '{{[1_G_SALES_ORG].[TOTAL SALES ORG]},{TM1FILTERBYLEVEL({DESCENDANTS({[1_G_SALES_ORG].['|P_Sales_Org|']})},0)}}';
+SubsetCreateByMDX(subset_copy,MDX_SALES_ORG);
+SubsetElementDelete(D_SALES_ORG, subset_copy, 1);
+
+#D_MATERIAL_PLAN
+MDX_DIVISION = '{{[SLS_MATERIAL_PLAN].[Total Planning Material]},{TM1FILTERBYLEVEL({DESCENDANTS({[SLS_MATERIAL_PLAN].['|P_Division|']})},0)}}';
+SubsetCreateByMDX(subset_copy,MDX_DIVISION);
+SubsetElementDelete(D_MATERIAL_PLAN, subset_copy, 1);
+
+#D_CUSTOMER
+MDX_CUSTOMER = '{TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_CUSTOMER])},0)}';
+SubsetCreateByMDX(subset_copy,MDX_CUSTOMER);
+SubsetElementDelete(D_CUSTOMER, subset_copy, 1);
+
+#D_INDICATEUR
+subsetcreate(D_FR_COST_PLAN_IND,subset_copy);
+SubsetElementInsert(D_FR_COST_PLAN_IND, subset_copy, 'SLS_VOL', 1);
+
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CURRENT_PHASE,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PERIOD,'Current Phase Periods');
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_ORG,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_DISTRIB_CHANNEL,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CUSTOMER,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_MATERIAL_PLAN,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_FR_COST_PLAN_IND,subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 1);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+# définition de la vue source#
+
+DatasourceCubeview= view_copy ;
+
+
+
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+Activité = ELPAR(D_MATERIAL, vELEM_MATERIAL_PLAN, 1);
+Default_Unit = AttrS(D_MATERIAL, Activité, 'Volume_Unit');
+
+vIncoterm = ATTRS (D_CUSTOMER, vELEM_CUSTOMER , 'Incoterm' ) ;
+vIncoterm_point =  ATTRS (D_CUSTOMER, vELEM_CUSTOMER , 'Incoterm2' ) ;
+
+#Distinguer périodes réelles et périodes prevs
+First_sim_month = CellGetS('}ElementAttributes_1_G_CURRENT_PHASE', vELEM_CURRENT_PHASE, 'First simulation month');
+
+# Contrat indexé ou Standard
+IF ( vELEM_STANDARD_INDEXE @= 'INDEXE' ) ;
+ FR_COST_UNIT_INIT = CellGetN('SLS_INIT', vELEM_CURRENT_Phase ,vELEM_Period, vELEM_sales_org , vELEM_distrib_channel, Default_Unit, vELEM_MATERIAL_PLAN, vELEM_CUSTOMER, vELEM_SHIP_POINT, 'TOTAL_SHIP_PLANT', 'TOTAL_PROD_PLANT', 'TOTAL_VENDOR','I_FR_COST_UNIT');
+ELSE ;
+ FR_COST_UNIT_INIT = CellGetN('SLS_INIT', vELEM_CURRENT_Phase ,vELEM_Period, vELEM_sales_org , vELEM_distrib_channel, Default_Unit, vELEM_MATERIAL_PLAN, vELEM_CUSTOMER, vELEM_SHIP_POINT, 'TOTAL_SHIP_PLANT', 'TOTAL_PROD_PLANT', 'TOTAL_VENDOR','FR_COST_UNIT');
+ENDIF ;
+
+#ASCIIOUTPUT ( '..\Rejects\testprice.csv' , numbertostring ( FR_COST_UNIT_INIT ) , vELEM_CURRENT_Phase ,vELEM_Period, vELEM_sales_org , vELEM_distrib_channel, Default_Unit, vELEM_MATERIAL_PLAN, vELEM_CUSTOMER, vELEM_SHIP_POINT ) ;
+
+#Si période réelle
+If(ATTRN(D_PERIOD, vELEM_PERIOD, 'Index_Num') < ATTRN(D_PERIOD, First_sim_month, 'Index_Num'));
+	CellPutN(FR_COST_UNIT_INIT ,C_Cube_Cible,vELEM_CURRENT_Phase , vELEM_STANDARD_INDEXE , vELEM_Period, vELEM_sales_org , vELEM_distrib_channel , vELEM_MATERIAL_PLAN ,vELEM_CUSTOMER,vELEM_MAT_FR_GROUP,vELEM_Ship_Point,'N/A_SHIP_PLANT', 'N/A_PROD_PLANT', 'N/A_VENDOR','IMP_FR_COST');
+
+#Si période prev, on applique les hypothèses logistiques
+Else;
+	Division = ELPAR(D_MATERIAL_PLAN,vELEM_MATERIAL_PLAN, 1);
+	v_Hyp = CellGetN (C_Cube_Hyp , vELEM_CURRENT_Phase ,vELEM_Period, vELEM_sales_org , vELEM_distrib_channel , Division , vELEM_MAT_FR_GROUP, vIncoterm ,'Variation Percentage' ) ; 
+	CellPutN( (FR_COST_UNIT_INIT + FR_COST_UNIT_INIT *v_hyp )  ,C_Cube_Cible,vELEM_CURRENT_Phase , vELEM_STANDARD_INDEXE , vELEM_Period, vELEM_sales_org , vELEM_distrib_channel , vELEM_MATERIAL_PLAN ,vELEM_CUSTOMER,vELEM_MAT_FR_GROUP,vELEM_Ship_Point,'N/A_SHIP_PLANT', 'N/A_PROD_PLANT', 'N/A_VENDOR','IMP_FR_COST');
+Endif ; 
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy(D_CURRENT_PHASE, subset_copy);
+SubsetDestroy(D_PERIOD, subset_copy);
+SubsetDestroy(D_SALES_ORG, subset_copy);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_copy);
+SubsetDestroy(D_CUSTOMER, subset_copy);
+SubsetDestroy(D_MATERIAL_PLAN, subset_copy);
+SubsetDestroy(D_SALES_GROUP, subset_copy);
+SubsetDestroy(D_VOLUME_UNIT, subset_copy);
+SubsetDestroy(D_FR_COST_PLAN_IND, subset_copy);
+
+#====================================#
+#        Activation de la consignation#
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 1);
+
+#endregion

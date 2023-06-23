@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_CUSTOMER_PRICE",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_CUSTOMER_PRICE')/Hierarchies('SLS_CUSTOMER_PRICE')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_CUSTOMER_PRICE.hierarchies/SLS_CUSTOMER_PRICE.json"
+	]
+}

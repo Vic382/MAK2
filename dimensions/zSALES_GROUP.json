@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"zSALES_GROUP",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('zSALES_GROUP')/Hierarchies('zSALES_GROUP')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"zSALES_GROUP.hierarchies/zSALES_GROUP.json"
+	]
+}

@@ -1,0 +1,10 @@
+{
+	"@type":"Subset",
+	"Name":"Indexé",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_Q_HQ')/Hierarchies('SLS_Q_HQ')/Elements('INDEXE')"
+		}
+	]
+}

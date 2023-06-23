@@ -1,0 +1,10 @@
+{
+	"@type":"Subset",
+	"Name":"Source_Subset_21-06-01_aa_ COPY_SLS_SALES_PLAN_SLS_REPORTING_ROLLING_FORECAST",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_CURRENT_PHASE')/Hierarchies('1_G_CURRENT_PHASE')/Elements('RFC')"
+		}
+	]
+}

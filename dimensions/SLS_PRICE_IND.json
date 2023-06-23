@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_PRICE_IND",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_PRICE_IND')/Hierarchies('SLS_PRICE_IND')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_PRICE_IND.hierarchies/SLS_PRICE_IND.json"
+	]
+}

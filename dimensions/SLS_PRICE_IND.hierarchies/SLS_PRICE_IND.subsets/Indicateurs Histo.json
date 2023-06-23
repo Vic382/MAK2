@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Indicateurs Histo",
+	"Expression":"{FILTER(TM1SubsetAll([SLS_PRICE_IND].[SLS_PRICE_IND]), (INSTR(1 , IIF([SLS_PRICE_IND].[SLS_PRICE_IND].CURRENTMEMBER.PROPERTIES(\"Caption\")=\"\", [SLS_PRICE_IND].[SLS_PRICE_IND].CURRENTMEMBER.PROPERTIES(\"MEMBER_CAPTION\"), [SLS_PRICE_IND].[SLS_PRICE_IND].CURRENTMEMBER.PROPERTIES(\"Caption\")) , \"Histo\" , 1) >= 1))}"
+}

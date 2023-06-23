@@ -1,0 +1,12 @@
+{
+	"@type":"Hierarchy",
+	"Name":"m_SECURITY_CUBES",
+	"Elements":
+	[
+		{
+			"Name":"security",
+			"Type":"String"
+		}
+	],
+	"Subsets@Code.links":[]
+}

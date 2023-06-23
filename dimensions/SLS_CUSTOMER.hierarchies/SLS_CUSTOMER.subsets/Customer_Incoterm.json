@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Customer_Incoterm",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_CUSTOMER]) , 0) , [SLS_CUSTOMER].[Incoterm] = [zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Incoterm]))}"
+}

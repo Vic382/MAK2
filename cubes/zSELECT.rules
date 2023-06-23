@@ -1,0 +1,13 @@
+#Region System
+FEEDSTRINGS;
+SKIPCHECK;
+#EndRegion
+
+['Filter_Value']=S: IF(DB('zSELECT',!}Clients,'Filter_Type') @= '', '', CONTINUE);
+['Sales Group']=S: DB('zSELECT', !}Clients, 'Sales_Group_Security');
+['Division_ID']=S: 	ATTRS ( '1_G_Material' , DB('zSELECT',!}Clients,'Division'),'code' ) ;
+#['Sales Org Code'] = S: DIMNM( '1_G_SALES_ORG', DIMIX('1_G_SALES_ORG',DB('zSELECT', !'}Clients', 'Sales Org')) );
+['Sales Org Logistics Code'] = S: DIMNM( '1_G_SALES_ORG', DIMIX('1_G_SALES_ORG',DB('zSELECT', !'}Clients', 'Sales Organisation Logistics')) );
+['zIndexed_Customer'] = S: IF(DB('zSELECT',!}Clients,'Indexed Customer') @= 'no','', DB('zSELECT',!}Clients,'Indexed Customer'));
+['Current Phase Sales'] = S: DB('SECURITY_CUBES','SLS_SALES_PLAN','security') ;
+Feeders;

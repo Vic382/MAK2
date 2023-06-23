@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Ship_to_Incoterm",
+	"Expression":"DESCENDANTS([SLS_CUSTOMER].[Incoterm].[All Incoterm])"
+}

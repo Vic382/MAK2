@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Phases",
+	"Expression":"{EXCEPT([1_G_PHASE].[1_G_PHASE].MEMBERS , {[1_G_PHASE].[1_G_PHASE].[N/A PHASE]})}"
+}

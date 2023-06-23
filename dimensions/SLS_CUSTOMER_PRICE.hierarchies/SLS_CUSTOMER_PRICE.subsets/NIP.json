@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"NIP",
+	"Expression":"{FILTER(TM1SubsetAll([SLS_CUSTOMER_PRICE].[SLS_CUSTOMER_PRICE]), (INSTR(1 , [SLS_CUSTOMER_PRICE].[SLS_CUSTOMER_PRICE].CURRENTMEMBER.PROPERTIES(\"MEMBER_NAME\") , \"IC\" , 1) >= 1))}"
+}

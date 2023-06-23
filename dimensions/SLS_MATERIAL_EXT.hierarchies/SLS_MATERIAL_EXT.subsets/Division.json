@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Division",
+	"Expression":"{TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_MATERIAL_EXT].[SLS_MATERIAL_EXT]) , 0)}"
+}

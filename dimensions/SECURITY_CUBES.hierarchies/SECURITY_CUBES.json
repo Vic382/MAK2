@@ -1,0 +1,16 @@
+{
+	"@type":"Hierarchy",
+	"Name":"SECURITY_CUBES",
+	"Elements":
+	[
+		{
+			"Name":"SLS_SALES_PLAN",
+			"Type":"String"
+		},
+		{
+			"Name":"SLS_SALES_REPORTING",
+			"Type":"String"
+		}
+	],
+	"Subsets@Code.links":[]
+}

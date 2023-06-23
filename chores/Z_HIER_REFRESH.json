@@ -1,0 +1,20 @@
+{
+	"@type":"Chore",
+	"Name":"Z_HIER_REFRESH",
+	"StartTime":"2022-06-09T12:18:54Z",
+	"DSTSensitive":false,
+	"Active":false,
+	"ExecutionMode":"SingleCommit",
+	"Frequency":"P0DT00H01M00S",
+	"Tasks":
+	[
+		{
+			"Step":0,
+			"Parameters":[],
+			"Process":
+			{
+				"@id":"Processes('SLS_CHA_HIER_1_G_MATERIAL_REFRESH')"
+			}
+		}
+	]
+}

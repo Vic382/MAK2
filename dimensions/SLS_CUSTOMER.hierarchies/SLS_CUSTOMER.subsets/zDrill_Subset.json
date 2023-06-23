@@ -1,0 +1,10 @@
+{
+	"@type":"Subset",
+	"Name":"zDrill_Subset",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('230838_14002020')"
+		}
+	]
+}

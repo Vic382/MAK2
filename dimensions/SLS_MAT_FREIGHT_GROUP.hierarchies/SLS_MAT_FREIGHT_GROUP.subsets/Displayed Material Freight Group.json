@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Displayed Material Freight Group",
+	"Expression":"{TM1SubsetToSet([SLS_MAT_FREIGHT_GROUP] , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Material Freight Group]) = \"\" , \"Level0\" , \"Current Material Freight Group\"))}"
+}

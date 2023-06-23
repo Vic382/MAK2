@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_PROD_PLANT",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_PROD_PLANT')/Hierarchies('SLS_PROD_PLANT')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_PROD_PLANT.hierarchies/SLS_PROD_PLANT.json"
+	]
+}

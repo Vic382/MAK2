@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"m_SECURITY_CUBES",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('m_SECURITY_CUBES')/Hierarchies('m_SECURITY_CUBES')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"m_SECURITY_CUBES.hierarchies/m_SECURITY_CUBES.json"
+	]
+}

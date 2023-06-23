@@ -1,0 +1,12 @@
+{
+	"@type":"Hierarchy",
+	"Name":"zVendor_IND",
+	"Elements":
+	[
+		{
+			"Name":"Vendor",
+			"Type":"String"
+		}
+	],
+	"Subsets@Code.links":[]
+}

@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_MATERIAL_PLAN_PRICE",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_MATERIAL_PLAN_PRICE')/Hierarchies('SLS_MATERIAL_PLAN_PRICE')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_MATERIAL_PLAN_PRICE.hierarchies/SLS_MATERIAL_PLAN_PRICE.json"
+	]
+}

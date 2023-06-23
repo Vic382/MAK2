@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Total_Line_Displayed",
+	"Expression":"{FILTER(TM1SUBSETALL([1_G_LINE].[1_G_LINE]) , ([1_G_LINE].[1_G_LINE].[Num_Line] <= [zSELECT].(STRTOMEMBER(((((((\"[}Clients].[\" + USERNAME)))))) + \"]\"),[zSELECT_IND].[Nb_Line])))}"
+}

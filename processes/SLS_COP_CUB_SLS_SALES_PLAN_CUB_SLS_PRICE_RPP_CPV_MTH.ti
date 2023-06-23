@@ -1,0 +1,433 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+################################################################
+#                                               DESCRIPTION DU PROCESSUS                                              #
+#                                                                                                                                                   #
+# Date :   29/10/2018                                                                                                                  #
+#                                                                                                                                                   #
+# Fait par :    Elisabeth MOUNIER                                                                                                #
+#                                                                                                                                                   #
+# Action : Processus de copie des conditions RPP/CPV dans le cube des ventes prévisionnelles.	 	     #
+#					                			      #
+#   Modifié le 21/03/2019 par Elisabeth Mounier
+#	Action : adapter le process aux nouveaux cubes Price et Sales Plan                                                                                                                                                #
+#################################################################
+
+#Specifique Retail GMS
+#pour B2B SUCRE BOULPAT ce sera dans un masque commun avec le taux Promo
+
+#====================================#
+#             Déclaration des variables                   #
+#====================================#
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_SALES_PLAN';
+C_Cube_Cible = 'SLS_SALES_PLAN';
+C_Cube_Price = 'SLS_PRICE'; 
+C_Cube_Select = 'zSELECT'; 
+C_zPROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+
+#--------------------Dimensions--------------------#
+D_PHASE = '1_G_CURRENT_PHASE';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+
+D_CUSTOMER_PRICE = 'SLS_CUSTOMER_PRICE';
+D_MATERIAL_PRICE = 'SLS_MATERIAL_PLAN_PRICE';
+D_PRICE_IND='SLS_PRICE_IND';
+
+D_CURRENCY = '1_G_CURRENCY';
+D_VOLUME_UNIT = '1_G_VOLUME_UNIT';
+D_SALES_PLAN_IND = 'SLS_SALES_PLAN_IND';
+
+
+#--------------------Elements--------------------#
+e_Message_Prolog = '';
+
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#-------------------- Elements --------------------#
+
+P_PHASE = CellGetS(C_Cube_Select, vClient, 'Current Phase');
+P_SALES_GROUP = CellGetS(C_Cube_Select, vClient, 'Sales Group');
+
+If(P_SALES_GROUP @= '');
+	P_SALES_GROUP = 'TOTAL_SALES_GROUP';
+EndIf;
+
+P_DISTRIB = '10';
+
+Parent = ATTRS(D_PERIOD, Period_Input, 'Mapping_Year');
+
+DatasourceASCIIDecimalSeparator='.';
+DatasourceASCIIThousandSeparator='';
+
+#====================================#
+#        Désactivation de la consignation             #
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 0);
+
+
+#============================================#
+#                  Initialisation de la vue à supprimer                 #
+#============================================#
+#pas de restriction sur la Sales Org car lancement du process par un Master de tout le périmètre
+
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Cible,view_erase);
+Subsetdestroy(D_PHASE,subset_erase);
+Subsetdestroy(D_SALES_GROUP,subset_erase);
+Subsetdestroy(D_DISTRIB_CHANNEL,subset_erase);
+Subsetdestroy(D_SALES_PLAN_IND,subset_erase);
+Subsetdestroy(D_PERIOD,subset_erase);
+
+
+#--------------------Création des objets--------------------#
+ViewCreate(C_Cube_Cible,view_erase);
+
+#D_PHASE
+subsetcreate(D_PHASE,subset_erase);
+SubsetElementInsert(D_PHASE, subset_erase, P_PHASE, 1);
+
+#D_SALES_GROUP
+subsetcreate(D_SALES_GROUP,subset_erase);
+SubsetElementInsert(D_SALES_GROUP, subset_erase, P_SALES_GROUP, 1);
+
+#D_PERIOD
+subsetcreate(D_PERIOD,subset_erase);
+SubsetElementInsert(D_PERIOD, subset_erase, Period_Input, 1);
+
+#D_DISTRIB_CHANNEL
+subsetcreate(D_DISTRIB_CHANNEL,subset_erase);
+SubsetElementInsert(D_DISTRIB_CHANNEL, subset_erase,P_DISTRIB, 1);
+
+#D_SALES_PLAN_IND
+subsetcreate(D_SALES_PLAN_IND,subset_erase);
+SubsetElementInsert(D_SALES_PLAN_IND, subset_erase, 'RPP_PER', 1);
+SubsetElementInsert(D_SALES_PLAN_IND, subset_erase, 'CPV_PER', 1);
+SubsetElementInsert(D_SALES_PLAN_IND, subset_erase, 'RPP_UNIT', 1);
+SubsetElementInsert(D_SALES_PLAN_IND, subset_erase, 'CPV_UNIT', 1);
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_PHASE,subset_erase);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_SALES_GROUP,subset_erase);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_DISTRIB_CHANNEL,subset_erase);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_SALES_PLAN_IND,subset_erase);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_PERIOD, subset_erase);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Cible,view_erase,1);
+ViewSetSkipCalcs(C_Cube_Cible,view_erase, 1);
+ViewSetSkipZeroes(C_Cube_Cible,view_erase, 1);
+
+#--------------------Suppression des données--------------------#
+ViewZeroOut(C_Cube_Cible,view_erase);
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Cible,view_erase);
+Subsetdestroy(D_PHASE,subset_erase);
+Subsetdestroy(D_SALES_GROUP,subset_erase);
+Subsetdestroy(D_DISTRIB_CHANNEL,subset_erase);
+Subsetdestroy(D_SALES_PLAN_IND,subset_erase);
+Subsetdestroy(D_PERIOD,subset_erase);
+
+#=========================================#
+#     Initialisation de la vue à copier/vue source           #
+#=========================================#
+
+# on veut avoir accès aux consos de la dim Customer
+# mais la vue doit commencer aux éléments ShipTO
+# donc on ne prend pas les consos dans la vue source, on accèdera au parent depuis le ShipTO
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy(D_PHASE, subset_copy);
+SubsetDestroy(D_PERIOD, subset_copy);
+SubsetDestroy(D_SALES_GROUP, subset_copy);
+SubsetDestroy(D_SALES_ORG, subset_copy);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_copy);
+SubsetDestroy(D_CUSTOMER, subset_copy);
+SubsetDestroy(D_SALES_PLAN_IND, subset_copy);
+SubsetDestroy(D_VOLUME_UNIT, subset_copy);
+SubsetDestroy(D_CURRENCY, subset_copy);
+
+
+#--------------------Création des objets--------------------#
+
+ViewCreate(C_Cube_Source,view_copy);
+
+#D_PHASE
+subsetcreate(D_PHASE,subset_copy);
+SubsetElementInsert(D_PHASE, subset_copy, P_PHASE, 1);
+
+#D_PERIOD
+subsetcreate(D_PERIOD,subset_copy);
+SubsetElementInsert(D_PERIOD, subset_copy, Period_Input, 1);
+
+#D_SALES_GROUP
+subsetcreate(D_SALES_GROUP,subset_copy);
+SubsetElementInsert(D_SALES_GROUP, subset_copy, P_SALES_GROUP, 1);
+
+#D_DISTRIB_CHANNEL
+subsetcreate(D_DISTRIB_CHANNEL,subset_copy);
+SubsetElementInsert(D_DISTRIB_CHANNEL, subset_copy, P_DISTRIB, 1);
+
+#D_SALES_ORG
+MDX_SALES_ORG = '{{[1_G_SALES_ORG].[TOTAL SALES ORG]},{TM1FILTERBYLEVEL({TM1SUBSETALL([1_G_SALES_ORG])},0)}}';
+SubsetCreateByMDX(subset_copy, MDX_SALES_ORG);
+SubsetElementDelete( D_SALES_ORG, subset_copy, 1);
+
+#D_CUSTOMER
+MDX_CUSTOMER = '{{[SLS_CUSTOMER].[TOTAL_CUSTOMER]},{TM1FILTERBYLEVEL( {TM1SUBSETALL( [SLS_CUSTOMER] )}, 0)}}';
+SubsetCreateByMDX(subset_copy, MDX_CUSTOMER);
+SubsetElementDelete(D_CUSTOMER, subset_copy, 1);
+
+#D_SALES_PLAN_IND
+#VRT : Mise en place des contrats indexe
+#MDX_SALES_PLAN_IND = '{{[SLS_SALES_PLAN_IND].[SLS_VOL]},{FILTER( {TM1SUBSETALL( [SLS_SALES_PLAN_IND] )}, [SLS_SALES_PLAN_IND].[Type_Indicateur] = "Volume")}}';
+MDX_SALES_PLAN_IND = '{ EXCEPT({FILTER( {TM1SUBSETALL( [SLS_SALES_PLAN_IND] )}, [SLS_SALES_PLAN_IND].[Type_Indicateur] = "Volume")},{TM1FILTERBYPATTERN( {TM1SUBSETALL( [SLS_SALES_PLAN_IND] )}, "I_*")})}';
+SubsetCreateByMDX(subset_copy, MDX_SALES_PLAN_IND);
+SubsetElementDelete(D_SALES_PLAN_IND, subset_copy, 1);
+nCheckIndex = SubsetElementGetIndex ( D_SALES_PLAN_IND, subset_copy , 'SLS_VOL_INDEXE',1) ;
+SubsetElementDelete(D_SALES_PLAN_IND, subset_copy, nCheckIndex );
+
+#D_CURRENCY
+subsetcreate(D_CURRENCY,subset_copy);
+SubsetElementInsert(D_CURRENCY, subset_copy, 'EUR', 1);
+
+#D_VOLUME_UNIT
+subsetcreate(D_VOLUME_UNIT,subset_copy);
+SubsetElementInsert(D_VOLUME_UNIT, subset_copy, 'TO', 1);
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PHASE,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PERIOD,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_GROUP,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_DISTRIB_CHANNEL,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_ORG,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CUSTOMER,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_PLAN_IND,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CURRENCY,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_VOLUME_UNIT,subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 1);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+# définition de la vue source#
+
+DatasourceCubeview= view_copy;
+
+#endregion
+#region Data
+#Attention, saisie des RPP sur un total année, soit le N/A de la période en cours
+
+
+#Year_Type = CellGetS(C_Cube_Select, vClient, 'Current_year_type');
+#Year_Type_N = ATTRS(D_PERIOD, vPeriod, Year_type | '_N');
+#Period_Input = Year_Type_N | ' Input';
+
+############################################################################
+###				   	RPP   					          ####
+#############################################################################
+
+
+
+#SI PM/ShipTo vide => voir PM/IC3, sinon etc...
+#Unit Price en EUR/TO (car pour Retail GMS et Sucre boulpat seulement activité sucre)
+#à copier sur l'indicateur Base_Unit
+
+#récupérer l'indicateur du cube SLS_PRICE (attention notre vue source est celle de sls_plan)
+
+#CAS 1 : check si des prix sont renseignés à la maille PM/ShipTo
+
+
+Val_Price_RPP = CellGetN(C_Cube_Price, vPhase, Period_Input, vSales_Org, vDistrib_Channel, vCustomer, vMaterial_Plan,  'N/A_SALES_GROUP', 'RPP_PER');
+
+
+#Si PM/shipTo vide
+If(Val_Price_RPP <> 0);
+
+	Val_RPP = Val_Price_RPP; 
+
+
+#Sinon, on check à la maille PM/IC3
+#plus précisément sur le N/A_IC3
+Else;
+
+	vIC3 = ELPAR(D_CUSTOMER, vCustomer, 1);
+	#vIC3_Input = 'N/A_' | vIC3; 
+	Val_IC3_RPP = CellGetN(C_Cube_Price, vPhase, Period_Input, vSales_Org, vDistrib_Channel, vIC3, vMaterial_Plan,  'N/A_SALES_GROUP', 'RPP_PER');
+	
+
+	If(Val_IC3_RPP <> 0);
+		Val_RPP = Val_IC3_RPP;
+
+
+	#Si PM/IC3 non renseigné, on cher=ck à la maille PM/NA_IC2
+	Else;
+
+		vIC2 = ELPAR(D_CUSTOMER, vIC3, 1);
+		#vIC2_Input = 'N/A_' | vIC2; 
+		Val_IC2_RPP = CellGetN(C_Cube_Price, vPhase, Period_Input, vSales_Org, vDistrib_Channel, vIC2, vMaterial_Plan,  'N/A_SALES_GROUP', 'RPP_PER');
+		
+		
+		If(Val_IC2_RPP <> 0);
+
+			Val_RPP = Val_IC2_RPP;
+
+
+		#Si PM/IC2 non renseigné, on check à la maille PM/NA_IC1
+		Else;
+
+			vIC1 = ELPAR(D_CUSTOMER, vIC2, 1);
+			#vIC1_Input = 'N/A_' | vIC1; 
+			Val_IC1_RPP = CellGetN(C_Cube_Price, vPhase, Period_Input, vSales_Org, vDistrib_Channel, vIC1, vMaterial_Plan, 'N/A_SALES_GROUP', 'RPP_PER');
+			Val_RPP = Val_IC1_RPP;
+
+
+		EndIf;
+	EndIf;
+
+
+EndIf;
+
+#on a seulement besoin de copier sur la période lue car pas besoin du prix s'il n'y a pas de volume
+CellPutN(Val_RPP, C_Cube_Cible, vPhase, vPeriod, vSales_Org, vDistrib_Channel, 'EUR', 'TO', vCustomer, vMaterial_Plan, vSales_Group, 'RPP_PER');
+
+
+############################################################################
+###				   	CPV   					          ####
+#############################################################################
+
+
+
+#SI PM/ShipTo vide => voir PM/IC3, sinon etc...
+#Unit Price en EUR/TO (car pour Retail GMS et Sucre boulpat seulement activité sucre)
+#à copier sur l'indicateur Base_Unit
+
+#récupérer l'indicateur du cube SLS_PRICE (attention notre vue source est celle de sls_plan)
+
+#CAS 1 : check si des prix sont renseignés à la maille PM/ShipTo
+
+
+Val_Price_CPV = CellGetN(C_Cube_Price, vPhase, Period_Input, vSales_Org, vDistrib_Channel, vCustomer, vMaterial_Plan,  'N/A_SALES_GROUP', 'CPV_PER');
+
+
+#Si PM/shipTo vide
+If(Val_Price_CPV <> 0);
+
+	Val_CPV = Val_Price_CPV; 
+
+#Sinon, on check à la maille PM/IC3
+#plus précisément sur le N/A_IC3
+Else;
+
+	vIC3 = ELPAR(D_CUSTOMER, vCustomer, 1);
+	#vIC3_Input = 'N/A_' | vIC3; 
+	Val_IC3_CPV = CellGetN(C_Cube_Price, vPhase, Period_Input, vSales_Org, vDistrib_Channel, vIC3, vMaterial_Plan,  'N/A_SALES_GROUP', 'CPV_PER');
+	
+
+	If(Val_IC3_CPV <> 0);
+
+		Val_CPV = Val_IC3_CPV;
+
+
+	#Si PM/IC3 non renseigné, on cher=ck à la maille PM/NA_IC2
+	Else;
+
+		vIC2 = ELPAR(D_CUSTOMER, vIC3, 1);
+		#vIC2_Input = 'N/A_' | vIC2; 
+		Val_IC2_CPV = CellGetN(C_Cube_Price, vPhase, Period_Input, vSales_Org, vDistrib_Channel, vIC2, vMaterial_Plan,  'N/A_SALES_GROUP', 'CPV_PER');
+	
+		
+		If(Val_IC2_CPV <> 0);
+
+			Val_CPV = Val_IC2_CPV;
+
+		#Si PM/IC2 non renseigné, on check à la maille PM/NA_IC1
+		Else;
+
+			vIC1 = ELPAR(D_CUSTOMER, vIC2, 1);
+			#vIC1_Input = 'N/A_' | vIC1; 
+			Val_IC1_CPV = CellGetN(C_Cube_Price, vPhase, Period_Input, vSales_Org, vDistrib_Channel, vIC1, vMaterial_Plan,  'N/A_SALES_GROUP', 'CPV_PER');
+			Val_CPV = Val_IC1_CPV;
+
+		
+
+		EndIf;
+	EndIf;
+
+
+EndIf;
+
+
+#on a seulement besoin de copier sur la période lue car pas besoin du prix s'il n'y a pas de volume
+CellPutN(Val_CPV, C_Cube_Cible, vPhase, vPeriod, vSales_Org, vDistrib_Channel, 'EUR', 'TO', vCustomer, vMaterial_Plan, vSales_Group, 'CPV_PER');
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy(D_PHASE, subset_copy);
+SubsetDestroy(D_PERIOD, subset_copy);
+SubsetDestroy(D_SALES_GROUP, subset_copy);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_copy);
+SubsetDestroy(D_SALES_ORG, subset_copy);
+SubsetDestroy(D_CUSTOMER, subset_copy);
+SubsetDestroy(D_SALES_PLAN_IND, subset_copy);
+SubsetDestroy(D_CURRENCY, subset_copy);
+SubsetDestroy(D_VOLUME_UNIT, subset_copy);
+
+#====================================#
+#        Activation de la consignation             #
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 1);
+#endregion

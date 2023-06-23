@@ -1,0 +1,13 @@
+{
+	"@type":"Subset",
+	"Name":"Standard_Indexé",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_Q_HQ')/Hierarchies('SLS_Q_HQ')/Elements('QUOTA_STAND')"
+		},
+		{
+			"@id":"Dimensions('SLS_Q_HQ')/Hierarchies('SLS_Q_HQ')/Elements('INDEXE')"
+		}
+	]
+}

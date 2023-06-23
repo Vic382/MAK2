@@ -1,0 +1,272 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+###############################################################################
+#                                               DESCRIPTION DU PROCESSUS      #
+#                                                                             #
+# Date :   21:03/2019                                                         #
+#                                                                             #
+# Fait par :    Ann BESNARD                                                   #
+#                                                                             #
+# Action : Processus de copie de CHA SAP vers INIT sur un périmètre donnée :  #
+#    		distrib channel, division, phase, mois lors de l'initialisation   #
+#									                                          #
+#                                                                             #
+###############################################################################
+
+
+#====================================#
+#             Déclaration des variables                   #
+#====================================#
+
+#--------------------Cubes--------------------#
+C_Cube_Cible = 'SLS_INIT';
+
+#--------------------Dimensions--------------------#
+D_PHASE = '1_G_PHASE';
+D_CURR_PHASE = '1_G_CURRENT_PHASE';
+D_PERIOD = '1_G_PERIOD';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_MATERIAL = '1_G_MATERIAL';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_STANDARD_INDEXE = 'SLS_Q_HQ' ;
+D_INIT_IND = 'SLS_INIT_IND';
+
+
+#--------------------Elements--------------------#
+
+vELEM_ACT = 'ACT';
+e_Message_Prolog = '';
+DISC = 'Unitary Discount';
+FR_SAMP = 'Unitary Free Samples';
+BP = 'Unitary Base Price';
+
+#--------------------Variables globales--------------------#
+
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+P_Process_Name = 'SLS_MASTER_COP_CUB_SLS_INIT_CUB_SLS_CHA_SAP';
+subset_temp = 'ztemp_' | vUSER |'_' | P_Process_Name;
+
+sub_Retail_GMS = subset_temp|'_Retail_GMS';
+sub_Retail_RHF = subset_temp|'_Retail_RHF';
+sub_B2B_Sucre = subset_temp|'_B2B_Sucre';
+sub_B2B_Sucre_BoulPat = subset_temp|'_B2B_Sucre_BoulPat';
+sub_B2B_Alcool = subset_temp|'_B2B_Alcool';
+sub_Export_Sucre = subset_temp|'_Export_Sucre';
+
+DatasourceASCIIDecimalSeparator='.';
+DatasourceASCIIThousandSeparator='';
+
+
+
+
+#============================================#
+#                  Vérification des paramètres                 #
+#============================================#
+
+#Distribution Channel
+If(P_DISTRIB_CHANNEL @= '');
+	P_DISTRIB_CHANNEL = 'Total Distribution Channel';
+EndIf;
+
+If(DIMIX(D_DISTRIB_CHANNEL, P_Distrib_Channel)=0);
+	e_Error_Prolog = 1;
+    e_Message_Prolog = 'Le paramètre '|P_Distrib_Channel|' n''appartient pas à la dimension ' | D_DISTRIB_CHANNEL;
+EndIf;
+
+#Division
+If(P_Division @= '');
+	P_Division = 'Total Material';
+    P_Division_Cible = 'Total PLanning Material';
+Else;
+	P_Division_Cible = P_Division;
+EndIf;
+
+If((DIMIX(D_MATERIAL, P_Division)=0 % ELLEV(D_MATERIAL, P_Division)<> 2) & P_Division @<> 'Total Material');
+	e_Error_Prolog = 1;
+    e_Message_Prolog = 'Le paramètre '|P_Division|' n''est pas un élément de niveau 2 de la dimension ' | D_MATERIAL;
+EndIf;
+
+#Phase Source
+If(DIMIX(D_PHASE, P_Phase_Source)=0);
+	e_Error_Prolog = 1;
+    e_Message_Prolog = 'Le paramètre '|P_Phase_Source|' n''appartient pas à la dimension ' | D_PHASE;
+EndIf;
+
+#Mois Source
+If(DIMIX(D_PERIOD, P_Mois_Source)=0);
+	e_Error_Prolog = 1;
+    e_Message_Prolog = 'Le paramètre '|P_Mois_Source|' n''appartient pas à la dimension ' | D_PERIOD;
+EndIf;
+
+#Phase Cible
+If(DIMIX(D_CURR_PHASE, P_Phase_Cible)=0);
+	e_Error_Prolog = 1;
+    e_Message_Prolog = 'Le paramètre '|P_Phase_Cible|' n''appartient pas à la dimension ' | D_CURR_PHASE;
+EndIf;
+
+#Mois Cible
+If(DIMIX(D_PERIOD, P_Mois_Cible)=0);
+	e_Error_Prolog = 1;
+    e_Message_Prolog = 'Le paramètre '|P_Mois_Cible|' n''appartient pas à la dimension ' | D_PERIOD;
+EndIf;
+
+If(e_Error_Prolog = 1);
+	ProcessBreak;
+EndIf;
+
+#============================================#
+#                  MAJ de la vue à supprimer                 #
+#============================================#
+
+#D_CURR_PHASE
+SubsetDeleteAllElements( D_CURR_PHASE, subset_erase);
+SubsetElementInsert(D_CURR_PHASE, subset_erase, P_Phase_Cible, 1);
+
+#D_PERIOD
+SubsetDeleteAllElements(D_PERIOD,subset_erase);
+SubsetElementInsert(D_PERIOD, subset_erase,P_Mois_Cible, 1);
+
+#D_DISTRIB_CHANNEL
+SubsetDeleteAllElements( D_DISTRIB_CHANNEL, subset_erase );
+MDX_DISTRIB_CHANNEL = '{TM1FILTERBYLEVEL({DESCENDANTS([1_G_DISTRIB_CHANNEL].[' | P_Distrib_Channel | '])},0)}';
+SubsetMDXSet( D_DISTRIB_CHANNEL, subset_erase, MDX_DISTRIB_CHANNEL );
+
+#D_MATERIAL
+SubsetDeleteAllElements( D_MATERIAL_PLAN, subset_erase );
+MDX_DIVISION = '{TM1FILTERBYLEVEL({DESCENDANTS([SLS_MATERIAL_PLAN].[' | P_DIVISION_CIBLE | '])},0)}';
+SubsetMDXSet( D_MATERIAL_PLAN, subset_erase, MDX_DIVISION );
+
+#--------------------Suppression des données--------------------#
+ViewZeroOut(C_Cube_Cible,view_erase);
+
+#=========================================#
+#     MAJ de la vue à copier/vue source           #
+#=========================================#
+
+#D_PHASE
+subsetDeleteAllElements(D_PHASE,subset_copy);
+SubsetElementInsert(D_PHASE, subset_copy,P_Phase_Source, 1);
+
+#D_PERIOD
+subsetDeleteAllElements(D_PERIOD,subset_copy);
+SubsetElementInsert(D_PERIOD, subset_copy, P_Mois_Source, 1);
+
+#D_DISTRIB_CHANNEL
+SubsetDeleteAllElements( D_DISTRIB_CHANNEL, subset_copy );
+MDX_DISTRIB_CHANNEL = '{TM1FILTERBYLEVEL({DESCENDANTS([1_G_DISTRIB_CHANNEL].[' | P_Distrib_Channel | '])},0)}';
+SubsetMDXSet( D_DISTRIB_CHANNEL, subset_copy, MDX_DISTRIB_CHANNEL );
+
+#D_MATERIAL
+SubsetDeleteAllElements( D_MATERIAL, subset_copy );
+MDX_DIVISION = '{TM1FILTERBYLEVEL({DESCENDANTS([1_G_MATERIAL].[' | P_DIVISION | '])},1)}';
+SubsetMDXSet( D_MATERIAL, subset_copy, MDX_DIVISION );
+
+#D_STANDARD_INDEXE
+SubsetDeleteAllElements( D_STANDARD_INDEXE, subset_copy );
+MDX_STANDARD_INDEXE = '{TM1FILTERBYLEVEL( {TM1SUBSETALL(['| D_STANDARD_INDEXE |'] )}, 0)}';
+SubsetMDXSet( D_STANDARD_INDEXE, subset_copy, MDX_STANDARD_INDEXE );
+
+# définition de la vue source#
+
+DatasourceCubeview = view_copy ;
+
+
+Phase = CellGetS('zPARAM','Phase','Value');
+First_Sim_Month = AttrS(D_CURR_PHASE, Phase, 'First Simulation Month');
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+# ELH - EVO Commerciaux - Mise à jour de l'attibut Désactivation Client Forecast pour ne répartir les données que sur les clients Actifs
+sStatutCustomer = AttrS( D_CUSTOMER , vELEM_CUSTOMER , 'Customer status') ;
+
+IF ( sStatutCustomer @= 'OBS' ) ;
+ AttrPutS ( 'Oui' , D_CUSTOMER , vELEM_CUSTOMER , 'Désactiver Client Forecast' ) ;
+ENDIF ;
+
+# VRT 23/02/2023 : Ajout d'un contrôle pour ne traiter que les clients Actif
+
+IF ( sStatutCustomer @= 'ACT' ) ;
+
+  #On ne veut pas initialiser les Sales_Plan avec des Produits obsolètes ou inactifs pour le prévisionnel
+  If((ATTRS(D_MATERIAL, vELEM_Material, 'Status') @= 'OBS' % ATTRS(D_MATERIAL, vELEM_Material, 'Status') @= 'INA') & StringToNumber(AttrS(D_PERIOD, vELEM_PERIOD,'Index'))>=StringToNumber(AttrS(D_PERIOD, First_Sim_Month,'Index')) );
+      ItemSkip; 
+  EndIf;
+
+  #On définit la liste des indicateurs à initialiser sur le périmètre
+  subset_ind = '';
+  If(vELEM_DISTRIB_CHANNEL @= '10' & AttrS(D_CUSTOMER,vELEM_CUSTOMER, 'IC1')@= 'IC1 - E00095');
+      subset_ind = sub_retail_RHF;
+      vAttr_Elem = AttrS('SLS_CHA_SAP_IND', vELEM_IND, 'Ind_Retail_RHF' );
+  ElseIf(vELEM_DISTRIB_CHANNEL @= '10');
+      subset_ind = sub_retail_GMS;
+      vAttr_Elem = AttrS('SLS_CHA_SAP_IND', vELEM_IND, 'Ind_Retail_GMS' );
+  ElseIf(vELEM_DISTRIB_CHANNEL @= '40' & ELPAR(D_MATERIAL, vELEM_MATERIAL, 1) @= 'D_10');
+      subset_ind = sub_Export_Sucre;
+      vAttr_Elem = AttrS('SLS_CHA_SAP_IND', vELEM_IND, 'Ind_Export_Sucre' );
+  ElseIf(vELEM_DISTRIB_CHANNEL @= '20' & ELPAR(D_MATERIAL, vELEM_MATERIAL, 1) @= 'D_10' & AttrS(D_CUSTOMER,vELEM_CUSTOMER, 'IC1')@= 'IC1 - E00070');
+      subset_ind = sub_B2B_Sucre_BoulPat;
+      vAttr_Elem = AttrS('SLS_CHA_SAP_IND', vELEM_IND, 'Ind_B2B_Sucre_BoulPat' );
+  ElseIf(vELEM_DISTRIB_CHANNEL @= '20' & (ELPAR(D_MATERIAL, vELEM_MATERIAL, 1) @= 'D_10' % ELPAR(D_MATERIAL, vELEM_MATERIAL, 1) @= 'D_40' % ELPAR(D_MATERIAL, vELEM_MATERIAL, 1) @= 'D_85'));
+      subset_ind = sub_B2B_Sucre;
+      vAttr_Elem = AttrS('SLS_CHA_SAP_IND', vELEM_IND, 'Ind_B2B_Sucre' );
+  Else;
+      subset_ind = sub_B2B_ALcool;
+      vAttr_Elem = AttrS('SLS_CHA_SAP_IND', vELEM_IND, 'Ind_B2B_Alcool' );
+  EndIf;
+  
+  #On trie sur ces indicateurs
+  If(SubsetElementGetIndex( D_INIT_IND, subset_ind, vELEM_IND, 1 ) = 0);
+      vELEM_IND_new = vAttr_Elem;
+      If(vELEM_IND_new @= '');
+          ItemReject(vELEM_IND |' - ' | subset_ind);
+      EndIf;
+  Else;
+      vELEM_IND_new = vELEM_IND;
+  EndIf;
+  
+  
+  # Modif VRT : 30/01/2023
+  # Mise en place des contrats indéxé. 
+  
+  
+  #On copie (Increment pour le cas de Free Samples ou de Discount)
+  #CellIncrementN(Value, C_Cube_Cible, P_Phase_Cible, P_Mois_Cible, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_VOLUME_UNIT, vELEM_MATERIAL, vELEM_CUSTOMER, vELEM_SHIP_POINT, vELEM_SHIP_PLANT, vELEM_PROD_PLANT, vELEM_VENDOR, vELEM_IND_new);
+  
+  
+  
+  # Vérification de l'élément de la dimenion SLS_Q_HQ ( indexe ou non_indexe ) pour alimenter le bon indicateur
+  IF ( vELEM_Q_HQ @= 'INDEXE') ;
+   vELEM_IND_new = 'I_' | vELEM_IND_new ;
+  ENDIF ;
+
+  CellIncrementN(Value, C_Cube_Cible, P_Phase_Cible, P_Mois_Cible, vELEM_SALES_ORG, vELEM_DISTRIB_CHANNEL, vELEM_VOLUME_UNIT, vELEM_MATERIAL, vELEM_CUSTOMER, vELEM_SHIP_POINT, vELEM_SHIP_PLANT, vELEM_PROD_PLANT, vELEM_VENDOR, vELEM_IND_new);
+
+ENDIF ;
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#endregion

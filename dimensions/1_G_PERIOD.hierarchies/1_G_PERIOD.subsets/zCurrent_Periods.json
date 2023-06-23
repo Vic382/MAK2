@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"zCurrent_Periods",
+	"Expression":"{[1_G_PERIOD].[N/A PERIOD],TM1SubsetToSet([1_G_PERIOD] , [zSELECT].(STRTOMEMBER(((((\"[}Clients].[\" + USERNAME)))) + \"]\"),[zSELECT_IND].[Current_Year_Type]))}"
+}

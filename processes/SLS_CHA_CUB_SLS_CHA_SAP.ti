@@ -1,0 +1,1089 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#################################################################
+#                                               DESCRIPTION DU PROCESSUS                                              #
+#                                                                                                                                                   #
+# Date :   30/08/2018                                                                                                                  #
+#                                                                                                                                                   #
+# Fait par :    Elisabeth MOUNIER                                                                                                #
+#                                                                                                                                                   #
+# Action : Processus de chargement du cube SLS_DETAIL                                                       #
+#                                         
+#Modifié le 15/03/2019 par Elisabeth Mounier
+# Action : Adapation au nouveau cube SLS_CHA_SAP + Chargement sur de nouveaux indicateurs volume
+#################################################################
+
+
+
+#====================================#
+#             Déclaration des variables                   #
+#====================================#
+
+#--------------------Cubes--------------------#
+C_Cube_Cible = 'SLS_CHA_SAP';
+C_zPROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+
+#--------------------Dimensions--------------------#
+D_PHASE = '1_G_PHASE';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_VOLUME = '1_G_VOLUME_UNIT';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_MATERIAL = '1_G_MATERIAL';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_SHIP_POINT = 'SLS_SHIP_POINT';
+D_SHIP_PLANT = 'SLS_SHIP_PLANT';
+D_PROD_PLANT='SLS_PROD_PLANT';
+D_VENDOR = 'SLS_VENDOR';
+D_PAYER='SLS_PAYER';
+D_SOLD_TO='SLS_SOLD_TO';
+D_INCOTERM = 'SLS_INCOTERM';
+D_QUOTA = 'SLS_Q_HQ';
+D_DETAIL_IND ='SLS_CHA_SAP_IND';
+
+
+#--------------------Elements--------------------#
+
+vELEM_ACT = P_Phase_Cible;
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+process_master = 'SLS_CHA_CUB_SLS_CHA_SAP';
+subset_erase = 'z_erase_master_' | vUSER |'_' | process_master;
+
+
+
+
+
+DatasourceASCIIDecimalSeparator=',';
+DatasourceASCIIThousandSeparator=' ';
+
+subsetall = 'All';
+
+#====================================#
+#    Désactivation de la consignation#
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 0);
+
+#------------------Réinit des subsets------------------------#
+SubsetDestroy(D_PERIOD, subsetall);
+
+#------------Création d'un subset contenant tous les éléments fins----------
+MDX = '{{[1_G_PERIOD].[Fiscal]},{EXCEPT(
+{FILTER(
+{TM1SORT( {TM1FILTERBYLEVEL( {TM1SUBSETALL( [1_G_PERIOD] )}, 0)}, ASC)},
+[}ElementAttributes_1_G_PERIOD].([}ElementAttributes_1_G_PERIOD].[Index])@<>"T")},
+{TM1FILTERBYPATTERN( {TM1SUBSETALL( [1_G_PERIOD] )}, "*Input")})}}';
+SubsetCreatebyMDX(subsetall, MDX);
+SubsetElementDelete(D_PERIOD,subsetall,1);
+
+
+#------------Remplissage des différents subsets----------#
+SubSize = SubsetGetSize( D_PERIOD, subsetall);
+cpt = SubSize;
+
+#============================================#
+#     Initialisation de la vue à supprimer   #
+#============================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Cible,view_erase);
+subsetdestroy(D_PHASE,subset_erase);
+subsetdestroy(D_PERIOD,subset_erase);
+subsetdestroy(D_DETAIL_IND ,subset_erase);
+
+#--------------------Création des objets--------------------#
+ViewCreate(C_Cube_Cible,view_erase);
+subsetcreate(D_PHASE,subset_erase);
+SubsetElementInsert(D_PHASE, subset_erase, P_Phase_Cible, 1);
+
+#format YYYY-MM-DD
+Date = Today(1);
+Date_Jour = SUBST( Date, 9, 2 );
+Date_Annee = SUBST(Date,1 , 4);
+Date_Mois = SUBST(Date, 6, 2);
+M1 = Date_Annee | '.' | Date_Mois;
+Index_M1_Num = StringToNumber(ATTRS(D_PERIOD, M1, 'Index'));
+
+#######ON IMPOSE CHARGEMENT 18 MOIS : PROVISOIRE############
+#Date_Jour = '01';
+###########FIN A SUPPR ######################""
+
+If(Date_Jour @<> '01');
+
+  #mois en cours
+
+  ####    Modification VRT   ####
+
+  #Last_Index = Index_M1_Num - 2 ;
+
+  # Modification du nombre de mois à importer selon zParam
+  # Si les 2 sont vides, on charge 3 mois
+  # Si l'un est vide, ProcessBreak
+
+  sCubeParam = 'zPARAM' ;
+  sFirstMonth = CellGetS ( sCubeParam , 'First_Month_Actual_New_Ind' , 'Value' ) ;
+  nFisrtMonthIndex = Dimix ( D_PERIOD , sFirstMonth ) ;
+  sLastMonth = CellGetS ( sCubeParam , 'Last_Month_Actual_New_Ind' , 'Value' ) ;
+  nLastMonthIndex = Dimix ( D_PERIOD , sLastMonth ) ;
+
+  # Controle Si 1 seul des paramètres est vide
+  IF ( sFirstMonth @= '' & sLastMonth @<> '' ) ;
+    ProcessError ;
+  ELSEIF ( sFirstMonth @<> '' & sLastMonth @= '' ) ;
+    ProcessError ;
+  ENDIF ;
+
+  IF ( sFirstMonth @= '' & sLastMonth @= '' ) ;
+
+    nJour = 2 ;
+    Last_Index = Index_M1_Num - nJour ;
+
+    subsetcreate( D_PERIOD, subset_erase);
+
+    #On parcourt tous les niveaux 0
+    While( cpt > 0);
+      #On récupère l'élément et son index
+      Elem = SubsetGetElementName( D_PERIOD, subsetall, cpt);
+      Index = StringToNumber(AttrS(D_PERIOD, Elem, 'Index'));
+      If( Index >= Last_Index & Index <= Index_M1_Num);
+        SubsetElementInsert( D_PERIOD, subset_erase, Elem, 1 );
+      EndIf;
+    
+      #Incrémentation du compteur while sur subsetall
+      cpt = cpt - 1;
+    End;
+
+  ELSE ;
+
+    # Boucle pour insérer tous les mois dans la plage sélectionné
+
+    subsetcreate( D_PERIOD, subset_erase);
+
+    #On parcourt tous les niveaux 0
+    nDebutBoucle = DIMIX ( D_PERIOD , sFirstMonth ) ;
+    nFinBoucle = DIMIX ( D_PERIOD , sLastMonth ) ;
+
+    While( nDebutBoucle <= nFinBoucle );
+
+      #On récupère l'élément et son index
+      Elem = DimNm ( D_PERIOD , nDebutBoucle );
+      IF ( ELLEV ( D_PERIOD , Elem ) <> 0 ) ;
+        #nFinBoucle = nFinBoucle + 1 ;
+      ELSE ;
+        SubsetElementInsert( D_PERIOD, subset_erase, Elem, 1 );
+      ENDIF ;
+    
+      #Incrémentation du compteur while sur subsetall
+      nDebutBoucle = nDebutBoucle + 1;
+
+    End;
+
+  ENDIF ;
+
+Else; 
+
+  #18 derniers mois
+  #Last_Index = Index_M1_Num - 18 ;
+
+
+    nJour = 18 ;
+    Last_Index = Index_M1_Num - nJour ;
+
+    subsetcreate( D_PERIOD, subset_erase);
+
+    #On parcourt tous les niveaux 0
+
+    While( cpt > 0);
+      #On récupère l'élément et son index
+      Elem = SubsetGetElementName( D_PERIOD, subsetall, cpt);
+      Index = StringToNumber(AttrS(D_PERIOD, Elem, 'Index'));
+      If( Index >= Last_Index & Index <= Index_M1_Num);
+        SubsetElementInsert( D_PERIOD, subset_erase, Elem, 1 );
+      EndIf;
+    
+      #Incrémentation du compteur while sur subsetall
+      cpt = cpt - 1;
+    End;
+
+EndIf;
+
+
+
+####   FIN VRT     ####
+
+######################################
+#itemskip;
+###################################""
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_PHASE,subset_erase);
+
+#On supprime toute la phase si on charge un forecast
+If( DimensionElementPrincipalName(D_PHASE, P_PHASE_CIBLE) @= 'ACT');
+	ViewSubsetAssign(C_Cube_Cible,view_erase, D_PERIOD,subset_erase);
+EndIf;
+
+# D_DETAIL_IND
+### OST- Ticket 495021 du 20/01/2023
+#sMDX = '{ EXCEPT( {TM1SUBSETALL( [SLS_CHA_SAP_IND] )}, { [SLS_CHA_SAP_IND].[Hedging_Result], [SLS_CHA_SAP_IND].[COUT_APPROCHE], [SLS_CHA_SAP_IND].[MP_STD],
+# [SLS_CHA_SAP_IND].[VAR_COST], [SLS_CHA_SAP_IND].[TRF_COST], [SLS_CHA_SAP_IND].[FULL_COST], [SLS_CHA_SAP_IND].[TRF_COST_MAR], [SLS_CHA_SAP_IND].[VAR_COST_MAR], [SLS_CHA_SAP_IND].[EBVD], [SLS_CHA_SAP_IND].[FULL_COST_MAR], [SLS_CHA_SAP_IND].[MP_STD_UNIT],
+# [SLS_CHA_SAP_IND].[VAR_COST_UNIT], [SLS_CHA_SAP_IND].[TRF_COST_UNIT], [SLS_CHA_SAP_IND].[FULL_COST_UNIT], [SLS_CHA_SAP_IND].[TRF_COST_MAR_UNIT], [SLS_CHA_SAP_IND].[VAR_COST_MAR_UNIT], [SLS_CHA_SAP_IND].[EBVD_UNIT], [SLS_CHA_SAP_IND].[FULL_COST_MAR_UNIT] }) }' ;
+### FIN - Ticket 495021 du 20/01/2023
+
+sMDX = '{ EXCEPT( {TM1SUBSETALL( [SLS_CHA_SAP_IND] )}, {  [SLS_CHA_SAP_IND].[COUT_APPROCHE], [SLS_CHA_SAP_IND].[MP_STD],
+ [SLS_CHA_SAP_IND].[VAR_COST], [SLS_CHA_SAP_IND].[TRF_COST], [SLS_CHA_SAP_IND].[FULL_COST], [SLS_CHA_SAP_IND].[TRF_COST_MAR], [SLS_CHA_SAP_IND].[VAR_COST_MAR], [SLS_CHA_SAP_IND].[EBVD], [SLS_CHA_SAP_IND].[FULL_COST_MAR], [SLS_CHA_SAP_IND].[MP_STD_UNIT],
+ [SLS_CHA_SAP_IND].[VAR_COST_UNIT], [SLS_CHA_SAP_IND].[TRF_COST_UNIT], [SLS_CHA_SAP_IND].[FULL_COST_UNIT], [SLS_CHA_SAP_IND].[TRF_COST_MAR_UNIT], [SLS_CHA_SAP_IND].[VAR_COST_MAR_UNIT], [SLS_CHA_SAP_IND].[EBVD_UNIT], [SLS_CHA_SAP_IND].[FULL_COST_MAR_UNIT] }) }' ;
+
+
+SubsetCreatebyMDX( subset_erase , sMDX);
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_DETAIL_IND, subset_erase );
+
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Cible,view_erase,1);
+ViewSetSkipCalcs(C_Cube_Cible,view_erase, 1);
+ViewSetSkipZeroes(C_Cube_Cible,view_erase, 1);
+
+#--------------------Suppression des données--------------------#
+ViewZeroOut(C_Cube_Cible,view_erase);
+
+
+#--------------------Sources de données--------------------#
+DatasourceNameForServer = CellGetS( C_zPROCESS_ADMINISTRATION, vPRO_NAME, 'DATASOURCE_NAME_FOR_SERVER', 'Comment');
+
+
+#Initialisation N/A et TOTAL de la Dimension Shipping_Point
+
+# Init des totaux
+
+If( DIMIX( D_SHIP_POINT, 'TOTAL_SHIP_POINT') = 0);
+	DimensionElementInsert(D_SHIP_POINT, '', 'TOTAL_SHIP_POINT', 'N');
+EndIf;
+
+#Init N/A
+
+If( DIMIX( D_SHIP_POINT, 'N/A_SHIP_POINT') = 0);
+	DimensionElementInsert(D_SHIP_POINT, '', 'N/A_SHIP_POINT', 'N');
+	DimensionElementComponentAdd(D_SHIP_POINT, 'TOTAL_SHIP_POINT', 'N/A_SHIP_POINT', 1);
+EndIf;
+
+
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#itemskip;
+###################################""
+
+
+#Chargement de la dimension SLS_SHIP_POINT
+
+If(DIMIX(D_SHIP_POINT, Ship_point) = 0 & Ship_point @<> '');
+	DimensionElementInsert(D_SHIP_POINT, '', Ship_point, 'N');
+
+	#Création de la hiérarchie Tot > ShipPoint
+	DimensionElementComponentAdd(D_SHIP_POINT, 'TOTAL_SHIP_POINT', Ship_point, 1);
+EndIf;
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#itemskip;
+###################################""
+
+
+#===================================#
+#             Chargement du cube SLS_CHA_SAP  #
+#===================================#
+
+##########On ne charge pas le mois en cours dans le cas du chargement des 18mois ######
+#format YYYY-MM-DD
+Date = Today(1);
+Date_Jour = SUBST( Date, 9, 2 );
+Date_Annee = SUBST(Date,1 , 4);
+Date_Mois = SUBST(Date, 6, 2);
+
+#######ON IMPOSE CHARGEMENT 18 MOIS : PROVISOIRE############
+#Date_Jour = '02';
+###########FIN A SUPPR ######################
+
+Period_F =  Annee | '.' | Mois;
+period_test = DimensionElementPrincipalName( D_PERIOD, Period_F);
+nPeriod_F_Index = Dimix ( D_PERIOD , period_test ) ;
+
+If(Date_Jour @= '01' & Date_Annee|'.'|Date_Mois @= period_test);
+#18 derniers mois
+	itemskip;
+EndIf;
+######Fin itemskip############
+
+#########   VRT : Controle du mois de chargement  ########
+IF ( sFirstMonth @<> '' & sLastMonth @<> '' ) ;
+  IF ( nPeriod_F_Index < nFisrtMonthIndex % nPeriod_F_Index > nLastMonthIndex ) ;
+    ItemSkip ;
+  ENDIF ;
+ENDIF ;
+###### FIN VRT   #######
+
+Mat= Material|'.';
+
+If( DIMIX(D_VENDOR ,Vendor)=0);
+	Vendor = 'NA Vendor';
+EndIf;
+
+If( DIMIX(D_SOLD_TO ,SoldTo)=0);
+	SoldTo = 'N/A_SOLD_TO';
+EndIf;
+
+If( DIMIX(D_SHIP_POINT ,Ship_point)=0);
+	Ship_point = 'N/A_SHIP_POINT';
+EndIf;
+
+If( DIMIX(D_PAYER ,Payer)=0);
+	Payer = 'N/A_PAYER';
+EndIf;
+
+If( DIMIX(D_INCOTERM ,Incoterm1)=0);
+	Incoterm1 = 'N/A_INCOTERM';
+EndIf;
+
+If( DIMIX(D_PROD_PLANT ,Prod_plant)=0);
+	Prod_plant = 'N/A_PROD_PLANT';
+EndIf;
+
+If( DIMIX(D_SHIP_PLANT ,Ship_plant)=0);
+	Ship_plant = 'N/A_SHIP_PLANT';
+EndIf;
+
+ShipTo_F = ShipTo| '_' | Sales_Org | Distrib | Division;
+
+######PROVISOIRE#########
+If(DIMIX(D_CUSTOMER, ShipTo_F) = 0 );
+	asciioutput('..\Rejects\reject_clients.csv', Division, ShipTo_F, Mat, Sales_TO, Sales_TSP, Sales_HL, Sales_HL2, Sales_HLAP, Sales_UC, Cust_price, Surcharge, Discount, PPD, CPV, Promotion, Free_Samples, Inv_val, Rest_FI, Cust_rebate, Cust_comm, Ret_serv, Cust_rebates, Fr_cost, Fr_Ins, NETX, NIP, fourNet, th_p_comm, prov_mat, emb_cost, brand_fee, prod_net, cred_ins, Cust_net, VPRS, Balance);
+    itemskip;
+EndIf;
+If(DIMIX(D_MATERIAL, Mat) = 0 );
+	asciioutput('..\Rejects\reject_material.csv', Division, Mat, Sales_TO);
+    itemskip;
+EndIf;
+
+#####FIn PROVISOIRE#####
+
+Division = ELPAR(D_MATERIAL, ELPAR(D_MATERIAL, Mat, 1),1);
+
+#Si le sales group du flux n'existe pas dans le référentiel, charger sur l'attribut du client
+Sales_Group_client = ATTRS(D_CUSTOMER, ShipTo_F, 'Sales Group');
+If( DIMIX(D_SALES_GROUP, Sales_Group) = 0);
+	Sales_Group = Sales_Group_client;
+EndIf;
+
+
+
+######## Chargement VOLUMES ##########
+
+#Replacer le signe moins à gauche, pour tous les volumes
+
+#Long_Sales_TO = LONG(Sales_TO);
+#Dernier_Car_Sales_TO = SUBST(Sales_TO, Long_Sales_TO, 1);
+#If( Dernier_Car_Sales_TO@= '-');
+# 	Debut_Car_Sales_TO = StringToNumberEx(SUBST(Sales_TO, 1, Long_Sales_TO-1), ',', '');
+# 	Sales_TO_new = (-1) * Debut_Car_Sales_TO;
+# Else;
+Sales_TO_new = StringToNumberEx(Sales_TO, ',', '');
+# EndIf;
+
+
+# Long_Sales_TSP = LONG(Sales_TSP);
+# Dernier_Car_Sales_TSP = SUBST(Sales_TSP, Long_Sales_TSP, 1);
+# If( Dernier_Car_Sales_TSP@= '-');
+# 	Debut_Car_Sales_TSP = StringToNumberEx(SUBST(Sales_TSP, 1, Long_Sales_TSP-1), ',', '');
+# 	Sales_TSP_new = (-1) * Debut_Car_Sales_TSP;
+# Else;
+ 	Sales_TSP_new = StringToNumberEx(Sales_TSP, ',', '');
+# EndIf;
+
+
+# Long_Sales_HL = LONG(Sales_HL);
+# Dernier_Car_Sales_HL = SUBST(Sales_HL, Long_Sales_HL, 1);
+# If( Dernier_Car_Sales_HL@= '-');
+# 	Debut_Car_Sales_HL = StringToNumberEx(SUBST(Sales_HL, 1, Long_Sales_HL-1), ',', '');
+# 	Sales_HL_new = (-1) * Debut_Car_Sales_HL;
+# Else;
+	Sales_HL_new = StringToNumberEx(Sales_HL, ',', '');
+# EndIf;
+
+# Long_Sales_HL2 = LONG(Sales_HL2);
+# Dernier_Car_Sales_HL2 = SUBST(Sales_HL2, Long_Sales_HL2, 1);
+# If( Dernier_Car_Sales_HL2@= '-');
+# 	Debut_Car_Sales_HL2 = StringToNumberEx(SUBST(Sales_HL2, 1, Long_Sales_HL2-1), ',', '');
+# 	Sales_HL2_new = (-1) * Debut_Car_Sales_HL2;
+# Else;
+ 	Sales_HL2_new = StringToNumberEx(Sales_HL2, ',', '');
+# EndIf;
+
+# Long_Sales_HLAP = LONG(Sales_HLAP);
+# Dernier_Car_Sales_HLAP = SUBST(Sales_HLAP, Long_Sales_HLAP, 1);
+# If( Dernier_Car_Sales_HLAP@= '-');
+# 	Debut_Car_Sales_HLAP = StringToNumberEx(SUBST(Sales_HLAP, 1, Long_Sales_HLAP-1), ',', '');
+# 	Sales_HLAP_new = (-1) * Debut_Car_Sales_HLAP;
+# Else;
+ 	Sales_HLAP_new = StringToNumberEx(Sales_HLAP, ',', '');
+# EndIf;
+
+
+# Long_Sales_UC = LONG(Sales_UC);
+# Dernier_Car_Sales_UC = SUBST(Sales_UC, Long_Sales_UC, 1);
+# If( Dernier_Car_Sales_UC@= '-');
+# 	Debut_Car_Sales_UC = StringToNumberEx(SUBST(Sales_UC, 1, Long_Sales_UC-1), ',', '');
+# 	Sales_UC_new = (-1) * Debut_Car_Sales_UC;
+# Else;
+ 	Sales_UC_new = StringToNumberEx(Sales_UC, ',', '');
+# EndIf;
+
+If(Quota @= '');
+	Quota = 'Z';
+EndIf;
+
+#Checker le canal de distrib
+#Si retail : différencier volume promo et hors promo en fonction des codes spécifiques et attributs Mat GRoup 5 (mini palettes)
+#Si alcool : volume
+#sinon (B2B & Export sucre) : contracted volume
+
+If(AttrS('SLS_CUSTOMER',ShipTo,'IC1')@='IC1 - E00095');
+
+	#Volume des Sales en TO
+	CellIncrementN(Sales_TO_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'TO', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'CURR_VOL');
+
+	#Volume des Sales en KG
+	Sales_KG_new = Sales_TO_new*1000;
+	CellIncrementN(Sales_KG_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'KG', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+	#Volume des Sales en TSP
+	CellIncrementN(Sales_TSP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'TSP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'CURR_VOL');
+
+	#Volume des Sales en KSP
+	Sales_KSP_new = Sales_TSP_new*1000;
+	CellIncrementN(Sales_KSP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'KSP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'CURR_VOL');
+
+	#Volume des Sales en HL
+	CellIncrementN(Sales_HL_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HL', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+	
+	#Volume des Sales en L
+	Sales_L_new = Sales_HL_new*100;
+	CellIncrementN(Sales_L_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'L', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'CURR_VOL');
+
+	#Volume des Sales en HL2
+	CellIncrementN(Sales_HL2_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HL2', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+	#Volume des Sales en L20
+	Sales_L20_new = Sales_HL2_new*100;
+	CellIncrementN(Sales_L20_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'L20', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+	#Volume des Sales en HLAP
+	CellIncrementN(Sales_HLAP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HLAP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+	#Volume des Sales en LAP
+	Sales_LAP_new =Sales_HLAP_new*100;
+	CellIncrementN(Sales_LAP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'LAP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+	#Volume des Sales en UC
+	CellIncrementN(Sales_UC_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'UC', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+ElseIf(AttrS('SLS_CUSTOMER',ShipTo,'IC1')@='IC1 - E00070');
+
+
+	#Volume des Sales en TO
+	CellIncrementN(Sales_TO_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'TO', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'CONTR_VOL');
+
+	#Volume des Sales en KG
+	Sales_KG_new = Sales_TO_new*1000;
+	CellIncrementN(Sales_KG_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'KG', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en TSP
+	CellIncrementN(Sales_TSP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'TSP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'CONTR_VOL');
+
+	#Volume des Sales en KSP
+	Sales_KSP_new = Sales_TSP_new*1000;
+	CellIncrementN(Sales_KSP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'KSP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'CONTR_VOL');
+
+	#Volume des Sales en HL
+	CellIncrementN(Sales_HL_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HL', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+	
+	#Volume des Sales en L
+	Sales_L_new = Sales_HL_new*100;
+	CellIncrementN(Sales_L_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'L', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'CONTR_VOL');
+
+	#Volume des Sales en HL2
+	CellIncrementN(Sales_HL2_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HL2', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en L20
+	Sales_L20_new = Sales_HL2_new*100;
+	CellIncrementN(Sales_L20_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'L20', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en HLAP
+	CellIncrementN(Sales_HLAP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HLAP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en LAP
+	Sales_LAP_new =Sales_HLAP_new*100;
+	CellIncrementN(Sales_LAP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'LAP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en UC
+	CellIncrementN(Sales_UC_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'UC', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+
+ElseIf(Distrib @= '10');
+
+	#Si code attribut spécifique promo, on charge le volume sur l'indicateur 'PROMO_VOL'
+	If( ATTRN(D_MATERIAL, Mat, 'Vol_Promo') = 1);
+
+		#Volume des Sales en TO
+		CellIncrementN(Sales_TO_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'TO', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'PROMO_VOL');
+
+		#Volume des Sales en KG
+		Sales_KG_new = Sales_TO_new*1000;
+		CellIncrementN(Sales_KG_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'KG', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'PROMO_VOL');
+
+		#Volume des Sales en TSP
+		CellIncrementN(Sales_TSP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'TSP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'PROMO_VOL');
+
+		#Volume des Sales en KSP
+		Sales_KSP_new = Sales_TSP_new*1000;
+		CellIncrementN(Sales_KSP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'KSP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'PROMO_VOL');
+
+		#Volume des Sales en HL
+		CellIncrementN(Sales_HL_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HL', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'PROMO_VOL');
+	
+		#Volume des Sales en L
+		Sales_L_new = Sales_HL_new*100;
+		CellIncrementN(Sales_L_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'L', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'PROMO_VOL');
+
+		#Volume des Sales en HL2
+		CellIncrementN(Sales_HL2_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HL2', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'PROMO_VOL');
+
+		#Volume des Sales en L20
+		Sales_L20_new = Sales_HL2_new*100;
+		CellIncrementN(Sales_L20_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'L20', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'PROMO_VOL');
+
+		#Volume des Sales en HLAP
+		CellIncrementN(Sales_HLAP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HLAP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'PROMO_VOL');
+
+		#Volume des Sales en LAP
+		Sales_LAP_new =Sales_HLAP_new*100;
+		CellIncrementN(Sales_LAP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'LAP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'PROMO_VOL');
+
+		#Volume des Sales en UC
+		CellIncrementN(Sales_UC_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'UC', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'PROMO_VOL');
+	
+	#Sinon, on charge le volume sur l'indicateur EX_PROMO_VOL	
+	Else;
+    
+		#Volume des Sales en TO
+		CellIncrementN(Sales_TO_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'TO', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+		#Volume des Sales en KG
+		Sales_KG_new = Sales_TO_new*1000;
+		CellIncrementN(Sales_KG_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'KG', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+		#Volume des Sales en TSP
+		CellIncrementN(Sales_TSP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'TSP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+		#Volume des Sales en KSP
+		Sales_KSP_new = Sales_TSP_new*1000;
+		CellIncrementN(Sales_KSP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'KSP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+		#Volume des Sales en HL
+		CellIncrementN(Sales_HL_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HL', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+	
+		#Volume des Sales en L
+		Sales_L_new = Sales_HL_new*100;
+		CellIncrementN(Sales_L_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'L', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+		#Volume des Sales en HL2
+		CellIncrementN(Sales_HL2_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HL2', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+		#Volume des Sales en L20
+		Sales_L20_new = Sales_HL2_new*100;
+		CellIncrementN(Sales_L20_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'L20', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+		#Volume des Sales en HLAP
+		CellIncrementN(Sales_HLAP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HLAP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+		#Volume des Sales en LAP
+		Sales_LAP_new =Sales_HLAP_new*100;
+		CellIncrementN(Sales_LAP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'LAP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+		#Volume des Sales en UC
+		CellIncrementN(Sales_UC_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'UC', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CURR_VOL');
+
+	EndIf;
+	
+#Sur indicateur 'VOL' pour l'alcool (20) et le bioéthanol (30)  
+ElseIf(Division @='D_20' % Division @= 'D_30' % Division @= 'D_70' % (Distrib @<> '10' & Distrib @<> '20' & Distrib @<> '40'));
+
+	#Volume des Sales en TO
+	CellIncrementN(Sales_TO_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'TO', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'VOL');
+
+	#Volume des Sales en KG
+	Sales_KG_new = Sales_TO_new*1000;
+	CellIncrementN(Sales_KG_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'KG', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'VOL');
+
+	#Volume des Sales en TSP
+	CellIncrementN(Sales_TSP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'TSP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'VOL');
+
+	#Volume des Sales en KSP
+	Sales_KSP_new = Sales_TSP_new*1000;
+	CellIncrementN(Sales_KSP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'KSP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'VOL');
+
+	#Volume des Sales en HL
+	CellIncrementN(Sales_HL_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HL', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'VOL');
+
+	#Volume des Sales en L
+	Sales_L_new = Sales_HL_new*100;
+	CellIncrementN(Sales_L_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'L', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'VOL');
+
+	#Volume des Sales en HL2
+	CellIncrementN(Sales_HL2_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HL2', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'VOL');
+
+	#Volume des Sales en L20
+	Sales_L20_new = Sales_HL2_new*100;
+	CellIncrementN(Sales_L20_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'L20', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'VOL');
+
+	#Volume des Sales en HLAP
+	CellIncrementN(Sales_HLAP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HLAP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'VOL');
+
+	#Volume des Sales en LAP
+	Sales_LAP_new =Sales_HLAP_new*100;
+	CellIncrementN(Sales_LAP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'LAP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'VOL');
+
+	#Volume des Sales en UC
+    If(Division @= 'D_10');
+
+		CellIncrementN(Sales_UC_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'UC', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'VOL');
+	Else;
+
+    	CellIncrementN(Sales_UC_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'PC', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'VOL');
+	EndIf;
+
+Else;
+
+	#Volume des Sales en TO
+	CellIncrementN(Sales_TO_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'TO', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en KG
+	Sales_KG_new = Sales_TO_new*1000;
+	CellIncrementN(Sales_KG_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'KG', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en TSP
+	CellIncrementN(Sales_TSP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'TSP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en KSP
+	Sales_KSP_new = Sales_TSP_new*1000;
+	CellIncrementN(Sales_KSP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'KSP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en HL
+	CellIncrementN(Sales_HL_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HL', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en L
+	Sales_L_new = Sales_HL_new*100;
+	CellIncrementN(Sales_L_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'L', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en HL2
+	CellIncrementN(Sales_HL2_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HL2', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en L20
+	Sales_L20_new = Sales_HL2_new*100;
+	CellIncrementN(Sales_L20_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'L20', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en HLAP
+	CellIncrementN(Sales_HLAP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'HLAP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en LAP
+	Sales_LAP_new =Sales_HLAP_new*100;
+	CellIncrementN(Sales_LAP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'LAP', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+
+	#Volume des Sales en UC
+    If(Division @= 'D_10');
+
+		CellIncrementN(Sales_UC_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'UC', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+	Else;
+
+    	CellIncrementN(Sales_UC_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'PC', ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CONTR_VOL');
+	EndIf;
+
+EndIf;
+
+###############Chargement Schéma de Prix #######################
+
+
+#Customer Price
+
+# Long_Cust_Price = LONG(Cust_Price);
+# Dernier_Car_Cust_Price = SUBST(Cust_Price, Long_Cust_Price, 1);
+# If( Dernier_Car_Cust_Price@= '-');
+# 	Debut_Car_Cust_Price = StringToNumberEx(SUBST(Cust_Price, 1, Long_Cust_Price-1), ',', '');
+# 	Cust_Price_new = (-1) * Debut_Car_Cust_Price;
+# Else;
+	Cust_Price_new = StringToNumberEx(Cust_Price, ',', '');
+# EndIf;
+CellIncrementN(Cust_Price_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'BASE');
+
+#Surcharge
+# Long_Surcharge = LONG(Surcharge);
+# Dernier_Car_Surcharge = SUBST(Surcharge, Long_Surcharge, 1);
+# If( Dernier_Car_Surcharge@= '-');
+# 	Debut_Car_Surcharge = StringToNumberEx(SUBST(Surcharge, 1, Long_Surcharge-1), ',', '');
+# 	Surcharge_new = (-1) * Debut_Car_Surcharge;
+# Else;
+	Surcharge_new = StringToNumberEx(Surcharge, ',', '');
+# EndIf;
+CellIncrementN(Surcharge_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'SURCH');
+
+#Discount
+# Long_Discount = LONG(Discount);
+# Dernier_Car_Discount = SUBST(Discount, Long_Discount, 1);
+# If( Dernier_Car_Discount@= '-');
+# 	Debut_Car_Discount = StringToNumberEx(SUBST(Discount, 1, Long_Discount-1), ',', '');
+# 	Discount_new = (-1) * Debut_Car_Discount;
+# Else;
+ 	Discount_new = StringToNumberEx(Discount, ',', '');
+# EndIf;
+CellIncrementN(Discount_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'RPP');
+
+#PPD
+# Long_PPD = LONG(PPD);
+# Dernier_Car_PPD = SUBST(PPD, Long_PPD, 1);
+# If( Dernier_Car_PPD@= '-');
+# 	Debut_Car_PPD = StringToNumberEx(SUBST(PPD, 1, Long_PPD-1), ',', '');
+# 	PPD_new = (-1) * Debut_Car_PPD;
+# Else;
+ 	PPD_new = StringToNumberEx(PPD, ',', '');
+# EndIf;
+CellIncrementN(PPD_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'RPP');
+
+#CPV
+# Long_CPV = LONG(CPV);
+# Dernier_Car_CPV = SUBST(CPV, Long_CPV, 1);
+# If( Dernier_Car_CPV@= '-');
+# 	Debut_Car_CPV = StringToNumberEx(SUBST(CPV, 1, Long_CPV-1), ',', '');
+# 	CPV_new = (-1) * Debut_Car_CPV;
+# Else;
+ 	CPV_new = StringToNumberEx(CPV, ',', '');
+# EndIf;
+CellIncrementN(CPV_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CPV');
+
+#PROMO
+# Long_Promotion = LONG(Promotion);
+# Dernier_Car_Promotion = SUBST(Promotion, Long_Promotion, 1);
+# If( Dernier_Car_Promotion@= '-');
+# 	Debut_Car_Promotion = StringToNumberEx(SUBST(Promotion, 1, Long_Promotion-1), ',', '');
+# 	Promotion_new = (-1) * Debut_Car_Promotion;
+# Else;
+ 	Promotion_new = StringToNumberEx(Promotion, ',', '');
+# EndIf;
+CellIncrementN(Promotion_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'PROMO');
+
+#FR_SAMP
+# Long_Free_Samples = LONG(Free_Samples);
+# Dernier_Car_Free_Samples = SUBST(Free_Samples, Long_Free_Samples, 1);
+# If( Dernier_Car_Free_Samples@= '-');
+# 	Debut_Car_Free_Samples = StringToNumberEx(SUBST(Free_Samples, 1, Long_Free_Samples-1), ',', '');
+# 	Free_Samples_new = (-1) * Debut_Car_Free_Samples;
+# Else;
+ 	Free_Samples_new = StringToNumberEx(Free_Samples, ',', '');
+# EndIf;
+CellIncrementN(Free_Samples_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'FR_SAMP');
+
+#Restitution Dir Fi
+# Long_Rest_FI = LONG(Rest_FI);
+# Dernier_Car_Rest_FI = SUBST(Rest_FI, Long_Rest_FI, 1);
+# If( Dernier_Car_Rest_FI@= '-');
+# 	Debut_Car_Rest_FI = StringToNumberEx(SUBST(Rest_FI, 1, Long_Rest_FI-1), ',', '');
+# 	Rest_FI_new = (-1) * Debut_Car_Rest_FI;
+# Else;
+ 	Rest_FI_new = StringToNumberEx(Rest_FI, ',', '');
+# EndIf;
+CellIncrementN(Rest_FI_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'REST_DIR_FI');
+
+#RET_SERV
+# Long_Ret_serv = LONG(Ret_serv);
+# Dernier_Car_Ret_serv = SUBST(Ret_serv, Long_Ret_serv, 1);
+# If( Dernier_Car_Ret_serv@= '-');
+# 	Debut_Car_Ret_serv = StringToNumberEx(SUBST(Ret_serv, 1, Long_Ret_serv-1), ',', '');
+# 	Ret_serv_new = (-1) * Debut_Car_Ret_serv;
+# Else;
+ 	Ret_serv_new = StringToNumberEx(Ret_serv, ',', '');
+# EndIf;
+CellIncrementN(Ret_serv_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'RET_SERV');
+
+#Customer Commission
+# Long_Cust_comm = LONG(Cust_comm);
+# Dernier_Car_Cust_comm = SUBST(Cust_comm, Long_Cust_comm, 1);
+# If( Dernier_Car_Cust_comm@= '-');
+# 	Debut_Car_Cust_comm = StringToNumberEx(SUBST(Cust_comm, 1, Long_Cust_comm-1), ',', '');
+# 	Cust_comm_new = (-1) * Debut_Car_Cust_comm;
+# Else;
+ 	Cust_comm_new = StringToNumberEx(Cust_comm, ',', '');
+# EndIf;
+CellIncrementN(Cust_comm_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CUST_COMM');
+
+#Customer rebate
+# Long_Cust_rebate = LONG(Cust_rebate);
+# Dernier_Car_Cust_rebate = SUBST(Cust_rebate, Long_Cust_rebate, 1);
+# If( Dernier_Car_Cust_rebate@= '-');
+# 	Debut_Car_Cust_rebate = StringToNumberEx(SUBST(Cust_rebate, 1, Long_Cust_rebate-1), ',', '');
+# 	Cust_rebate_new = (-1) * Debut_Car_Cust_rebate;
+# Else;
+ 	Cust_rebate_new = StringToNumberEx(Cust_rebate, ',', '');
+# EndIf;
+CellIncrementN(Cust_rebate_new*(-1), C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CUST_REBATE');
+
+#FR_COST
+# Long_Fr_Cost = LONG(Fr_Cost);
+# Dernier_Car_Fr_Cost = SUBST(Fr_Cost, Long_Fr_Cost, 1);
+# If( Dernier_Car_Fr_Cost@= '-');
+# 	Debut_Car_Fr_Cost = StringToNumberEx(SUBST(Fr_Cost, 1, Long_Fr_Cost-1), ',', '');
+# 	Fr_Cost_new = (-1) * Debut_Car_Fr_Cost;
+# Else;
+ 	Fr_Cost_new = StringToNumberEx(Fr_Cost, ',', '');
+# EndIf;
+CellIncrementN(StringToNumberEx(Fr_Cost, ',', ''), C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'FR_COST');
+
+#FR_INS
+# Long_Fr_Ins = LONG(Fr_Ins);
+# Dernier_Car_Fr_Ins = SUBST(Fr_Ins, Long_Fr_Ins, 1);
+# If( Dernier_Car_Fr_Ins@= '-');
+# 	Debut_Car_Fr_Ins = StringToNumberEx(SUBST(Fr_Ins, 1, Long_Fr_Ins-1), ',', '');
+# 	Fr_Ins_new = (-1) * Debut_Car_Fr_Ins;
+# Else;
+ 	Fr_Ins_new = StringToNumberEx(Fr_Ins, ',', '');
+# EndIf;
+CellIncrementN(StringToNumberEx(Fr_Ins, ',', ''), C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'FR_INS');
+
+#NIP
+# Long_NIP = LONG(NIP);
+# Dernier_Car_NIP = SUBST(NIP, Long_NIP, 1);
+# If( Dernier_Car_NIP@= '-');
+# 	Debut_Car_NIP = StringToNumberEx(SUBST(NIP, 1, Long_NIP-1), ',', '');
+# 	NIP_new = (-1) * Debut_Car_NIP;
+# Else;
+ 	NIP_new = StringToNumberEx(NIP, ',', '');
+# EndIf;
+CellIncrementN(NIP_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'NIP');
+
+#TH_P_COMM
+# Long_th_p_comm = LONG(th_p_comm);
+# Dernier_Car_th_p_comm = SUBST(th_p_comm, Long_th_p_comm, 1);
+# If( Dernier_Car_th_p_comm@= '-');
+# 	Debut_Car_th_p_comm = StringToNumberEx(SUBST(th_p_comm, 1, Long_th_p_comm-1), ',', '');
+# 	th_p_comm_new = (-1) * Debut_Car_th_p_comm;
+# Else;
+ 	th_p_comm_new = StringToNumberEx(th_p_comm, ',', '');
+# EndIf;
+CellIncrementN(th_p_comm_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'TH_P_COMM');
+
+#Prov Transp Mat
+# Long_prov_mat = LONG(prov_mat);
+# Dernier_Car_prov_mat = SUBST(prov_mat, Long_prov_mat, 1);
+# If( Dernier_Car_prov_mat@= '-');
+# 	Debut_Car_prov_mat = StringToNumberEx(SUBST(prov_mat, 1, Long_prov_mat-1), ',', '');
+# 	prov_mat_new = (-1) * Debut_Car_prov_mat;
+# Else;
+	prov_mat_new = StringToNumberEx(prov_mat, ',', '');
+# EndIf;
+CellIncrementN(prov_mat_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'PROV_TRANS_MAT');
+
+#EMB_COST
+# Long_emb_cost = LONG(emb_cost);
+# Dernier_Car_emb_cost = SUBST(emb_cost, Long_emb_cost, 1);
+# If( Dernier_Car_emb_cost@= '-');
+# 	Debut_Car_emb_cost = StringToNumberEx(SUBST(emb_cost, 1, Long_emb_cost-1), ',', '');
+# 	emb_cost_new = (-1) * Debut_Car_emb_cost;
+# Else;
+ 	emb_cost_new = StringToNumberEx(emb_cost, ',', '');
+# EndIf;
+CellIncrementN(emb_cost_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'EMB_COST');
+
+#BRAND_FEE
+# Long_brand_fee = LONG(brand_fee);
+# Dernier_Car_brand_fee = SUBST(brand_fee, Long_brand_fee, 1);
+# If( Dernier_Car_brand_fee@= '-');
+# 	Debut_Car_brand_fee = StringToNumberEx(SUBST(brand_fee, 1, Long_brand_fee-1), ',', '');
+# 	brand_fee_new = (-1) * Debut_Car_brand_fee;
+# Else;
+ 	brand_fee_new = StringToNumberEx(brand_fee, ',', '');
+# EndIf;
+CellIncrementN(brand_fee_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'BRAND_FEE');
+
+#COPA_PROD_PROM
+# Long_COPA_promo = LONG(COPA_promo);
+# Dernier_Car_COPA_promo = SUBST(COPA_promo, Long_COPA_promo, 1);
+# If( Dernier_Car_COPA_promo@= '-');
+# 	Debut_Car_COPA_promo = StringToNumberEx(SUBST(COPA_promo, 1, Long_COPA_promo-1), ',', '');
+# 	COPA_promo_new = (-1) * Debut_Car_COPA_promo;
+# Else;
+ 	COPA_promo_new = StringToNumberEx(COPA_promo, ',', '');
+# EndIf;
+CellIncrementN(COPA_promo_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'COPA_PROD_PROM');
+
+#MARK_PROD_COST
+# Long_Mark_prod = LONG(Mark_prod);
+# Dernier_Car_Mark_prod = SUBST(Mark_prod, Long_Mark_prod, 1);
+# If( Dernier_Car_Mark_prod@= '-');
+# 	Debut_Car_Mark_prod = StringToNumberEx(SUBST(Mark_prod, 1, Long_Mark_prod-1), ',', '');
+# 	Mark_prod_new = (-1) * Debut_Car_Mark_prod;
+# Else;
+ 	Mark_prod_new = StringToNumberEx(Mark_prod, ',', '');
+# EndIf;
+CellIncrementN(Mark_prod_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'MARK_PROD_COST');
+
+#CRED_INS
+# Long_CRED_INS = LONG(CRED_INS);
+# Dernier_Car_CRED_INS = SUBST(CRED_INS, Long_CRED_INS, 1);
+# If( Dernier_Car_CRED_INS@= '-');
+# 	Debut_Car_CRED_INS = StringToNumberEx(SUBST(CRED_INS, 1, Long_CRED_INS-1), ',', '');
+# 	CRED_INS_new = (-1) * Debut_Car_CRED_INS;
+# Else;
+ 	CRED_INS_new = StringToNumberEx(CRED_INS, ',', '');
+# EndIf;
+CellIncrementN(CRED_INS_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'CRED_INS');
+
+#COPA_MARK_CUST
+# Long_COPA_Mark = LONG(COPA_Mark);
+# Dernier_Car_COPA_Mark = SUBST(COPA_Mark, Long_COPA_Mark, 1);
+# If( Dernier_Car_COPA_Mark@= '-');
+# 	Debut_Car_COPA_Mark = StringToNumberEx(SUBST(COPA_Mark, 1, Long_COPA_Mark-1), ',', '');
+# 	COPA_Mark_new = (-1) * Debut_Car_COPA_Mark;
+# Else;
+ 	COPA_Mark_new = StringToNumberEx(COPA_Mark, ',', '');
+# EndIf;
+CellIncrementN(COPA_Mark_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'COPA_MARK_CUST');
+
+#COPA_CUST_PROM
+# Long_COPA_Cust = LONG(COPA_Cust);
+# Dernier_Car_COPA_Cust = SUBST(COPA_Cust, Long_COPA_Cust, 1);
+# If( Dernier_Car_COPA_Cust@= '-');
+# 	Debut_Car_COPA_Cust = StringToNumberEx(SUBST(COPA_Cust, 1, Long_COPA_Cust-1), ',', '');
+# 	COPA_Cust_new = (-1) * Debut_Car_COPA_Cust;
+# Else;
+ 	COPA_Cust_new = StringToNumberEx(COPA_Cust, ',', '');
+# EndIf;
+CellIncrementN(StringToNumberEx(COPA_cust, ',', ''), C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'COPA_CUST_PROM');
+
+#MARK_CUST_COST
+# Long_Mark_CUST = LONG(Mark_CUST);
+# Dernier_Car_Mark_CUST = SUBST(Mark_CUST, Long_Mark_CUST, 1);
+# If( Dernier_Car_Mark_CUST@= '-');
+# 	Debut_Car_Mark_CUST = StringToNumberEx(SUBST(Mark_CUST, 1, Long_Mark_CUST-1), ',', '');
+# 	Mark_CUST_new = (-1) * Debut_Car_Mark_CUST;
+# Else;
+ 	Mark_CUST_new = StringToNumberEx(Mark_CUST, ',', '');
+# EndIf;
+CellIncrementN(Mark_CUST_new, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'MARK_CUST_COST');
+
+#VPRS
+# Long_VPRS = LONG(VPRS);
+# Dernier_Car_VPRS = SUBST(VPRS, Long_VPRS, 1);
+# If( Dernier_Car_VPRS@= '-');
+# 	Debut_Car_VPRS = StringToNumberEx(SUBST(VPRS, 1, Long_VPRS-1), ',', '');
+# 	VPRS_new = (-1) * Debut_Car_VPRS;
+# Else;
+ 	VPRS_new = StringToNumberEx(VPRS, ',', '');
+# EndIf;
+CellIncrementN(StringToNumberEx(VPRS, ',', ''), C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'VPRS');
+
+#PREMIUM
+# Long_VPRS = LONG(VPRS);
+# Dernier_Car_VPRS = SUBST(VPRS, Long_VPRS, 1);
+# If( Dernier_Car_VPRS@= '-');
+# 	Debut_Car_VPRS = StringToNumberEx(SUBST(VPRS, 1, Long_VPRS-1), ',', '');
+# 	VPRS_new = (-1) * Debut_Car_VPRS;
+# Else;
+ 	VPRS_new = StringToNumberEx(PREMIUM, ',', '');
+# EndIf;
+CellIncrementN(StringToNumberEx(PREMIUM, ',', ''), C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'PREMIUM');
+
+#HEDGING
+# Long_VPRS = LONG(VPRS);
+# Dernier_Car_VPRS = SUBST(VPRS, Long_VPRS, 1);
+# If( Dernier_Car_VPRS@= '-');
+# 	Debut_Car_VPRS = StringToNumberEx(SUBST(VPRS, 1, Long_VPRS-1), ',', '');
+# 	VPRS_new = (-1) * Debut_Car_VPRS;
+# Else;
+ 	VPRS_new = StringToNumberEx(Hedging, ',', '');
+# EndIf;
+CellIncrementN(StringToNumberEx(Hedging, ',', ''), C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'Hedging_Result');
+
+#UNIT_FR_COST
+Unit_Fr_Cost = StringToNumberEx(Fr_Cost, ',', '')\Sales_TO_new;
+CellIncrementN(Unit_Fr_Cost, C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT',ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota,'FR_COST_UNIT');
+
+
+
+
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#--------------------Destruction des objets--------------------#
+
+# RAZ
+ViewDestroy(C_Cube_Cible,view_erase);
+
+
+#calcul des prix unitaires au niveau fin
+ExecuteProcess('SLS_CAL_CUB_SLS_CHA_SAP', 'P_PHASE', P_PHASE_CIBLE);
+
+#On copie vers reporting que le réel
+If( DimensionElementPrincipalName(D_PHASE, P_PHASE_CIBLE) @= 'ACT');
+	ExecuteProcess('SLS_MASTER_COP_CUB_SLS_REPORTING_CUB_SLS_CHA_SAP', 'P_PHASE', P_PHASE_CIBLE);
+EndIf;
+
+#--------------------Destruction des objets--------------------#
+
+# RAZ
+subsetdestroy(D_DETAIL_IND ,subset_erase);
+subsetdestroy(D_PERIOD ,subset_erase);
+
+subsetdestroy(D_PHASE,subset_erase);
+#subsetdestroy(D_PERIOD,subset_erase);
+#====================================#
+#   Activation de la consignation    #
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 1);
+#endregion

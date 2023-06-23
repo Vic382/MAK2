@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Planning Material GMS PAW",
+	"Expression":"{TM1SubsetToSet([SLS_MATERIAL_PLAN] , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Retail hierarchy]) <> \"\" , [zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Retail hierarchy]) , \"Planning Material\"))}"
+}

@@ -1,0 +1,19 @@
+{
+	"@type":"Subset",
+	"Name":"zDrill_Subset",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_MATERIAL')/Hierarchies('1_G_MATERIAL')/Elements('11256940')"
+		},
+		{
+			"@id":"Dimensions('1_G_MATERIAL')/Hierarchies('1_G_MATERIAL')/Elements('11256910.')"
+		},
+		{
+			"@id":"Dimensions('1_G_MATERIAL')/Hierarchies('1_G_MATERIAL')/Elements('11253910.')"
+		},
+		{
+			"@id":"Dimensions('1_G_MATERIAL')/Hierarchies('1_G_MATERIAL')/Elements('11251910.')"
+		}
+	]
+}

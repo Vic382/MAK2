@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Customer B2B Alcohol Prix",
+	"Expression":"{TM1SubsetToSet([SLS_CUSTOMER] , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Indexed Customer]) = \"\" , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Customer IC]) = \"\" , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Expertise]) = \"\" , \"MDX_Sales_Group_level0\" , \"subset_Expertise_Sales_Group_zSelect\") , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Expertise]) = \"\" , \"Customer IC\" , \"subset_IC_Expertise_Sales_Group_zSelect\")) , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Customer IC]) = \"\" , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Expertise]) = \"\" , \"subset_Indexed_Sales_Group_zSelect\" , \"subset_Indexed_Expertise_Sales_Group_zSelect\") , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Expertise]) = \"\" , \"subset_Indexed_IC_Sales_Group_zSelect\" , \"subset_Indexed_IC_Expertise_Sales_Group_zSelect\"))))}"
+}

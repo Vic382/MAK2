@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Restit_GSM",
+	"Expression":"TM1SubsetToSet([SLS_SALES_PLAN_IND] , IIF([zSELECT].(STRTOMEMBER(((\"[}Clients].[\" + USERNAME)) + \"]\"),[zSELECT_IND].[Standard / Indexé]) = \"Standards\" , \"Restit_GSM_NI\" ,  IIF([zSELECT].(STRTOMEMBER(((\"[}Clients].[\" + USERNAME)) + \"]\"),[zSELECT_IND].[Standard / Indexé]) = \"Indexés\" , \"Restit_GSM_I\" , \"Restit_GSM\")))"
+}

@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Volume_10_S",
+	"Expression":"TM1SubsetToSet([SLS_SALES_PLAN_IND] , IIF([zSELECT].(STRTOMEMBER(((\"[}Clients].[\" + USERNAME)) + \"]\"),[zSELECT_IND].[Standard / Indexé]) = \"Standards\" , \"Volume_10_Sugar_NI\" ,  IIF([zSELECT].(STRTOMEMBER(((\"[}Clients].[\" + USERNAME)) + \"]\"),[zSELECT_IND].[Standard / Indexé]) = \"Indexés\" , \"Volume_10_Sugar_I\" , \"Volume_10_Sugar\")))"
+}

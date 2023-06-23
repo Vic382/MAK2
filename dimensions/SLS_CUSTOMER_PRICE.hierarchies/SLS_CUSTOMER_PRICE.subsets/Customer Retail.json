@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Customer Retail",
+	"Expression":"{FILTER(TM1SUBSETALL([SLS_CUSTOMER_PRICE].[SLS_CUSTOMER_PRICE]) , (INSTR(1 , [SLS_CUSTOMER_PRICE].[SLS_CUSTOMER_PRICE].CURRENTMEMBER.PROPERTIES(\"Distribution Channel\") , \"10\" , 1) >= 1))}"
+}

@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"New_Comb_CS",
+	"Expression":"{TM1FILTERBYLEVEL(FILTER(FILTER(FILTER(TM1SUBSETALL([SLS_CUSTOMER].[SLS_CUSTOMER]) , INSTR(1 , [SLS_CUSTOMER].[SLS_CUSTOMER].CURRENTMEMBER.PROPERTIES(\"Distribution Channel Name\") , [zSELECT].(STRTOMEMBER((((\"[}Clients].[\" + USERNAME))) + \"]\"),[zSELECT_IND].[Distrib Channel]) , 1) >= 1) , INSTR(1 , [SLS_CUSTOMER].[SLS_CUSTOMER].CURRENTMEMBER.PROPERTIES(\"Sales Organisation Name\") , [zSELECT].(STRTOMEMBER((((\"[}Clients].[\" + USERNAME))) + \"]\"),[zSELECT_IND].[Sales Org]) , 1) >= 1) , INSTR(1 , [SLS_CUSTOMER].[SLS_CUSTOMER].CURRENTMEMBER.PROPERTIES(\"Division Name\") , [zSELECT].(STRTOMEMBER((((\"[}Clients].[\" + USERNAME))) + \"]\"),[zSELECT_IND].[Division]) , 1) >= 1) , 0)}"
+}

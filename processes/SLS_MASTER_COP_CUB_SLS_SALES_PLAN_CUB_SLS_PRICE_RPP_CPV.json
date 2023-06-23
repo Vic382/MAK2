@@ -1,0 +1,25 @@
+{
+	"@type":"Process",
+	"Name":"SLS_MASTER_COP_CUB_SLS_SALES_PLAN_CUB_SLS_PRICE_RPP_CPV",
+	"HasSecurityAccess":false,
+	"Code@Code.link":"SLS_MASTER_COP_CUB_SLS_SALES_PLAN_CUB_SLS_PRICE_RPP_CPV.ti",
+	"UIData":"_ParameterConstraints=e30=€",
+	"DataSource":
+	{
+		"Type":"TM1DimensionSubset",
+		"dataSourceNameForClient":"1_G_PERIOD",
+		"dataSourceNameForServer":"1_G_PERIOD",
+		"subset":"Input_RPP_CPV"
+	},
+	"Parameters":[],
+	"Variables":
+	[
+		{
+			"Name":"vPeriod",
+			"Type":"String",
+			"Position":1,
+			"StartByte":0,
+			"EndByte":0
+		}
+	]
+}

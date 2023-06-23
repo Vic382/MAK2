@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_ASSIGN_IND",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_ASSIGN_IND.hierarchies/SLS_ASSIGN_IND.json"
+	]
+}

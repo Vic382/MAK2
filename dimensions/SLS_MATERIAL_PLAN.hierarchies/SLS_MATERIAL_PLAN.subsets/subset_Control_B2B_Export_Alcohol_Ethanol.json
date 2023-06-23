@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"subset_Control_B2B_Export_Alcohol_Ethanol",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(DESCENDANTS(STRTOMEMBER(((\"[SLS_MATERIAL_PLAN].[\" + [zSELECT].(STRTOMEMBER(((\"[}Clients].[\" + USERNAME)) + \"]\"),[zSELECT_IND].[Division]))) + \"]\")) , 0) , (([SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].[Status] <> \"OBS\")) AND (([SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].[Status] <> \"INA\")))}"
+}

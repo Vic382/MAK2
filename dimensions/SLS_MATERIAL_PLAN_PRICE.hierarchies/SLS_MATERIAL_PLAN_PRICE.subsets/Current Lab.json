@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Current Lab",
+	"Expression":"{STRTOMEMBER((((\"[SLS_MATERIAL_PLAN_PRICE].[\" + [zSELECT].(STRTOMEMBER(((((\"[}Clients].[\" + USERNAME)))) + \"]\"),[zSELECT_IND].[Lab])))) + \"]\")}"
+}

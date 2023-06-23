@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Control Type CS",
+	"Expression":"{STRTOMEMBER((\"[SLS_FR_COST_PLAN_IND].[\" + [zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Control_CS])) + \"]\")}"
+}

@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"subset_Control_Retail_Sugar",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(DESCENDANTS([SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].[D_10]) , 0) , (((([SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].[Status] <> \"OBS\")) AND (([SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].[Status] <> \"INA\")))) AND ((INSTR(1 , [SLS_MATERIAL_PLAN].[SLS_MATERIAL_PLAN].[Distribution Channel] , \"10\" , 1) >= 1)))}"
+}

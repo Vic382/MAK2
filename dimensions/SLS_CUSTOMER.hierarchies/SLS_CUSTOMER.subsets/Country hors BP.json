@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Country hors BP",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(EXCEPT(TM1SUBSETALL([SLS_CUSTOMER].[SLS_CUSTOMER]) , DESCENDANTS([SLS_CUSTOMER].[IC1 - E00070])) , 0) , [SLS_CUSTOMER].[Country Name] = [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Country]))}"
+}

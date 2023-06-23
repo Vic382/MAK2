@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Filtre GMS",
+	"Expression":"{FILTER(TM1FILTERBYPATTERN(DESCENDANTS(STRTOMEMBER(\"[SLS_CUSTOMER].[\" + [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Customer Retail GMS/RHF]) + \"]\")) , [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Level Customer Retail GMS/RHF]) + \"*\") , [SLS_CUSTOMER].[Sales Group Name] = [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Sales Group])),FILTER(TM1FILTERBYPATTERN(DESCENDANTS(STRTOMEMBER(\"[SLS_CUSTOMER].[\" + [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Customer Retail GMS/RHF]) + \"]\")) , [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Level Customer Retail GMS/RHF]) + \"*\") , [SLS_CUSTOMER].[Sales Group Name] = \"Multiple Sales Group\")}"
+}

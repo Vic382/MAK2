@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Default",
+	"Expression":"{{[1_G_CURRENT_PHASE].MEMBERS}}"
+}

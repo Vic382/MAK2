@@ -1,0 +1,28 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#COPIE DE SLS_CHA_SAP vers SLS_REPORING
+#Besoin de copier les volumes avant les prix pour calculer la valo
+
+ExecuteProcess( 'SLS_COP_CUB_SLS_REPORTING_CUB_SLS_CHA_SAP_VOL', 'P_PHASE', P_PHASE );
+ExecuteProcess( 'SLS_COP_CUB_SLS_REPORTING_CUB_SLS_CHA_SAP_PRICE', 'P_PHASE', P_PHASE );
+ExecuteProcess( 'SLS_COP_CUB_SLS_REPORTING_CUB_SLS_CHA_SAP_NEW_INDICATEURS', 'P_PHASE', P_PHASE );
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

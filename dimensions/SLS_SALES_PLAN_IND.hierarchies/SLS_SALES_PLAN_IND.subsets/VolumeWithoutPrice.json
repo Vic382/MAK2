@@ -1,0 +1,13 @@
+{
+	"@type":"Subset",
+	"Name":"VolumeWithoutPrice",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('Tech_control')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')/Hierarchies('SLS_SALES_PLAN_IND')/Elements('I_Tech_control')"
+		}
+	]
+}

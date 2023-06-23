@@ -1,0 +1,25 @@
+{
+	"@type":"Hierarchy",
+	"Name":"1_G_CURRENCY",
+	"Elements":
+	[
+		{
+			"Name":"EUR",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"USD",
+			"Type":"Numeric"
+		},
+		{
+			"Name":"N/A CURRENCY",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":
+	[
+		"1_G_CURRENCY.subsets/Source_Subset_23-03-10_SLS_SALES_PLAN_VALIDATION_VOLUME.json",
+		"1_G_CURRENCY.subsets/Source_Subset_23-03-11_SLS_SALES_PLAN_VALIDATION_VOLUME.json",
+		"1_G_CURRENCY.subsets/Subset_Reporting.json"
+	]
+}

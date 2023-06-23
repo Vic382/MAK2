@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Expertise",
+	"Expression":"{FILTER(TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_CUSTOMER].[SLS_CUSTOMER]) , 0) , [SLS_CUSTOMER].[Expertise] = [zSELECT].(STRTOMEMBER(\"[}Clients].[\" + USERNAME + \"]\"),[zSELECT_IND].[Expertise]))}"
+}

@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"All",
+	"Expression":"TM1SORT(TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_CUSTOMER:Country])},1), ASC)"
+}

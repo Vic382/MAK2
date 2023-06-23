@@ -1,0 +1,13 @@
+{
+	"@type":"Dimension",
+	"Name":"SLS_INCOTERM",
+	"AllLeavesHierarchyName":"",
+	"DefaultHierarchy":
+	{
+		"@id":"Dimensions('SLS_INCOTERM')/Hierarchies('SLS_INCOTERM')"
+	},
+	"Hierarchies@Code.links":
+	[
+		"SLS_INCOTERM.hierarchies/SLS_INCOTERM.json"
+	]
+}

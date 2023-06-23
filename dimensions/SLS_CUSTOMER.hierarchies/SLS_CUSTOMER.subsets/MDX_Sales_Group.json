@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"MDX_Sales_Group",
+	"Expression":"{UNION(FILTER(EXCEPT(TM1SUBSETALL([SLS_CUSTOMER]) , {[SLS_CUSTOMER].[N/A_CUSTOMER]}) , [SLS_CUSTOMER].[Sales Group Name] = [zSELECT].(STRTOMEMBER(((\"[}Clients].[\" + USERNAME)) + \"]\"),[zSELECT_IND].[Sales Group])) , FILTER(EXCEPT(TM1SUBSETALL([SLS_CUSTOMER]) , {[SLS_CUSTOMER].[N/A_CUSTOMER]}) , [SLS_CUSTOMER].[Sales Group Name] = \"Multiple Sales Group\"))}"
+}

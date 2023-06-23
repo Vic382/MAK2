@@ -1,0 +1,18 @@
+{
+	"@type":"Cube",
+	"Name":"zCLIENT_SLS_SALES_GROUP",
+	"Rules@Code.link":"zCLIENT_SLS_SALES_GROUP.rules",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('zSALES_GROUP')"
+		},
+		{
+			"@id":"Dimensions('}Clients')"
+		}
+	],
+	"Views@Code.links":
+	[
+		"zCLIENT_SLS_SALES_GROUP.views/View1.json"
+	]
+}

@@ -1,0 +1,18 @@
+{
+	"@type":"Cube",
+	"Name":"zATTR_COMBI_COMM",
+	"Rules@Code.link":"zATTR_COMBI_COMM.rules",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('SLS_CUSTOMER')"
+		},
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')"
+		},
+		{
+			"@id":"Dimensions('zATTR_COMBI_COMM')"
+		}
+	],
+	"Views@Code.links":[]
+}

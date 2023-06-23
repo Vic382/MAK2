@@ -1,0 +1,12 @@
+{
+	"@type":"Hierarchy",
+	"Name":"zVERIF_IMPORT_LOGISTIQUE_IND",
+	"Elements":
+	[
+		{
+			"Name":"Valeur_N",
+			"Type":"Numeric"
+		}
+	],
+	"Subsets@Code.links":[]
+}

@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"IC2 BoulPat",
+	"Expression":"{TM1FILTERBYPATTERN( {TM1DRILLDOWNMEMBER( {TM1FILTERBYPATTERN( {TM1SUBSETALL( [SLS_CUSTOMER] )}, \"IC1 - E00070 - FBVP\")}, ALL, RECURSIVE )}, \"IC2*\")}"
+}

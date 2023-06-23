@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Source_Phase_Admin",
+	"Expression":"{ EXCEPT( {TM1SUBSETALL( [1_G_PHASE_REP] )}, { [1_G_PHASE_REP].[ACT] }) }"
+}

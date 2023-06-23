@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"PAW Calendar",
+	"Expression":"{[1_G_PERIOD].[CAL_ACT_N-1],[1_G_PERIOD].[CAL_ACT_N],TM1SubsetToSet([1_G_PERIOD] , \"Calendar\"),[1_G_PERIOD].[N/A PERIOD]}"
+}

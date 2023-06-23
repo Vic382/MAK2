@@ -1,0 +1,22 @@
+{
+	"@type":"Subset",
+	"Name":"Volume_D_10",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_VOLUME_UNIT')/Hierarchies('1_G_VOLUME_UNIT')/Elements('TO')"
+		},
+		{
+			"@id":"Dimensions('1_G_VOLUME_UNIT')/Hierarchies('1_G_VOLUME_UNIT')/Elements('TSP')"
+		},
+		{
+			"@id":"Dimensions('1_G_VOLUME_UNIT')/Hierarchies('1_G_VOLUME_UNIT')/Elements('KG')"
+		},
+		{
+			"@id":"Dimensions('1_G_VOLUME_UNIT')/Hierarchies('1_G_VOLUME_UNIT')/Elements('KSP')"
+		},
+		{
+			"@id":"Dimensions('1_G_VOLUME_UNIT')/Hierarchies('1_G_VOLUME_UNIT')/Elements('UC')"
+		}
+	]
+}

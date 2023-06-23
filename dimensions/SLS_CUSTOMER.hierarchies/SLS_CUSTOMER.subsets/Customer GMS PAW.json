@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Customer GMS PAW",
+	"Expression":"{TM1SubsetToSet([SLS_CUSTOMER] , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Level Customer Retail GMS/RHF]) <> \"\" , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Customer Retail GMS/RHF]) <> \"\" , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Level Customer Retail GMS/RHF]) = \"Ship-to-party\" , \"Ship-to-party Filtre GMS\" , \"Filtre GMS\") , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Level Customer Retail GMS/RHF]) = \"Ship-to-party\" , \"MDX_Sales_Group_level0\" , [zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Level Customer Retail GMS/RHF]))) , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Customer Retail GMS/RHF]) <> \"\" , \"Ship-to-party Filtre GMS\" , \"MDX_Sales_Group_level0\")))}"
+}

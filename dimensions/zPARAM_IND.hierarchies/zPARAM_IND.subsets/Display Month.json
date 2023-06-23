@@ -1,0 +1,25 @@
+{
+	"@type":"Subset",
+	"Name":"Display Month",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('zPARAM_IND')/Hierarchies('zPARAM_IND')/Elements('Calendar First Display Month')"
+		},
+		{
+			"@id":"Dimensions('zPARAM_IND')/Hierarchies('zPARAM_IND')/Elements('Calendar Last Display Month')"
+		},
+		{
+			"@id":"Dimensions('zPARAM_IND')/Hierarchies('zPARAM_IND')/Elements('Fiscal First Display Month')"
+		},
+		{
+			"@id":"Dimensions('zPARAM_IND')/Hierarchies('zPARAM_IND')/Elements('Fiscal Last Display Month')"
+		},
+		{
+			"@id":"Dimensions('zPARAM_IND')/Hierarchies('zPARAM_IND')/Elements('Campaign First Display Month')"
+		},
+		{
+			"@id":"Dimensions('zPARAM_IND')/Hierarchies('zPARAM_IND')/Elements('Campaign Last Display Month')"
+		}
+	]
+}

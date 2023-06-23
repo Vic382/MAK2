@@ -1,0 +1,16 @@
+{
+	"@type":"Subset",
+	"Name":"Invit_Copie_Reporting",
+	"Elements":
+	[
+		{
+			"@id":"Dimensions('1_G_PHASE_REP')/Hierarchies('1_G_PHASE_REP')/Elements('CURR_PHASE_CS')"
+		},
+		{
+			"@id":"Dimensions('1_G_PHASE_REP')/Hierarchies('1_G_PHASE_REP')/Elements('CURR_PHASE_CS_V1')"
+		},
+		{
+			"@id":"Dimensions('1_G_PHASE_REP')/Hierarchies('1_G_PHASE_REP')/Elements('CURR_PHASE_CS_V2')"
+		}
+	]
+}

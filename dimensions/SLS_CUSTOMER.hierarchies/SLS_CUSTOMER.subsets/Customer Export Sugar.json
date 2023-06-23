@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"Customer Export Sugar",
+	"Expression":"{ORDER(DISTINCT(TM1SubsetToSet([SLS_CUSTOMER] , IIF([zSELECT].(STRTOMEMBER((\"[}Clients].[\" + USERNAME) + \"]\"),[zSELECT_IND].[Customer IC]) = \"\" , \"MDX_Sales_Group_level0\" , \"Customer IC\"))) , [SLS_CUSTOMER].[SLS_CUSTOMER].CURRENTMEMBER.PROPERTIES(\"IC2\") , BDESC)}"
+}
