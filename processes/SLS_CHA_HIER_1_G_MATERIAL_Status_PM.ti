@@ -1,0 +1,129 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#############################################################################################################################
+#                                               DESCRIPTION DU PROCESSUS                                                    #
+#                                                                                                                           #
+# Date :   14/03/2019                                                                                                       #
+#                                                                                                                           #
+# Fait par :   Ann BESNARD																								    #
+#                                                                                                                           #
+# Action : Processus de mise à jour des hiérarchies virtuelles de SLS_CUSTOMER                                              #
+#																                                                            #
+#				                                  					                                                        #
+#                                                                                                                           #
+#############################################################################################################################
+
+#=============================================#
+#             Déclaration des variables       #
+#=============================================#
+
+#--------------------Cubes--------------------#
+C_Attr_MATERIAL = '}ElementAttributes_1_G_MATERIAL';
+
+#--------------------Dimensions--------------------#
+D_MATERIAL = '1_G_MATERIAL';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_Attr_MATERIAL = '}ElementAttributes_1_G_MATERIAL';
+
+#--------------------Elements--------------------#
+TOT_MATERIAL = 'TOTAL_MATERIAL';
+
+#--------------------Hiérarchies--------------------#
+Stt_PM = 'Status_PM';
+Stt = 'Status';
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+subset_temp = 'z_temp_' | vUSER |'_' | vPRO_NAME;
+subset_hier = 'z_hier_' | vUSER |'_' | vPRO_NAME;
+
+
+#--------------------Sources de données--------------------#
+SubsetDestroy(D_MATERIAL, subset_copy);
+
+MDX = '{{['|D_MATERIAL|'].['|TOT_MATERIAL|']},{TM1FILTERBYLEVEL({TM1SUBSETALL(['|D_MATERIAL|'])},0)}}';
+SubsetCreateByMDX(subset_copy, MDX);
+SubsetElementDelete(D_MATERIAL, subset_copy, 1);
+
+
+HierarchyCreate( D_MATERIAL, 'Status_PM' );
+SetHierarchyGroupsSecurity( 'READ', D_MATERIAL, 'Status_PM' );
+HierarchyElementInsert( D_MATERIAL, 'Status_PM', '', 'Total Status PM', 'N' );
+
+
+
+DatasourceDimensionSubset = subset_copy;
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#-----------------Chargement de la hiérarchie Status_PM----------------#
+Status_Code = AttrS(D_MATERIAL,ELPAR(D_MATERIAL,vELEM_MATERIAL,1),'Status');
+
+If(Status_code @= '');
+   	Status_Code_PM = 'Others';
+Else;
+	Status_Code_PM = Status_code|' PM';
+EndIf;
+
+If(DIMIX(D_MATERIAL|':'|stt_PM, Status_code |' PM') = 0);
+	HierarchyElementInsert(D_MATERIAL, Stt_PM, 'Total Status PM',Status_Code_PM, 'N');
+    HierarchyElementComponentAdd(D_MATERIAL, Stt_PM,'Total Status PM',Status_Code_PM, 1);
+EndIf;
+
+If(DIMIX(D_MATERIAL|':'|Stt_PM, vELEM_MATERIAL) = 0);
+	HierarchyElementInsert(D_MATERIAL, Stt_PM, Status_Code_PM,vELEM_MATERIAL, 'N');  
+    HierarchyElementComponentAdd(D_MATERIAL, Stt_PM, Status_Code_PM, vELEM_MATERIAL, 1);
+EndIf;
+
+
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+Status_Code = AttrS(D_MATERIAL,ELPAR(D_MATERIAL,vELEM_MATERIAL,1),'Status');
+
+If(Status_code @= '');
+   	Status_Code_PM = 'Others';
+    Status_desc = 'Others';
+Else;
+	Status_Code_PM = Status_code|' PM';
+    Status_desc = AttrS(D_MATERIAL,ELPAR(D_MATERIAL,vELEM_MATERIAL,1),'Status Name');
+EndIf;
+
+#-----------------Chargement de la hiérarchie Status_PM----------------#
+AttrPutS(Status_desc ,D_MATERIAL|':'|Stt_PM, Status_Code_PM,'Caption' );
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+SubsetDestroy(D_Attr_MATERIAL, subset_temp);
+SubsetDestroy(D_MATERIAL, subset_copy);
+#endregion

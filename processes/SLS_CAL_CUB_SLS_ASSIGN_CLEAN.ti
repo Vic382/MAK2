@@ -1,0 +1,168 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   25/04/2019                                                        #
+#                                                                            #
+# Fait par :    JM		                                                	 #
+#                                                                            #
+# Action : Processus qui vide les cellules de SLS_ASSIGN si la combinaison   #
+#   sur le cube SLS_SALES_PLAN est vide         							 #
+#																			 #
+##############################################################################
+#--------------------Cubes--------------------#
+
+C_Cube_SOURCE = 'SLS_ASSIGN';
+C_zPARAM = 'zPARAM';
+C_zSelect ='zSelect';
+#--------------------Dimensions--------------------#
+D_CURRENT_PHASE = '1_G_CURRENT_PHASE';
+D_VERSION = 'SLS_VERSION';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_LINE = '1_G_LINE';
+D_ASSIGN_IND = 'SLS_ASSIGN_IND';
+
+# VRT : Mise en place contrat indexé
+D_Q_HQ = 'SLS_Q_HQ' ;
+# Fin VRT 
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+vUser_Name = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vUSER = SUBST(vUser_Name, SCAN('/',vUser_Name)+1, 100);
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+# Récupération de la phase en cours et des paramètres de cette phase
+Curr_Phase = CellGetS( C_zPARAM,'Phase','Value');
+P_Phase = CellGetS(C_zSelect, vClient ,'Current Phase');
+
+ 
+#--------------------Vues--------------------#
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+# Récupération de la phase en cours et des paramètres de cette phase
+Curr_Phase = CellGetS(C_zPARAM,'Phase','Value');
+P_Phase = CellGetS(C_zSelect, vClient ,'Current Phase');
+v_FirstSim = ATTRS(D_CURRENT_PHASE,P_phase, 'First Simulation month');
+v_FirstSimInd = ATTRS(D_PERIOD,v_FirstSim, 'Index');
+
+# ViewDestroy( C_Cube_Source, view_copy );
+ asTemporay = 1;
+#--------------------Création des objets--------------------#
+ViewCreate(C_Cube_SOURCE,view_COPY,asTemporay );
+# # 1_G_CURRENT_PHASE
+subsetcreate(D_CURRENT_PHASE,subset_copy,asTemporay);
+SubsetElementInsert(D_CURRENT_PHASE, subset_copy, P_Phase, 1);
+# SLS_VERSION
+subsetcreate(D_VERSION,subset_copy,asTemporay);
+SubsetElementInsert(D_VERSION, subset_copy, 'FV', 1);
+
+# VRT : Mise en place contrat indexé
+# SLS_Q_HQ
+MDX_Q_HQ = 'TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_Q_HQ])},0)';
+SubsetCreatebyMDX( subset_copy, MDX_Q_HQ, asTemporay);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_Q_HQ,subset_copy);
+# Fin VRT 
+
+# 1_G_PERIOD
+vMDX_PERIOD = '{{[' | D_PERIOD | '].[Campaign]},{FILTER({TM1SUBSETALL([' | D_PERIOD | '])},[' | D_PERIOD | '].[Index_Num] >= ' | v_FirstSimInd | ')}}';
+subsetcreateByMdx(subset_copy,vMDX_PERIOD,asTemporay);
+SubsetElementDelete(D_PERIOD, subset_copy, 1);
+# 1_G_SALES_ORG
+subsetcreate(D_SALES_ORG,subset_copy,asTemporay);
+SubsetElementInsert(D_SALES_ORG, subset_copy, p_G_Sales_Org, 1);
+# # 1_G_DISTRIB_CHANNEL
+subsetcreate(D_DISTRIB_CHANNEL,subset_copy,asTemporay);
+SubsetElementInsert(D_DISTRIB_CHANNEL, subset_copy, p_G_Distrib_Channel, 1);
+# # 1_G_DISTRIB_CHANNEL
+# subsetcreate(D_ASSIGN_IND,subset_copy,asTemporay);
+# SubsetElementInsert(D_ASSIGN_IND, subset_copy, 'SLS_VOL', 1);
+# SLS_CUSTOMER
+If(P_SALES_GROUP @<> '');
+	vMDX_CUSTOMER_SALES_GROUP = '{{[' | D_CUSTOMER | '].[TOTAL_CUSTOMER]},{FILTER(TM1FILTERBYLEVEL({DESCENDANTS([' | D_CUSTOMER | '].[Total Customer])},0), [SLS_CUSTOMER].[Sales Group Name] = "' | P_SALES_GROUP | '"")}}';
+Else;
+	vMDX_CUSTOMER_SALES_GROUP = '{{[' | D_CUSTOMER | '].[TOTAL_CUSTOMER]},{TM1FILTERBYLEVEL({DESCENDANTS([' | D_CUSTOMER | '].[Total Customer])},0)}}';
+EndIf;
+subsetcreateByMdx(subset_copy,vMDX_CUSTOMER_SALES_GROUP,asTemporay);
+SubsetElementDelete(D_CUSTOMER, subset_copy, 1);
+
+# #--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PERIOD,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_VERSION,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_ORG,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_DISTRIB_CHANNEL,subset_copy);
+#ViewSubsetAssign(C_Cube_Source,view_copy, D_ASSIGN_IND,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CURRENT_PHASE,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CUSTOMER,subset_copy);
+
+
+
+
+
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 1);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+
+ #--------------------Déclaration de la vue source--------------------#
+DataSourceNameForServer=C_Cube_Source;
+DatasourceCubeview=view_copy;
+ 
+
+
+#endregion
+#region Data
+Division = ELPAR( D_MATERIAL_PLAN, v_SLS_MATERIAL_PLAN, 1);
+Default_Unit = ATTRS('1_G_MATERIAL', Division, 'Volume_Unit');
+#Currency = USD si Export Sucre
+If(v_g_distrib_channel @= '40' & Division @= 'D_10');
+	vCURRENCY = 'USD';
+Else; 
+	vCURRENCY = 'EUR';
+EndIf;
+
+vCheck_Data = CellGetN( 'SLS_SALES_PLAN',v_G_Current_Phase,v_G_Period, v_G_Sales_Org, v_G_Distrib_Channel, vCURRENCY, Default_Unit,v_SLS_Customer, 
+		v_SLS_Material_Plan, 'TOTAL_SALES_GROUP','SLS_VOL_NON_INDEXE');
+
+If(vCheck_Data = 0);
+	If( DTYPE( D_ASSIGN_IND,v_SLS_Assign_Ind ) @= 'n');
+		CellPutN(0 , C_Cube_SOURCE , v_G_Current_Phase, v_SLS_Version, v_Q_HQ , v_G_Period,v_G_Sales_Org,v_G_Distrib_Channel,v_SLS_Material_Plan,v_SLS_Customer 
+			,v_G_Line,v_SLS_Assign_Ind);
+	Else;
+		CellPutS('' , C_Cube_SOURCE , v_G_Current_Phase, v_SLS_Version, v_Q_HQ , v_G_Period,v_G_Sales_Org,v_G_Distrib_Channel,v_SLS_Material_Plan,v_SLS_Customer 
+			,v_G_Line,v_SLS_Assign_Ind);
+	EndIf;
+EndIf;
+
+
+
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

@@ -1,0 +1,15 @@
+{
+	"@type":"Cube",
+	"Name":"SECURITY_CUBES",
+	"Rules@Code.link":"SECURITY_CUBES.rules",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('SECURITY_CUBES')"
+		},
+		{
+			"@id":"Dimensions('m_SECURITY_CUBES')"
+		}
+	],
+	"Views@Code.links":[]
+}

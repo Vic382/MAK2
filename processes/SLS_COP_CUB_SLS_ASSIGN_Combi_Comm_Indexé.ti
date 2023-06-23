@@ -1,0 +1,117 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   28/02/2023                                                        #
+#                                                                            #
+# Fait par :    ELH 		                                       	         #
+#                                                                            #
+# Action : Mise à jour des Priority Vendor              				  	 #
+#           																 #
+#																			 #
+##############################################################################
+
+#===============================#
+#	Déclaration des variables	#
+#===============================#
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+vUser_Name = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vUSER = SUBST(vUser_Name, SCAN('/',vUser_Name)+1, 100);
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_ASSIGN' ;  
+#--------------------Vues--------------------#
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+#--------------------Déclaration de la vue source--------------------#
+DataSourceNameForServer=C_Cube_Source;
+DatasourceCubeview=view_copy;
+
+
+As_Temporary = 1 ; 
+#--------------------Création des objets Source-----------------#
+
+# VRT : Mise en place contrat indexé
+D_Q_HQ = 'SLS_Q_HQ' ;
+# Fin VRT 
+
+ViewCreate(C_Cube_Source ,view_Copy, As_Temporary );
+
+# VRT : Mise en place contrat indexé
+# SLS_Q_HQ
+# MDX_Q_HQ = 'TM1FILTERBYLEVEL({TM1SUBSETALL([SLS_Q_HQ])},0)';
+# SubsetCreatebyMDX( subset_copy, MDX_Q_HQ, As_Temporary);
+subsetcreate(D_Q_HQ,subset_copy ,As_Temporary);
+SubsetElementInsert(D_Q_HQ, subset_copy, 'QUOTA_STAND' , 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_Q_HQ,subset_copy);
+# Fin VRT 
+
+# 1_G_PERIOD
+subsetcreate('1_G_PERIOD',subset_copy ,As_Temporary);
+SubsetElementInsert('1_G_PERIOD', subset_copy, 'N/A PERIOD' , 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, '1_G_PERIOD',subset_copy);
+
+
+# SLS_ASSIGN_IND
+subsetcreate('SLS_ASSIGN_IND',subset_copy ,As_Temporary);
+SubsetElementInsert('SLS_ASSIGN_IND', subset_copy, 'SHIP_PT' , 1);
+ViewSubsetAssign(C_Cube_Source,view_copy, 'SLS_ASSIGN_IND',subset_copy);
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+# Récupération des volumes sur le contrat indexé
+nSLSVolIndexe = CellGetN ( C_Cube_Source , vCurrPhase , vVersion , 'INDEXE' , 'CAMP YEAR' , vSalesOrg , vDistribChannel , vPlanningMaterial , vCustomer , vLine , 'SLS_VOL' ) ;
+nAssignVolIndexe = CellGetN ( C_Cube_Source , vCurrPhase , vVersion , 'INDEXE' , 'CAMP YEAR' , vSalesOrg , vDistribChannel , vPlanningMaterial , vCustomer , vLine , 'ASSIGN_VOL' ) ; 
+nVolIndexe = nSLSVolIndexe + nAssignVolIndexe ;
+# Si le volume indexé est différent de 0
+IF ( nVolIndexe <> 0 ) ;
+ # Récupération du Shipping Point du contrat indexé
+ sShipPtIndexe = CellGetS ( C_Cube_Source , vCurrPhase , vVersion , 'INDEXE' , vPeriod , vSalesOrg , vDistribChannel , vPlanningMaterial , vCustomer , vLine , vIndicateur ) ;
+ # Si le Shipping Point est vide, insertion de la Combi Comm à l'identique du contrat standard
+ IF ( sShipPtIndexe @= '' ) ;
+  sShipPtIndexe = CellGetS ( C_Cube_Source , vCurrPhase , vVersion , vIndexe , vPeriod , vSalesOrg , vDistribChannel , vPlanningMaterial , vCustomer , vLine , vIndicateur ) ;
+  CellPutS ( sShipPtIndexe , C_Cube_Source , vCurrPhase , vVersion , 'INDEXE' , vPeriod , vSalesOrg , vDistribChannel , vPlanningMaterial , vCustomer , vLine , vIndicateur ) ;
+  # Récupération du Shipping Plant du contrat Standard
+  sShipPlant = CellGetS ( C_Cube_Source , vCurrPhase , vVersion , vIndexe , vPeriod , vSalesOrg , vDistribChannel , vPlanningMaterial , vCustomer , vLine , 'SHIP_PLANT' ) ;
+  # Insertion du Shipping Plant pour le contrat indexé
+  CellPutS ( sShipPlant , C_Cube_Source , vCurrPhase , vVersion , 'INDEXE' , vPeriod , vSalesOrg , vDistribChannel , vPlanningMaterial , vCustomer , vLine , 'SHIP_PLANT' ) ;
+  # Récupération du Production Plant du contrat Standard
+  sProdPlant = CellGetS ( C_Cube_Source , vCurrPhase , vVersion , vIndexe , vPeriod , vSalesOrg , vDistribChannel , vPlanningMaterial , vCustomer , vLine , 'PROD_PLANT' ) ;
+  # Insertion du Production Plant pour le contrat indexé
+  CellPutS ( sProdPlant , C_Cube_Source , vCurrPhase , vVersion , 'INDEXE' , vPeriod , vSalesOrg , vDistribChannel , vPlanningMaterial , vCustomer , vLine , 'PROD_PLANT' ) ;
+    # Récupération du Vendor du contrat Standard
+  sVendor = CellGetS ( C_Cube_Source , vCurrPhase , vVersion , vIndexe , vPeriod , vSalesOrg , vDistribChannel , vPlanningMaterial , vCustomer , vLine , 'VENDOR' ) ;
+  # Insertion du Vendor pour le contrat indexé
+  CellPutS ( sVendor , C_Cube_Source , vCurrPhase , vVersion , 'INDEXE' , vPeriod , vSalesOrg , vDistribChannel , vPlanningMaterial , vCustomer , vLine , 'VENDOR' ) ;
+ ENDIF ;
+ENDIF ;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

@@ -709,6 +709,7 @@
 		"SLS_SALES_PLAN_IND.subsets/Volume_40_Sugar_I.json",
 		"SLS_SALES_PLAN_IND.subsets/Volume_40_Sugar_NI.json",
 		"SLS_SALES_PLAN_IND.subsets/VolumeWithoutPrice.json",
-		"SLS_SALES_PLAN_IND.subsets/z_copy_Admin_SLS_CAL_CUBS_SWITCH_ARTICLE_PRICE.json"
+		"SLS_SALES_PLAN_IND.subsets/z_copy_Admin_SLS_CAL_CUBS_SWITCH_ARTICLE_PRICE.json",
+		"SLS_SALES_PLAN_IND.subsets/z_copy_Pascal MUTELET_SLS_CAL_CUB_SLS_SALES_PLAN_SWITCH_MAT_NEW_COMB.json"
 	]
 }

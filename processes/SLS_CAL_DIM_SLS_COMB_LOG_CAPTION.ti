@@ -1,0 +1,111 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+#################################################################
+#                                               DESCRIPTION DU PROCESSUS                                              #
+#                                                                                                                                                   #
+# Date :   05/11/2019                                                                                                                  #
+#                                                                                                                                                   #
+# Fait par :   Elisabeth MOUNIER                                                                                                 #
+#                                                                                                                                                   #
+# Action : Processus de MAJ du J-1 Caption de la dimension SLS_SHIP_POINT                                         #
+#                                                                                                                                                   #
+#################################################################
+
+SetInputCharacterSet('TM1CS_UTF8');
+
+#====================================#
+#             Déclaration des variables                   #
+#====================================#
+
+#--------------------Dimensions--------------------#
+
+D_SHIP_PT = 'SLS_SHIP_POINT';
+D_SHIP_PLANT = 'SLS_SHIP_PLANT';
+D_PROD_PLANT = 'SLS_PROD_PLANT';
+D_VENDOR = 'SLS_VENDOR';
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+
+#--------------------Sous-ensembles--------------------#
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+If(P_INDICATEUR = 1);
+	# SLS_SHIP_PT
+    DIM_SOURCE = D_SHIP_PT;
+	MDX_SHIP_PT = '{{[SLS_SHIP_POINT].[Total Shipping Point]},{TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_SHIP_POINT]), 0)}}';
+	subsetcreatebyMDX(subset_copy,MDX_SHIP_PT, 1);
+	SubsetElementDelete(D_SHIP_PT, subset_copy, 1);
+
+ElseIf(P_INDICATEUR = 2);
+	# SLS_SHIP_PLANT
+    DIM_SOURCE = D_SHIP_PLANT;
+	MDX_SHIP_PLANT = '{{[SLS_SHIP_PLANT].[Total Shipping Plant]},{TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_SHIP_PLANT]), 0)}}';
+	subsetcreatebyMDX(subset_copy,MDX_SHIP_PLANT, 1);
+	SubsetElementDelete(D_SHIP_PLANT, subset_copy, 1);
+    
+ElseIf(P_INDICATEUR = 3);
+	# SLS_PROD_PLANT
+    DIM_SOURCE = D_PROD_PLANT;
+	MDX_PROD_PLANT = '{{[SLS_PROD_PLANT].[Total Production Plant]},{TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_PROD_PLANT]), 0)}}';
+	subsetcreatebyMDX(subset_copy,MDX_PROD_PLANT, 1);
+	SubsetElementDelete(D_PROD_PLANT, subset_copy, 1);
+    
+ElseIf(P_INDICATEUR = 4);
+	# SLS_VENDOR
+    DIM_SOURCE = D_VENDOR;
+	MDX_VENDOR = '{{[SLS_VENDOR].[Total Vendor]},{TM1FILTERBYLEVEL(TM1SUBSETALL([SLS_VENDOR]), 0)}}';
+	subsetcreatebyMDX(subset_copy,MDX_VENDOR, 1);
+	SubsetElementDelete(D_VENDOR, subset_copy, 1);
+
+EndIf;
+
+DatasourceNameForServer = DIM_SOURCE ;
+
+DatasourceDimensionSubset = subset_copy;
+#endregion
+#region Data
+If(P_Indicateur = 1);
+	New_Caption_Shippint_Point = ATTRS(D_SHIP_PT, Value, 'Code - Caption');
+	#Mise à jour de J-1 Caption
+	AttrPutS( New_Caption_Shippint_Point, D_SHIP_PT, Value, 'J-1 Caption');
+ElseIf(P_INDICATEUR = 2);
+	New_Caption_Shipping_Plant = ATTRS(D_SHIP_PLANT, Value, 'Code - Caption');
+	#Mise à jour de J-1 Caption
+	AttrPutS( New_Caption_Shipping_Plant, D_SHIP_PLANT, Value, 'J-1 Caption');
+ElseIf(P_INDICATEUR = 3);
+	New_Caption_Prod_Plant = ATTRS(D_PROD_PLANT, Value, 'Code - Caption');
+	#Mise à jour de J-1 Caption
+	AttrPutS( New_Caption_Prod_Plant, D_PROD_PLANT, Value, 'J-1 Caption');
+ElseIf(P_INDICATEUR = 4);
+	New_Caption_Vendor = ATTRS(D_VENDOR, Value, 'Code - Caption');
+	#Mise à jour de J-1 Caption
+	AttrPutS( New_Caption_Vendor, D_VENDOR, Value, 'J-1 Caption');
+EndIf;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

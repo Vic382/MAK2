@@ -1,0 +1,126 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   16/04/2019                                                        #
+#                                                                            #
+# Fait par :    JMB 		                                                 #
+#                                                                            #
+# Action : Processus de copie des données prévisionnelles pour le CS		 #
+#																			 #
+##############################################################################
+
+
+
+
+#===============================================#
+#	Actualisation de la vue à copier/vue source	#
+#===============================================#
+
+#--------------------Actualisation des objets--------------------#
+# SLS_SHIP_POINT
+SubsetDeleteAllElements( 'SLS_SHIP_POINT', subset_copy );
+SubsetElementInsert('SLS_SHIP_POINT', subset_copy, P_SHIP_POINT, 1);
+# SLS_SHIP_PLANT
+SubsetDeleteAllElements( 'SLS_SHIP_PLANT', subset_copy );
+SubsetElementInsert('SLS_SHIP_PLANT', subset_copy, P_SHIP_PLANT, 1);
+# SLS_PROD_PLANT
+SubsetDeleteAllElements( 'SLS_PROD_PLANT', subset_copy );
+SubsetElementInsert('SLS_PROD_PLANT', subset_copy, P_PROD_PLANT, 1);
+# SLS_VENDOR
+SubsetDeleteAllElements( 'SLS_VENDOR', subset_copy );
+SubsetElementInsert('SLS_VENDOR', subset_copy, P_VENDOR, 1);
+
+# SLS_INIT_IND
+SubsetDeleteAllElements( 'SLS_INIT_IND', subset_copy );
+SubsetElementInsert('SLS_INIT_IND', subset_copy, 'SLS_VOL', 1);
+SubsetElementInsert('SLS_INIT_IND', subset_copy, 'I_SLS_VOL', 1);
+
+#--------------------Déclaration de la vue source--------------------#
+DataSourceNameForServer='SLS_INIT';
+DatasourceCubeview=view_copy;
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+# VRT : Mise en place contrat indexé
+# Controle de l'indicateur si préfixé de I_ alors éléments INDEXE dans la dimension SLS_Q_HQ
+# Sinon élément standard dans cette même dimension
+IF ( vINIT_IND @= 'I_SLS_VOL') ;
+  v_Q_HQ = 'INDEXE' ;
+ELSE ;
+  v_Q_HQ = 'QUOTA_STAND' ;
+ENDIF ;
+# Fin VRT 
+
+# Ecriture de la combinaison logistique sur Actual Version
+CellPutS(ATTRS('SLS_SHIP_POINT', vSHIP_POINT, 'Code - Caption' ), 'SLS_ASSIGN', vCURRENT_PHASE, P_VERSION, v_Q_HQ , 'N/A PERIOD', vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, P_LINE, 'Shipping Point');
+CellPutS(ATTRS('SLS_SHIP_PLANT', vSHIP_PLANT, 'Code - Caption' ), 'SLS_ASSIGN', vCURRENT_PHASE, P_VERSION, v_Q_HQ , 'N/A PERIOD', vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, P_LINE, 'Shipping Plant');
+CellPutS(ATTRS('SLS_PROD_PLANT', vPROD_PLANT, 'Code - Caption' ), 'SLS_ASSIGN', vCURRENT_PHASE, P_VERSION, v_Q_HQ , 'N/A PERIOD', vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, P_LINE, 'Production Plant');
+CellPutS(ATTRS('SLS_VENDOR', vVENDOR, 'Code - Caption' ), 'SLS_ASSIGN', vCURRENT_PHASE, P_VERSION, v_Q_HQ , 'N/A PERIOD', vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, P_LINE, 'Vendor');
+# ELH - 20/02/2023 - EVO Cristal Commerciaux - Ecriture du Priority VENDOR, attribut du CUSTOMER
+ # Récupération de l'attribut Vendor Priority de la dimension SLS_CUSTOMER
+sPriorityVendor = ATTRS ( 'SLS_CUSTOMER' , vCUSTOMER , 'Vendor Priority' ) ;
+ # Si le Vendor Priority n'est pas vide
+IF ( sPriorityVendor @<> '' ) ;
+ # Si le Vendor Priority contient '|'
+ nScan = SCAN ( '|' , sPriorityVendor ) ;
+ IF ( nScan > 0 ) ;
+  # Récupération du premier Vendor Priority dans l'attribut
+  sPriorityVendor = SubSt ( sPriorityVendor , 1 , nScan - 1 ) ; 
+ ENDIF ;
+ IF ( DIMIX ( 'SLS_VENDOR' , sPriorityVendor ) > 0 ) ;
+  # Récupération du code - Libelle du Vendor
+  sPriorityVendor = ATTRS ( 'SLS_VENDOR' , sPriorityVendor, 'Code-Caption' ) ;
+  # Insertion du Vendor Priority
+  CellPutS( sPriorityVendor , 'SLS_ASSIGN', vCURRENT_PHASE, P_VERSION, v_Q_HQ , 'N/A PERIOD', vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, P_LINE, 'Vendor Priority');
+ ENDIF ;
+ENDIF ;
+# Fin ELH - 20/02/2023 - EVO Cristal Commerciaux 
+
+
+vVolume_Total_InitIndex = CellGetN('SLS_INIT',vCURRENT_PHASE,vPERIOD,vSALES_ORG,vDISTRIB_CHANNEL,vVOLUME_UNIT,vMATERIAL_PLAN,vCUSTOMER,'Total Shipping Point','Total Ship Plant','Total Prod Plant','Total Vendor','I_SLS_VOL');
+
+
+IF ( vINIT_IND @= 'I_SLS_VOL') ;
+
+  vVolume_SourceIndex = CellGetN('SLS_SALES_PLAN',vCURRENT_PHASE,vPERIOD,vSALES_ORG,vDISTRIB_CHANNEL,P_CURRENCY,vVOLUME_UNIT,vCUSTOMER,vMATERIAL_PLAN,'Total Sales Group','SLS_VOL_INDEXE');
+
+  nVolumeAssignIndex = ROUNDP ( ( ( vVolume_SourceIndex * vValue ) \ vVolume_Total_InitIndex ) , 3 ) ;
+
+  # Ecriture du volume affecté
+  CellPutN( nVolumeAssignIndex , 'SLS_ASSIGN', vCURRENT_PHASE, P_VERSION, 'INDEXE' , vPeriod, vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, P_LINE, 'ASSIGN_VOL');
+ELSE ;
+
+  # Détermination du volume à copier
+  vVolume_Source = CellGetN('SLS_SALES_PLAN',vCURRENT_PHASE,vPERIOD,vSALES_ORG,vDISTRIB_CHANNEL,P_CURRENCY,vVOLUME_UNIT,vCUSTOMER,vMATERIAL_PLAN,'Total Sales Group','SLS_VOL_NON_INDEXE');
+
+  vVolume_Total_Init = CellGetN('SLS_INIT',vCURRENT_PHASE,vPERIOD,vSALES_ORG,vDISTRIB_CHANNEL,vVOLUME_UNIT,vMATERIAL_PLAN,vCUSTOMER,'Total Shipping Point','Total Ship Plant','Total Prod Plant','Total Vendor','Sales Volume') - vVolume_Total_InitIndex ;
+  
+  vValueIndex = CellGetN('SLS_INIT',vCURRENT_PHASE,vPERIOD,vSALES_ORG,vDISTRIB_CHANNEL,vVOLUME_UNIT,vMATERIAL_PLAN,vCUSTOMER,vSHIP_POINT,vSHIP_PLANT,vPROD_PLANT,vVENDOR,'I_SLS_VOL') ;
+  vValue = vValue - vValueIndex ;
+  
+  # ELH - EVO Commerciaux - Arrondi
+  nVolumeAssign = ROUNDP ( ( ( vVolume_Source * vValue ) \ vVolume_Total_Init ) , 3 ) ;
+
+  CellPutN( nVolumeAssign , 'SLS_ASSIGN', vCURRENT_PHASE, P_VERSION, 'QUOTA_STAND' , vPeriod, vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, P_LINE, 'ASSIGN_VOL');
+ENDIF ;
+
+# suppression enr 03/03/2020
+# IF(vPeriod @= '2020.08');
+# itemreject(NumberToString(vVolume_Source * vValue \ vVolume_Total_Init) | ' - ' | 'SLS_ASSIGN' | ' - ' | vCURRENT_PHASE | ' - ' | P_VERSION | ' - ' | vPeriod | ' - ' | vSALES_ORG | ' - ' | vDISTRIB_CHANNEL | ' - ' | vMATERIAL_PLAN | ' - ' | vCUSTOMER | ' - ' | P_LINE | ' - ' | 'ASSIGN_VOL');
+# ENDIF;
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

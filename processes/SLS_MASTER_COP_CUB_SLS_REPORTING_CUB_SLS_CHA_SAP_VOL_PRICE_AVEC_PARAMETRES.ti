@@ -1,0 +1,89 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                                                                                                  #
+#                                                                                                                                                                                 #
+# Date :   11/05/2020                                                                                                                                                #
+#                                                                                                                                                                                 #
+# Fait par :    ELH		                                        	                                                                                   #
+#                                                                                                                                                                                 #
+# Action : Master copie, volumes et prix, du cube CHA_SAP vers le cube Reponting avec choix                             #
+#              des périodes source et cible,                                                                                                                      #
+#           	des phases source et cible,                                                                                                                        #
+#              du Distrub Channel                                                                                                                                     #
+#              et du Sales Org				                                                                                   #
+#											   #
+##############################################################################
+
+#===============================#
+#	Déclaration des variables	#
+#===============================#
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+vUser_Name = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vUSER = SUBST(vUser_Name, SCAN('/',vUser_Name)+1, 100);
+z_PROCESS = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+# Cube paramètre utilisateur
+sCubeUser = 'zSELECT' ;
+# Utilisateur lancant le processus
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+# Dimension 1_G_PHASE_REP
+D_PHASE_REP = '1_G_PHASE_REP' ;
+
+# Phase sur laquelle les données doivent être copiées
+P_Phase_Rep = CellGetS ( sCubeUser , vClient , 'Target Phase' ) ;
+
+#-- First Simulation Month
+# Récupération de l'attribut de blocage
+sBlocage = AttrS ( D_PHASE_REP , DimensionElementPrincipalName(D_PHASE_REP,P_Phase_Rep), 'Blocage_First simulation month');
+# Si l'attribut de blocage est non
+IF ( sBlocage @<> 'Oui' & P_Phase_Rep @<> 'ACT' ) ;
+ # Récupération dans le cube zSELECT du first simulation month paramétré
+ sFSM = CellGetS( sCubeUser , vClient ,'First Simulation Month');
+ # Si le fisrt simulation est défini en param, alimentation avec ce First Simulation Month et passage du Blocage à Oui
+ IF ( sFSM @<> '' ) ;
+  AttrPutS(sFSM, D_PHASE_REP , DimensionElementPrincipalName(D_PHASE_REP,P_Phase_Rep), 'First simulation month');
+  AttrPutS ( 'Oui' , D_PHASE_REP, DimensionElementPrincipalName(D_PHASE_REP,P_Phase_Rep), 'Blocage_First simulation month');
+ ENDIF ;
+ENDIF ;
+
+
+#******************************Exécution des processus*****************************************
+
+# Copie des Volumes
+ExecuteProcess ( 'SLS_COP_CUB_SLS_REPORTING_CUB_SLS_CHA_SAP_VOLUMES_AVEC_PARAMETRES' ) ;
+
+# Copie des prix
+ExecuteProcess ( 'SLS_COP_CUB_SLS_REPORTING_CUB_SLS_CHA_SAP_PRICE_AVEC_PARAMETRES' ) ;
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

@@ -1,0 +1,95 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   16/04/2019                                                        #
+#                                                                            #
+# Fait par :    JMB 		                                                 #
+#                                                                            #
+# Action : Processus de copie des données prévisionnelles pour le CS		 #
+#																			 #
+##############################################################################
+
+
+
+
+#===============================================#
+#	Actualisation de la vue à copier/vue source	#
+#===============================================#
+
+#--------------------Actualisation des objets--------------------#
+# SLS_SHIP_POINT
+SubsetDeleteAllElements( 'SLS_SHIP_POINT', subset_copy );
+SubsetElementInsert('SLS_SHIP_POINT', subset_copy, P_SHIP_POINT, 1);
+# SLS_SHIP_PLANT
+SubsetDeleteAllElements( 'SLS_SHIP_PLANT', subset_copy );
+SubsetElementInsert('SLS_SHIP_PLANT', subset_copy, P_SHIP_PLANT, 1);
+# SLS_PROD_PLANT
+SubsetDeleteAllElements( 'SLS_PROD_PLANT', subset_copy );
+SubsetElementInsert('SLS_PROD_PLANT', subset_copy, P_PROD_PLANT, 1);
+# SLS_VENDOR
+SubsetDeleteAllElements( 'SLS_VENDOR', subset_copy );
+SubsetElementInsert('SLS_VENDOR', subset_copy, P_VENDOR, 1);
+
+#--------------------Déclaration de la vue source--------------------#
+DataSourceNameForServer='SLS_INIT';
+DatasourceCubeview=view_copy;
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+# IF((vMATERIAL_PLAN @= '11311000' & vCUSTOMER @= '230075_14002020' & vPERIOD @= '2019.03')
+# % (vMATERIAL_PLAN @= '11311000' & vCUSTOMER @= '230075_14002020' & vPERIOD @= '2019.04')
+# % (vMATERIAL_PLAN @= '11311000' & vCUSTOMER @= '230075_14002020' & vPERIOD @= '2019.05')
+# % (vMATERIAL_PLAN @= '11311000' & vCUSTOMER @= '230075_14002020' & vPERIOD @= '2019.06')
+# % (vMATERIAL_PLAN @= '11311000' & vCUSTOMER @= '230075_14002020' & vPERIOD @= '2019.07')
+# % (vMATERIAL_PLAN @= '11311000' & vCUSTOMER @= '230075_14002020' & vPERIOD @= '2019.08')
+# % (vMATERIAL_PLAN @= '11311000' & vCUSTOMER @= '230075_14002020' & vPERIOD @= '2019.09'));
+# #itemreject(P_LINE);
+# #itemreject(ATTRS('SLS_SHIP_POINT', vSHIP_POINT, 'Code - Caption' ) | ' - ' | ATTRS('SLS_SHIP_PLANT', vSHIP_PLANT, 'Code - Caption' ) | ' - ' | ATTRS('SLS_PROD_PLANT', vPROD_PLANT, 'Code - Caption' ) | ' - ' | ATTRS('SLS_VENDOR', vVENDOR, 'Code - Caption' ));
+# ELSE;
+# itemskip;
+# ENDIF;
+
+IF((vSales_Org @= '1400' & vPERIOD @= '2019.02')
+% (vSales_Org @= '1400' & vPERIOD @= '2019.03')
+% (vSales_Org @= '1400' & vPERIOD @= '2019.04')
+% (vSales_Org @= '1400' & vPERIOD @= '2019.05')
+% (vSales_Org @= '1400' & vPERIOD @= '2019.06')
+% (vSales_Org @= '1400' & vPERIOD @= '2019.07')
+% (vSales_Org @= '1400' & vPERIOD @= '2019.08')
+% (vSales_Org @= '1400' & vPERIOD @= '2019.09'));
+#itemreject(P_LINE);
+#itemreject(ATTRS('SLS_SHIP_POINT', vSHIP_POINT, 'Code - Caption' ) | ' - ' | ATTRS('SLS_SHIP_PLANT', vSHIP_PLANT, 'Code - Caption' ) | ' - ' | ATTRS('SLS_PROD_PLANT', vPROD_PLANT, 'Code - Caption' ) | ' - ' | ATTRS('SLS_VENDOR', vVENDOR, 'Code - Caption' ));
+ELSE;
+itemskip;
+ENDIF;
+
+# Ecriture de la combinaison logistique sur Actual Version
+CellPutS(ATTRS('SLS_SHIP_POINT', vSHIP_POINT, 'Code - Caption' ), 'SLS_ASSIGN', vCURRENT_PHASE, P_VERSION, 'N/A PERIOD', vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, P_LINE, 'Shipping Point');
+CellPutS(ATTRS('SLS_SHIP_PLANT', vSHIP_PLANT, 'Code - Caption' ), 'SLS_ASSIGN', vCURRENT_PHASE, P_VERSION, 'N/A PERIOD', vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, P_LINE, 'Shipping Plant');
+CellPutS(ATTRS('SLS_PROD_PLANT', vPROD_PLANT, 'Code - Caption' ), 'SLS_ASSIGN', vCURRENT_PHASE, P_VERSION, 'N/A PERIOD', vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, P_LINE, 'Production Plant');
+CellPutS(ATTRS('SLS_VENDOR', vVENDOR, 'Code - Caption' ), 'SLS_ASSIGN', vCURRENT_PHASE, P_VERSION, 'N/A PERIOD', vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, P_LINE, 'Vendor');
+
+# Détermination du volume à copier
+vVolume_Source = CellGetN('SLS_SALES_PLAN',vCURRENT_PHASE,vPERIOD,vSALES_ORG,vDISTRIB_CHANNEL,P_CURRENCY,vVOLUME_UNIT,vCUSTOMER,vMATERIAL_PLAN,'Total Sales Group','Sales Volume');
+vVolume_Total_Init = CellGetN('SLS_INIT',vCURRENT_PHASE,vPERIOD,vSALES_ORG,vDISTRIB_CHANNEL,vVOLUME_UNIT,vMATERIAL_PLAN,vCUSTOMER,'Total Shipping Point','Total Ship Plant','Total Prod Plant','Total Vendor','Sales Volume');
+
+# Ecriture du volume affecté
+asciioutput('..\reel_france_alcool.csv', numbertostring(vVolume_Source), numbertostring(vValue), numbertostring(vVOlume_Total_Init), 'SLS_ASSIGN', vCURRENT_PHASE, P_VERSION, vPeriod, vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, P_LINE, 'ASSIGN_VOL');
+
+CellPutN(vVolume_Source * vValue \ vVolume_Total_Init, 'SLS_ASSIGN', vCURRENT_PHASE, P_VERSION, vPeriod, vSALES_ORG, vDISTRIB_CHANNEL, vMATERIAL_PLAN, vCUSTOMER, P_LINE, 'ASSIGN_VOL');
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

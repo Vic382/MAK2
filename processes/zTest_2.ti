@@ -1,0 +1,21 @@
+#region Prolog
+MinorErrorLogMax = -1;
+OnMinorErrorDoItemSkip = 1;
+CurrentLogSetting = CubeGetLogChanges('SLS_ASSIGN');
+CubeSetLogChanges('SLS_ASSIGN', 0);
+NumRowsRead = 0;
+NumRowsProcessed = 0;
+SetInputCharacterSet('TM1CS_UTF8');
+#endregion
+#region Data
+NumRowsRead = NumRowsRead + 1;
+CellPutN(StringToNumber(vValue),'SLS_ASSIGN',vDim1,'FV',vDim3,vDim4,vDim5,vDim6,vDim7,vDim8,vDim9);
+NumRowsProcessed = NumRowsProcessed + 1;
+#endregion
+#region Epilog
+If (pResult @<> '');
+TextOutput(pResult, NumberToString(NumRowsRead), NumberToString(NumRowsProcessed));
+EndIf;
+CubeSaveData('SLS_ASSIGN');
+CubeSetLogChanges('SLS_ASSIGN', CurrentLogSetting);
+#endregion

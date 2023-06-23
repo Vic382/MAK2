@@ -1,0 +1,136 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#################################################################
+#                                               DESCRIPTION DU PROCESSUS                                              #
+#                                                                                                                                                   #
+# Date :   24/10/2018                                                                                                                  #
+#                                                                                                                                                   #
+# Fait par :   Rihab BEN HADEF                                                                                                   #
+#                                                                                                                                                   #
+# Action :calcule des éléments fins du schéma de prix à partir des pourcentages                        #
+#                                                                                                                                                   #
+#                                                                                                                                                   #
+#################################################################
+
+#--------------------Cubes--------------------#
+
+vSourceCube = 'SLS_SALES_PLAN';
+vTargetCube = 'SLS_SALES_PLAN';
+
+vSubsetName = '##_SLS_SALES_PLAN_'| TIMST( Now(), '\i\s') | NumberToString( int( 10000000 * (rand() + (rand() \ rand()))));
+
+vViewName = vSubsetName;
+
+ViewDestroy(vSourceCube, vViewName);
+SubsetDestroy('SLS_SALES_PLAN_IND', vSubsetName);
+
+#--------------------Création des objets--------------------#
+
+ViewCreate(vSourceCube, vViewName);
+
+SubsetCreate('SLS_SALES_PLAN_IND', vSubsetName);
+
+#SubsetElementInsert('SLS_SALES_PLAN_IND', vSubsetName,'DISC_PER', 1);
+SubsetElementInsert('SLS_SALES_PLAN_IND', vSubsetName,'RPP_PER', 1);
+SubsetElementInsert('SLS_SALES_PLAN_IND', vSubsetName,'CPV_PER', 1);
+SubsetElementInsert('SLS_SALES_PLAN_IND', vSubsetName,'REB_PER', 1);
+SubsetElementInsert('SLS_SALES_PLAN_IND', vSubsetName,'RET_SERV_PER', 1);
+SubsetElementInsert('SLS_SALES_PLAN_IND', vSubsetName,'PROMO_RATE', 1);
+
+
+### Assigning subsets to view
+
+ViewSubsetAssign(vSourceCube, vViewName, 'SLS_SALES_PLAN_IND', vSubsetName);
+
+### View zero out
+#ViewZeroOut(vTargetCube, vViewName2);
+
+### Assigning view as source
+ViewExtractSkipCalcsSet(vTargetCube , vViewName, 1);
+ViewExtractSkipRuleValuesSet(vTargetCube , vViewName, 1);
+ViewExtractSkipZeroesSet(vTargetCube , vViewName, 1);
+
+DatasourceCubeview=vViewName;
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+vValue1 =CellGetN(vTargetCube,vPhase,vPeriod,vOrg,vChannel,vCurrency,vVolumeUnit,vCustomer,vMaterial,vSalesGroup,'CUST_PRICE_UNIT' );
+
+##### DISC UNIT ######
+
+
+#vValue2 =CellGetN(vTargetCube,vPhase,vPeriod,vOrg,vChannel,vCurrency,vVolumeUnit,vCustomer,vMaterial,vSalesGroup,'DISC_PER');
+
+#vValueToInsert=vValue1 * vValue2;
+
+#CellPutN(vValueToInsert,vTargetCube,vPhase,vPeriod,vOrg,vChannel,vCurrency,vVolumeUnit,vCustomer,vMaterial,vSalesGroup,'DISC_UNIT');
+
+##### PROMO UNIT ######
+
+vValue2 =CellGetN(vTargetCube,vPhase,vPeriod,vOrg,vChannel,vCurrency,vVolumeUnit,vCustomer,vMaterial,vSalesGroup,'PROMO_RATE');
+
+vPROMO =vValue1 * vValue2;
+
+CellPutN(vPROMO,vTargetCube,vPhase,vPeriod,vOrg,vChannel,vCurrency,vVolumeUnit,vCustomer,vMaterial,vSalesGroup,'PROMO_UNIT');
+
+
+##### RPP UNIT ######
+
+vValue2 =CellGetN(vTargetCube,vPhase,vPeriod,vOrg,vChannel,vCurrency,vVolumeUnit,vCustomer,vMaterial,vSalesGroup,'RPP_PER');
+
+vRPP =(vValue1 - vPROMO) * vValue2;
+
+CellPutN(vRPP,vTargetCube,vPhase,vPeriod,vOrg,vChannel,vCurrency,vVolumeUnit,vCustomer,vMaterial,vSalesGroup,'RPP_UNIT');
+
+
+##### CPV UNIT ######
+
+vValue2 =CellGetN(vTargetCube,vPhase,vPeriod,vOrg,vChannel,vCurrency,vVolumeUnit,vCustomer,vMaterial,vSalesGroup,'CPV_PER');
+
+vCPV =(vValue1 - vPROMO - vRPP) * vValue2;
+
+CellPutN(vCPV,vTargetCube,vPhase,vPeriod,vOrg,vChannel,vCurrency,vVolumeUnit,vCustomer,vMaterial,vSalesGroup,'CPV_UNIT');
+
+
+
+######################################################Invoiced Value ##################################################################
+##### RET_SERV_UNIT ######
+
+vValue1 =CellGetN(vTargetCube,vPhase,vPeriod,vOrg,vChannel,vCurrency,vVolumeUnit,vCustomer,vMaterial,vSalesGroup,'INV_VAL_UNIT' );
+vValue2 =CellGetN(vTargetCube,vPhase,vPeriod,vOrg,vChannel,vCurrency,vVolumeUnit,vCustomer,vMaterial,vSalesGroup,'RET_SERV_PER');
+
+vValueToInsert=vValue1 * vValue2;
+
+#sinon peut écraser la valeur saisie directement sur Retail Services Unit
+If(vValueToInsert <> 0);
+	CellPutN(vValueToInsert,vTargetCube,vPhase,vPeriod,vOrg,vChannel,vCurrency,vVolumeUnit,vCustomer,vMaterial,vSalesGroup,'RET_SERV_UNIT');
+EndIf;
+
+##### CUST_REBATE_UNIT ######
+vValue2 =CellGetN(vTargetCube,vPhase,vPeriod,vOrg,vChannel,vCurrency,vVolumeUnit,vCustomer,vMaterial,vSalesGroup,'REB_PER');
+
+vValueToInsert=vValue1 * vValue2;
+
+#sinon peut écraser la valeur saisie directement sur Rebates Unit
+If(vValueToInsert <> 0);
+	CellPutN(vValueToInsert,vTargetCube,vPhase,vPeriod,vOrg,vChannel,vCurrency,vVolumeUnit,vCustomer,vMaterial,vSalesGroup,'CUST_REBATE_UNIT');
+EndIf;
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+ViewDestroy(vSourceCube, vViewName);
+SubsetDestroy('SLS_SALES_PLAN_IND', vSubsetName);
+#endregion

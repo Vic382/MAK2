@@ -1,0 +1,139 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#################################################################
+#                                               DESCRIPTION DU PROCESSUS                                              #
+#                                                                                                                                                   #
+# Date :   30/08/2018                                                                                                                  #
+#                                                                                                                                                   #
+# Fait par :   Elisabeth MOUNIER                                                                                                 #
+#                                                                                                                                                   #
+# Action : Processus de chargement de la dimension SLS_VENDOR                                          #
+#                                                                                                                                                   #
+#################################################################
+
+#Modification Ann BESNARD le 21/12/2018
+SetInputCharacterSet('TM1CS_UTF8');
+
+#====================================#
+#             Déclaration des variables                   #
+#====================================#
+
+#--------------------Cubes--------------------#
+C_zPROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+
+
+#--------------------Dimensions--------------------#
+
+D_VENDOR = 'SLS_VENDOR';
+
+
+#--------------------Elements--------------------#
+
+TOT_VENDOR = 'TOTAL_VENDOR';
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+
+
+
+#--------------------Sources de données--------------------#
+DatasourceNameForServer = CellGetS( C_zPROCESS_ADMINISTRATION, vPRO_NAME, 'DATASOURCE_NAME_FOR_SERVER', 'Comment');
+
+# Init des totaux
+
+If( DIMIX( D_VENDOR, TOT_VENDOR) = 0);
+	DimensionElementInsert(D_VENDOR, '', TOT_VENDOR, 'N');
+EndIf;
+
+#Init N/A
+
+If( DIMIX( D_VENDOR, 'N/A_VENDOR') = 0);
+	DimensionElementInsert(D_VENDOR, '', 'N/A_VENDOR', 'N');
+	DimensionElementComponentAdd(D_VENDOR, TOT_VENDOR, 'N/A_VENDOR', 1);
+EndIf;
+
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+#Chargement de la dimension SLS_VENDOR
+
+
+#Insertion des Vendor dans la dimension SLS_VENDOR
+If( DIMIX( D_VENDOR, Vendor_code) = 0);
+	DimensionElementInsert(D_VENDOR, '', Vendor_code, 'N');
+EndIf;
+
+
+#Création de la hiérarchie Tot > Vendor
+DimensionElementComponentAdd(D_VENDOR, TOT_VENDOR, Vendor_code, 1);
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#Attributs des Vendor dans la dimension SLS_VENDOR
+
+If(Vendor_code @<> '');
+
+	AttrPutS(Vendor_code|' - '|Vendor_desc, D_VENDOR, Vendor_code, 'Code - Caption' );
+
+	While(DIMIX(D_VENDOR, Vendor_desc)<>0);
+		Vendor_desc = Vendor_desc|'.';
+	End;
+	AttrPutS(Vendor_desc, D_VENDOR, Vendor_code, 'Caption' );
+
+	#Attribut Groupe
+
+	#Si le code commence par GD, attribut =1, sinon 0
+	If(subst(Vendor_code, 1, 2) @= 'GD');
+		vGroup = 1;
+	Else;
+		vGroup = 0;
+	EndIf;
+
+	AttrPutN(vGroup, D_VENDOR, Vendor_code, 'Group' );
+
+EndIf;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#Alias Total
+AttrPutS('Total Vendor', D_VENDOR, TOT_VENDOR, 'Caption' );
+AttrPutS('Total Vendor', D_VENDOR, TOT_VENDOR, 'Code - Caption' );
+
+#Alias N/A Vendor
+AttrPutS('N/A Vendor', D_VENDOR, 'N/A_VENDOR', 'Caption' );
+AttrPutS('NA Vendor', D_VENDOR, 'N/A_VENDOR', 'Code - Caption' );
+#endregion

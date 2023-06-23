@@ -1,0 +1,194 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#########################################################################
+#                   DESCRIPTION DU PROCESSUS                   			#
+#                                                              			#
+# Date :   10/04/2019                                          			#
+#                                                             			#
+# Fait par :    Ann BESNARD                                    			#
+#                                                              			#
+# Action :Accès en écriture pour Functional Admin à tous les sales gp 	#   
+#															            #                                                                       	      
+#									                         			#                                                                                                                                                 #
+#########################################################################
+
+#====================================#
+#      Déclaration des variables     #
+#====================================#
+
+#--------------------Cubes--------------------#
+C_ClientGroups = 'zClient_SLS_SALES_GROUP';
+
+#--------------------Dimensions--------------------#
+D_Clients = '}Clients';
+D_zSALES_GROUP = 'zSALES_GROUP';
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'); 
+
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+
+#============================================#
+#       Initialisation de la vue à supprimer #
+#============================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_ClientGroups,view_erase);
+Subsetdestroy(D_Clients,subset_erase);
+
+#--------------------Création des objets--------------------#
+ViewCreate(C_ClientGroups,view_erase);
+
+#D_Groups
+MDX_Client = '{	
+	{[}Clients].[Admin]},
+	{FILTER(
+		{TM1SUBSETALL([}Clients])},
+		[}ClientGroups].([}Groups].[Functional_Admin_CDG])@<>""
+	)
+	}
+}';
+SubsetCreatebyMDX( subset_erase, MDX_Client, 0 );
+SubsetElementDelete( D_Clients, subset_erase, 1 );
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_ClientGroups,view_erase, D_Clients,subset_erase);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_ClientGroups,view_erase,1);
+ViewSetSkipCalcs(C_ClientGroups,view_erase, 1);
+ViewSetSkipZeroes(C_ClientGroups,view_erase, 1);
+
+#--------------------Suppression des données--------------------#
+ViewZeroOut(C_ClientGroups,view_erase);
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_ClientGroups,view_erase);
+Subsetdestroy(D_Clients,subset_erase);
+
+#============================================#
+#       Initialisation de la vue à copier    #
+#============================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_ClientGroups,view_copy);
+Subsetdestroy(D_Clients,subset_copy);
+
+#--------------------Création des objets--------------------#
+ViewCreate(C_ClientGroups,view_copy);
+
+#D_Groups
+MDX_Client = '{{	
+	{[}Clients].[Admin]},
+	{FILTER(
+		{TM1SUBSETALL([}Clients])},
+		[}ClientGroups].([}Groups].[Functional_Admin_CDG])@<>""
+	)
+	}
+},
+{	
+	{[}Clients].[Admin]},
+	{FILTER(
+		{TM1SUBSETALL([}Clients])},
+		[}ClientGroups].([}Groups].[CS])@<>""
+	)
+	}
+},
+{	
+	{[}Clients].[Admin]},
+	{FILTER(
+		{TM1SUBSETALL([}Clients])},
+		[}ClientGroups].([}Groups].[Logistics])@<>""
+	)
+	}
+},
+{	
+	{[}Clients].[Admin]},
+	{FILTER(
+		{TM1SUBSETALL([}Clients])},
+		[}ClientGroups].([}Groups].[Volume_Only])@<>""
+	)
+	}
+},
+{	
+	{[}Clients].[Admin]},
+	{FILTER(
+		{TM1SUBSETALL([}Clients])},
+		[}ClientGroups].([}Groups].[4Net])@<>""
+	)
+	}
+}
+}';
+SubsetCreatebyMDX( subset_copy, MDX_Client, 0 );
+SubsetElementDelete( D_Clients, subset_copy, 1 );
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_ClientGroups,view_copy, D_Clients,subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_ClientGroups,view_copy,1);
+ViewSetSkipCalcs(C_ClientGroups,view_copy, 1);
+ViewSetSkipZeroes(C_ClientGroups,view_copy, 0);
+
+#--------------------Suppression des données--------------------#
+DataSourceCubeView = view_copy;
+
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+#============================================#
+#         Mise en place du Group approprié   #
+#============================================#
+
+User = AttrS(D_Clients, vELEM_Clients, 'Caption');
+zSales_Groups = AttrS(D_zSALES_GROUP, vELEM_zSALES_GROUP, 'Caption');
+
+CellPutS('WRITE', C_ClientGroups, vELEM_zSALES_GROUP, vELEM_Clients);
+
+
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_ClientGroups,view_copy);
+Subsetdestroy(D_Clients,subset_copy);
+#endregion

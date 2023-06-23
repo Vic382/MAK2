@@ -1,0 +1,13 @@
+{
+	"@type":"Process",
+	"Name":"zDEL_SLS_FR_COST_PLAN",
+	"HasSecurityAccess":false,
+	"Code@Code.link":"zDEL_SLS_FR_COST_PLAN.ti",
+	"UIData":"CubeAction=1511€DataAction=1503€CubeLogChanges=0€_ParameterConstraints=e30=€",
+	"DataSource":
+	{
+		"Type":"None"
+	},
+	"Parameters":[],
+	"Variables":[]
+}

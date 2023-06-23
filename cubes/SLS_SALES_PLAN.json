@@ -1,0 +1,49 @@
+{
+	"@type":"Cube",
+	"Name":"SLS_SALES_PLAN",
+	"Rules@Code.link":"SLS_SALES_PLAN.rules",
+	"DrillthroughRules@Code.link":"SLS_SALES_PLAN.drillthrough.rules",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('1_G_CURRENT_PHASE')"
+		},
+		{
+			"@id":"Dimensions('1_G_PERIOD')"
+		},
+		{
+			"@id":"Dimensions('1_G_SALES_ORG')"
+		},
+		{
+			"@id":"Dimensions('1_G_DISTRIB_CHANNEL')"
+		},
+		{
+			"@id":"Dimensions('1_G_CURRENCY')"
+		},
+		{
+			"@id":"Dimensions('1_G_VOLUME_UNIT')"
+		},
+		{
+			"@id":"Dimensions('SLS_CUSTOMER')"
+		},
+		{
+			"@id":"Dimensions('SLS_MATERIAL_PLAN')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_GROUP')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_PLAN_IND')"
+		}
+	],
+	"Views@Code.links":
+	[
+		"SLS_SALES_PLAN.views/All.json",
+		"SLS_SALES_PLAN.views/SWITCH ARTICLE.json",
+		"SLS_SALES_PLAN.views/view1.json",
+		"SLS_SALES_PLAN.views/z_copy_Pascal MUTELET_SLS_CAL_CUB_SLS_SALES_PLAN_SWITCH_MAT_NEW_COMB.json",
+		"SLS_SALES_PLAN.views/513676_2_SALES_PLAN.json",
+		"SLS_SALES_PLAN.views/513676_SALES_PLAN.json",
+		"SLS_SALES_PLAN.views/VERIF_VOLUME_MANU.json"
+	]
+}

@@ -1,0 +1,78 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+#################################################################
+#                                               DESCRIPTION DU PROCESSUS                                              #
+#                                                                                                                                                   #
+# Date :   09/06/2022                                                                                                          #
+#                                                                                                                                                   #
+# Fait par :   VRT                                                                                                                          #
+#                                                                                                                                                   #
+# Action : Rechargement des hiérarchies virtuelles sur SLS_MAT_PLAN et 1_G_MATERIAL     #
+#                                         
+#################################################################
+
+
+# Dimension
+sDimSLS_Mat = 'SLS_MATERIAL_PLAN' ;
+sDimGMat = '1_G_MATERIAL' ;
+
+
+# Refresh des hiérarchies
+
+# Dimension 1_G_MATERIAL
+HierarchyUpdateDirect( sDimGMat , 'PH1-Raw material' );
+HierarchyUpdateDirect( sDimGMat , 'PH2-Product family' );
+HierarchyUpdateDirect( sDimGMat , 'PH3-Calib_TAV_Charac' );
+HierarchyUpdateDirect( sDimGMat , 'PH4-Packag. Format' );
+HierarchyUpdateDirect( sDimGMat , 'PH5-Sales Unit' );
+
+HierarchyUpdateDirect( sDimGMat , 'MG1-Market solution' );
+HierarchyUpdateDirect( sDimGMat , 'MG2-Brand' );
+HierarchyUpdateDirect( sDimGMat , 'MG3-Sourcing' );
+HierarchyUpdateDirect( sDimGMat , 'MG4-Color_Und-Denat' );
+HierarchyUpdateDirect( sDimGMat , 'MG5-Formulation' );
+
+HierarchyUpdateDirect( sDimGMat , 'C-Certificates' );
+HierarchyUpdateDirect( sDimGMat , 'C-Packaging type' );
+HierarchyUpdateDirect( sDimGMat , 'C-Pallet type' );
+HierarchyUpdateDirect( sDimGMat , 'C-Specific marks' );
+HierarchyUpdateDirect( sDimGMat , 'C-Bundle unit' );
+
+# Dimension SLS_MATERIAL_PLAN
+
+HierarchyUpdateDirect( sDimSLS_Mat , 'PH1-Raw material' );
+HierarchyUpdateDirect( sDimSLS_Mat , 'PH2-Product family' );
+HierarchyUpdateDirect( sDimSLS_Mat , 'PH3-Calib_TAV_Charac' );
+HierarchyUpdateDirect( sDimSLS_Mat , 'PH4-Packag. Format' );
+HierarchyUpdateDirect( sDimSLS_Mat , 'PH5-Sales Unit' );
+
+HierarchyUpdateDirect( sDimSLS_Mat , 'MG1-Market solution' );
+HierarchyUpdateDirect( sDimSLS_Mat , 'MG2-Brand' );
+HierarchyUpdateDirect( sDimSLS_Mat , 'MG3-Sourcing' );
+HierarchyUpdateDirect( sDimSLS_Mat , 'MG4-Color_Und-Denat' );
+HierarchyUpdateDirect( sDimSLS_Mat , 'MG5-Formulation' );
+
+HierarchyUpdateDirect( sDimSLS_Mat , 'C-Certificates' );
+HierarchyUpdateDirect( sDimSLS_Mat , 'C-Packaging type' );
+HierarchyUpdateDirect( sDimSLS_Mat , 'C-Pallet type' );
+HierarchyUpdateDirect( sDimSLS_Mat , 'C-Specific marks' );
+HierarchyUpdateDirect( sDimSLS_Mat , 'C-Bundle unit' );
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

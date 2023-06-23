@@ -1,0 +1,2862 @@
+{
+	"@type":"NativeView",
+	"Name":"View1",
+	"Columns":
+	[
+		{
+			"Subset":
+			{
+				"Hierarchy":
+				{
+					"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')"
+				},
+				"Elements":
+				[
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('zAssign_VS_SLSVOL')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('Vendor Priority')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('z_Ship_PT_Select')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('SLS_VOL')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('ASSIGN_VOL')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('SHIP_PT')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('SHIP_PLANT')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('PROD_PLANT')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('VENDOR')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('zASSIGN_VOL_TOT')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('zASSIGN_PREV')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('SURCH_UNIT')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('PREMIUM_UNIT')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('BASE_UNIT')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('RPP_UNIT')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('CPV_UNIT')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('PROMO_UNIT')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('CUST_REBATE_UNIT')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('RET_SERV_UNIT')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('FR_COST_UNIT')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('NIP_UNIT')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('SURCH')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('PREMIUM')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('BASE')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('DISC')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('RPP')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('CPV')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('PROMO')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('CUST_REBATE')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('RET_SERV')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('FR_COST')"
+					},
+					{
+						"@id":"Dimensions('SLS_ASSIGN_IND')/Hierarchies('SLS_ASSIGN_IND')/Elements('NIP')"
+					}
+				]
+			}
+		}
+	],
+	"Rows":
+	[
+		{
+			"Subset":
+			{
+				"Hierarchy":
+				{
+					"@id":"Dimensions('1_G_LINE')/Hierarchies('1_G_LINE')"
+				},
+				"Elements":
+				[
+					{
+						"@id":"Dimensions('1_G_LINE')/Hierarchies('1_G_LINE')/Elements('Total_Line')"
+					}
+				]
+			}
+		}
+	],
+	"Titles":
+	[
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('1_G_CURRENT_PHASE')/Hierarchies('1_G_CURRENT_PHASE')/Subsets('Default')"
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('1_G_CURRENT_PHASE')/Hierarchies('1_G_CURRENT_PHASE')/Elements('CURR_PHASE')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"Hierarchy":
+				{
+					"@id":"Dimensions('SLS_VERSION')/Hierarchies('SLS_VERSION')"
+				},
+				"Elements":
+				[
+					{
+						"@id":"Dimensions('SLS_VERSION')/Hierarchies('SLS_VERSION')/Elements('AV')"
+					},
+					{
+						"@id":"Dimensions('SLS_VERSION')/Hierarchies('SLS_VERSION')/Elements('FV')"
+					}
+				]
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('SLS_VERSION')/Hierarchies('SLS_VERSION')/Elements('AV')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('SLS_Q_HQ')/Hierarchies('SLS_Q_HQ')/Subsets('Default')"
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('SLS_Q_HQ')/Hierarchies('SLS_Q_HQ')/Elements('TOTAL_TYPE_QUOTA')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"Hierarchy":
+				{
+					"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')"
+				},
+				"Elements":
+				[
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP YEAR')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2013')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2014')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2015')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2016')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2017')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2018')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2019')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2020')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2021')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2022')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2023')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2024')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2025')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2026')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2027')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2028')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2029')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP 2030')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('N/A_CAMP_YEAR')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC YEAR')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2013')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2014')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2015')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2016')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2017')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2018')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2019')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2020')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2021')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2022')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2023')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2024')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2025')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2026')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2027')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2028')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2029')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('FISC 2030')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('N/A_FISC_YEAR')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL YEAR')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2013')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2014')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2015')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2016')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2017')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2018')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2019')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2020')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2021')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2022')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2023')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2024')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2025')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2026')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2027')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2028')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2029')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAL 2030')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('N/A_CAL_YEAR')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2016.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2016.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2017.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2017.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2018.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2018.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2019.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2019.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2020.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2020.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2021.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2021.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2022.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2022.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2022.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2023.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2023.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2023.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2024.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2024.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2024.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2025.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2025.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2025.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2026.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2026.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2026.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2027.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2027.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2027.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2028.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2028.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2028.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2029.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2029.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2029.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2030.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2030.07')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAMP_2030.08')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2016.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2016.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2017.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2017.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2018.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2018.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2019.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2019.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2020.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2020.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2021.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2021.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2022.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2022.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2022.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2023.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2023.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2023.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2024.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2024.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2024.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2025.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2025.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2025.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2026.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2026.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2026.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2027.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2027.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2027.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2028.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2028.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2028.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2029.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2029.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_FISC_2029.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2016.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2016.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2017.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2017.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2018.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2018.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2019.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2019.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2020.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2020.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2021.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2021.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2022.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2022.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2022.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2023.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2023.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2023.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2024.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2024.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2024.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2025.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2025.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2025.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2026.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2026.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2026.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2027.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2027.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2027.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2028.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2028.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2028.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2029.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2029.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2029.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2030.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2030.10')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_CAL_2030.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2013.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2013.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2014.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2014.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2015.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2015.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2016.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2016.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2017.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2017.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2018.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2018.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2019.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2019.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2020.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2020.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2021.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2021.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2022.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2022.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2022.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2023.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2023.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2023.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2024.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2024.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2024.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2025.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2025.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2025.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2026.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2026.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2026.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2027.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2027.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2027.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2028.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2028.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2028.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2029.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2029.04')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_FISC_2029.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2013.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2013.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2013.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2013.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2014.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2014.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2015.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2015.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2016.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2016.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2017.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2017.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2018.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2018.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2019.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2019.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2020.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2020.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2021.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2021.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2022.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2022.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2022.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2023.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2023.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2023.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2024.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2024.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2024.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2025.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2025.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2025.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2026.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2026.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2026.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2027.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2027.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2027.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2028.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2028.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2028.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2029.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2029.12')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAMP_2029.11')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2013.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2013.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2014.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2014.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2015.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2015.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2016.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2016.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2017.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2017.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2018.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2018.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2019.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2019.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2020.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2020.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2021.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2021.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2022.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2022.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2022.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2023.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2023.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2023.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2024.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2024.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2024.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2025.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2025.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2025.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2026.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2026.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2026.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2027.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2027.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2027.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2028.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2028.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2028.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2029.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2029.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2029.02')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2030.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('2030.03')"
+					},
+					{
+						"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CUMUL_ASC_CAL_2030.02')"
+					}
+				]
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('1_G_PERIOD')/Hierarchies('1_G_PERIOD')/Elements('CAMP YEAR')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"Hierarchy":
+				{
+					"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')"
+				},
+				"Elements":
+				[
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('TOTAL SALES ORG')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('1000')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('1200')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('1300')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('1400')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('1610')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('1620')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('1630')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('1710')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('1720')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('1730')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('2000')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('2100')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('2150')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('2200')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('2300')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('2400')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('3310')"
+					},
+					{
+						"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('N/A SALES ORG')"
+					}
+				]
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('1_G_SALES_ORG')/Hierarchies('1_G_SALES_ORG')/Elements('TOTAL SALES ORG')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"@id":"Dimensions('1_G_DISTRIB_CHANNEL')/Hierarchies('1_G_DISTRIB_CHANNEL')/Subsets('Default')"
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('1_G_DISTRIB_CHANNEL')/Hierarchies('1_G_DISTRIB_CHANNEL')/Elements('Total_Cristal_Co')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"Hierarchy":
+				{
+					"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')"
+				},
+				"Elements":
+				[
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('TOTAL_PLANNING_MATERIAL')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('N/A_PLANNING_MATERIAL')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_90')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_40')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_10')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_30')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_20')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_70')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_80')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_50')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_60')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('D_85')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('RETAIL SPE BIO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BRAND EH BIEN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('DISCOUNT BRAND NAVARRE')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE SACHET 1.5 KG NAVARRE')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CRISTAL SAC PAP 5 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE SACHET NAVARRE')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 1 KG NAVARRE')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('DISCOUNT BRAND MONOPRIX')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 4 MONOPRIX')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE KG MONOPRIX')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('STANDARD BRAND DADDY')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE SACHET 600G DADDY')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE SACHET 1.5 KG DADDY')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 4 PREDECOUPE DADDY')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 3 DADDY')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 4 DADDY')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE SACHET DADDY')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE ETUI KG DADDY')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE ETUI 500 G DADDY')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CRISTAL KG DADDY')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CRISTAL 5 KG DADDY')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('STANDARD BRAND ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SACHET SEMOULE 1.5KG ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 4 PREDECOUPE ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 4 ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE SACHET ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE ETUI KG ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CRISTAL KG ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CRISTAL 5 KG ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('DISCOUNT BRAND ECO+')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CRISTAL 5 KG ECO+')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE SACHET ECO+')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 4 ECO +')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('DISCOUNT BRAND CASINO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CRISTAL 5KG CASINO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE SACHET MDD CASINO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 4 MDD CASINO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('DISCOUNT BRAND FAZENDA')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE SACHET FAZENDA')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('DISCOUNT BRAND CARREFOUR')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE SACHET SIMPL')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 4 SIMPL')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 4 CARREFOUR DISCOUNT')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('DISCOUNT BRAND TOP  BUDGET')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 4 TOP BUDGET')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE SACHET TOP BUDGET')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('DISCOUNT BRAND DOUSUC')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SEMOULE KG DOUSUC')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 4 DOUSUC')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('DISCOUNT BRAND NETTO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 4 NETTO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE SACHET NETTO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE ETUI NETTO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CRISTAL 5KG NETTO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('DISCOUNT BRAND GIRAUDON')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 4 GIRAUDON')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('DISCOUNT BRAND DEBRIO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU 4 DEBRIO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SACHET POUDRE DEBRIO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SUCRES LIQUIDES DADDY')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SQUEEZE DADDY FRAISE')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SQUEEZE DADDY CARAMEL')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SQUEEZE DADDY CHOCOLAT')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BRAND ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SACHET PURE CANNE KG ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('ETUI BV SUCRE CANDI ERSTEIN 300G')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('ETUI BV SUCRE PERLES ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('ETUI SUCRE DE CANNELLE ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('PACK PURE CANNE BIO ERSTEIN 750G')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('ERSTEIN MCX BRUT CANNE 500 GR')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('PETITS MORCEAUX ERSTEIN CANNE KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SPECIAL CONFITURE ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SPECIAL LOTS 3X1 ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('ENVELOPPES 2MX ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BUCHETTES ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAU CANNE ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE CANNE KG ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('GLACE POLY 500G ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('GLACE 500 G ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('PETIT MORCEAU BLANC 500G ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BRUT BLANC 750G ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BRUT CANNE 750G ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CANDI 500G ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('PACK POUDRE  ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('PACK EXTRA FIN ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('PACK CASSONADE ERSTEIN')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BRAND DISCOUNT DIAMANT')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('PACK POUDRE DIAMANT')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('PACK CASSONADE DIAMANT')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BRAND TRUVIA')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('PPK FIBRES STEVIA DADDY 150G')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('FEUILLES DE STEVIA BIO 30G')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('COMPRIMES TRUVIA BY DADDY')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BUCHETTES TRUVIA BY DADDY')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('MORCEAUX TRUVIA BY DADDY 140 G')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('PPK TRUVIA BY DADDY 150 G')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BTE 40 STS TRUVIA BY DADDY 60 G')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SUCRIER PDRE TRUVIA BY DADDY 270')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BOITE 40 SACHETS TRUVIA 70 G')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BRAND DISCOUNT LEADER PRICE')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('GLACE 500 G LEADER PRICE')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BRAND DISCOUNT SYSTEME U')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SPECIAL CONFITURE SYSTEME U')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BRAND DISCOUNT NETTO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('GLACE 500G NETTO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('POUDRE CANNE NETTO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SPECIAL CONFITURE NETTO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('STICKS TRUVIA RHF')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('STICKS 1,5 G 250 RATIONS')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('DOSES RHF 10 G')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('DOSES 10 G - 500 RATIONS')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('DOSES 10 G - 1000 RATIONS')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BUCHETTES RHF - 4 G')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BUCHETTES 4 G - 200 RATIONS')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BUCHETTES 4 G - 600 RATIONS')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BUCHETTES 4 G - 1000 RATIONS')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BUCHETTES RHF - 5 G')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BUCHETTES 5 G - 500 RATIONS')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BUCHETTES 5 G - 600 RATIONS')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BUCHETTES 5 G - 800 RATIONS')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('BUCHETTES 5 G - 1000 RATIONS')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('ENVELOPPES RHF')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('ENVELOPPES 1 MCX ROND')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('ENVELOPPES 1 MCX CANNE')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('ENVELOPPES RHF - 2X2')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('ENVELOPPES RHF - 2X7')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('ENVELOPPES RHF - 3 MORCEAUX')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SACS SEMOULE')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SEMOULE 10 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SEMOULE 20 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SEMOULE 25 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SEMOULE 50 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SACS CRISTAL')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CRISTALLISE 10 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CRISTALLISE 20 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CRISTALLISE 25 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CRISTALLISE 50 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CRISTALLISE BB')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('GLACES')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('GLACE 10 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('GLACE 20 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('GLACE 25 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('GLACE PURE 10 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('PERLES')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('PERLES 5 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('PERLES CAL 6 - 10 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CASSONADE')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CASSONADE  5 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CASSONADE 25 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('CASSONADE BIO')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('FONDANT')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('FONDANT EXTRA 20')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('TRIMOLINE')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('TRIMOLINE SEAU 2 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('TRIMOLINE SEAU 7 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('TRIMOLINE SEAU 11 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('TRIMOLINE SEAU 16 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('TRIMOLINE FUT 35 KG')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SIROLINE')"
+					},
+					{
+						"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('SIROLINE BIDON 7 KG')"
+					}
+				]
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('SLS_MATERIAL_PLAN')/Hierarchies('SLS_MATERIAL_PLAN')/Elements('TOTAL_PLANNING_MATERIAL')"
+			}
+		},
+		{
+			"Subset":
+			{
+				"Hierarchy":
+				{
+					"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')"
+				},
+				"Elements":
+				[
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('TOTAL_CUSTOMER')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('N/A_CUSTOMER')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00060')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00073')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00062')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00050')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00072')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1032')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - K10315')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00020')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - K11122')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - V00401')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00009')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00096')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00012')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00091')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00053')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00097')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00056')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00100')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00099')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00055')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00086')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00087')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00094')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00102')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00051')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00092')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - Z00001')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00065')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00101')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00054')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00061')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00095')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00011')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00093')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00059')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00070')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00090')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00010')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00052')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00014')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1214')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1228')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1224')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1226')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1237')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1038')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1091')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1000')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1060')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1068')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1111')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1079')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1227')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1050')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1051')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1026')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1236')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1064')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1244')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1061')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1197')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1013')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1087')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1025')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1066')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1220')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1067')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1208')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1058')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1070')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1056')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1036')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1046')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1004')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1007')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1053')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1095')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1039')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1035')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1106')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1254')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1069')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1234')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1085')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1231')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1073')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1102')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1019')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1216')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1107')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1210')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1047')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1217')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1225')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1108')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1232')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1097')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1205')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1105')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1112')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1113')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1114')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1117')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1119')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1121')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1122')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1125')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1126')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1127')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1128')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1130')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1133')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1134')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1136')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1137')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1138')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1139')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1140')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1143')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1145')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1123')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1144')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1149')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1150')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1141')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1153')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1221')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1161')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1164')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1165')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1167')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1168')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1160')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1170')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1172')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1154')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1177')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1188')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1179')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1180')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1181')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1184')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1185')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1186')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1041')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1189')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1190')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1191')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1194')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1195')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1044')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1043')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1109')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1215')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1204')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1218')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1201')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1088')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1086')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1166')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1028')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1132')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1152')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1209')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1233')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1009')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1104')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1229')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1037')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1110')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1223')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1175')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1158')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1241')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1212')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1239')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1193')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1235')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1049')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1083')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1211')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1260')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1243')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1246')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1076')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1206')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1269')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1011')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1029')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1202')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1261')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1078')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1116')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1018')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1124')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1151')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1192')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1030')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1142')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1120')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1270')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1268')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1271')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1162')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1253')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1267')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1252')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1094')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1115')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1265')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1255')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1200')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1001')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1222')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1259')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1263')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1257')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1010')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1077')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1182')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1207')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1219')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1071')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1054')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1245')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1080')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1003')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1014')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1081')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1002')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1008')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1258')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1264')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1021')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1089')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1247')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1072')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1065')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1027')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1230')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1092')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1052')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1266')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1057')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1015')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1213')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1063')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1023')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1031')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1262')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1016')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1017')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1273')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1272')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1006')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1171')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1005')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1020')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1174')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1240')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1042')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1055')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1074')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1203')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1093')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1238')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1274')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1256')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1012')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1155')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1242')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1275')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1129')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP050')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP010')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP190')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP080')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1183')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1187')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP300')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1131')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1163')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP130')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP270')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1176')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP060')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP330')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP070')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1118')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP090')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1148')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP020')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP360')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP230')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP200')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP160')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP290')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP140')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP250')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP110')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP180')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP240')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP030')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1156')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1024')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP280')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP320')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP210')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP042')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP040')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP340')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP120')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1135')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP350')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP150')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP310')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP100')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - AP260')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EH1018')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1024')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1025')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1006')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1035')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1020')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1022')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1037')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1075')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1008')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1034')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1036')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1038')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1033')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1016')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1040')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1005')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1041')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1042')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1039')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1043')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1026')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1032')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1019')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1010')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1000')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1021')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1007')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1003')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1009')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1014')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1004')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1044')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1031')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - EU1001')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - G00002')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - G00007')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - G00001')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - G00010')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - G00003')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - G00005')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - G00004')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - G00011')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - G00006')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - G00012')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - G00008')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - G00009')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00071')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1034')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1022')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - FA1090')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - E00098')"
+					},
+					{
+						"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('IC1 - Other')"
+					}
+				]
+			},
+			"Selected":
+			{
+				"@id":"Dimensions('SLS_CUSTOMER')/Hierarchies('SLS_CUSTOMER')/Elements('TOTAL_CUSTOMER')"
+			}
+		}
+	],
+	"SuppressEmptyColumns":false,
+	"SuppressEmptyRows":false,
+	"FormatString":"0.#########"
+}

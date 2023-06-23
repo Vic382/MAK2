@@ -1,0 +1,21 @@
+{
+	"@type":"Cube",
+	"Name":"SLS_CURRENCY_RATE",
+	"Rules@Code.link":"SLS_CURRENCY_RATE.rules",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('1_G_MIX_PHASE')"
+		},
+		{
+			"@id":"Dimensions('1_G_SALES_ORG')"
+		},
+		{
+			"@id":"Dimensions('1_G_CURRENCY')"
+		},
+		{
+			"@id":"Dimensions('SLS_CURRENCY_RATE_IND')"
+		}
+	],
+	"Views@Code.links":[]
+}

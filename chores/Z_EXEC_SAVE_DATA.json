@@ -1,0 +1,20 @@
+{
+	"@type":"Chore",
+	"Name":"Z_EXEC_SAVE_DATA",
+	"StartTime":"2022-10-17T23:00Z",
+	"DSTSensitive":false,
+	"Active":true,
+	"ExecutionMode":"SingleCommit",
+	"Frequency":"P1DT00H00M00S",
+	"Tasks":
+	[
+		{
+			"Step":0,
+			"Parameters":[],
+			"Process":
+			{
+				"@id":"Processes('Z_BACKUP_DATA')"
+			}
+		}
+	]
+}

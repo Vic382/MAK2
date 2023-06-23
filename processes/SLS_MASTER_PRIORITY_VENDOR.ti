@@ -1,0 +1,24 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   27/03/2023                                                        #
+#                                                                            #
+# Fait par :    ELH 		                                                 #
+#                                                                            #
+# Action : Mise à jour des PRIORITY VENDOR                              	 #
+#           (Picklist et mesure Priotity Vendor) du cube SLS_ASSIGN			 #
+#																			 #
+##############################################################################
+
+# ELH - EVO Commerciaux - Mise à jour du Priority Vendor
+ExecuteProcess ( 'SLS_CREATE_VENDOR_PRIORITY_PICKLIST_SLS_ASSIGN') ;
+ExecuteProcess( 'SLS_CAL_CUB_SLS_ASSIGN_PRIORITY_VENDOR' ) ;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

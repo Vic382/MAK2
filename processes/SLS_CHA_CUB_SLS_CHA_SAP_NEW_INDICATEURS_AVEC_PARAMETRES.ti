@@ -1,0 +1,427 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+#################################################################
+#                                               DESCRIPTION DU PROCESSUS                                              #
+#                                                                                                                                                   #
+# Date :   30/08/2018                                                                                                                  #
+#                                                                                                                                                   #
+# Fait par :    Elisabeth MOUNIER                                                                                                #
+#                                                                                                                                                   #
+# Action : Processus de chargement du cube SLS_DETAIL                                                       #
+#                                         
+#Modifié le 15/03/2019 par Elisabeth Mounier
+# Action : Adapation au nouveau cube SLS_CHA_SAP + Chargement sur de nouveaux indicateurs volume
+#################################################################
+
+
+
+#====================================#
+#             Déclaration des variables                   #
+#====================================#
+
+#--------------------Cubes--------------------#
+C_Cube_Cible = 'SLS_CHA_SAP';
+C_zPROCESS_ADMINISTRATION = 'zPROCESS_ADMINISTRATION';
+sCubeParam = 'zPARAM' ;
+
+#--------------------Dimensions--------------------#
+D_PHASE = '1_G_PHASE';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_VOLUME = '1_G_VOLUME_UNIT';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_MATERIAL = '1_G_MATERIAL';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_SHIP_POINT = 'SLS_SHIP_POINT';
+D_SHIP_PLANT = 'SLS_SHIP_PLANT';
+D_PROD_PLANT='SLS_PROD_PLANT';
+D_VENDOR = 'SLS_VENDOR';
+D_PAYER='SLS_PAYER';
+D_SOLD_TO='SLS_SOLD_TO';
+D_INCOTERM = 'SLS_INCOTERM';
+D_QUOTA = 'SLS_Q_HQ';
+D_DETAIL_IND='SLS_CHA_SAP_IND';
+
+
+#--------------------Elements--------------------#
+
+vELEM_ACT = P_Phase_Cible;
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+Viewdestroy ( C_Cube_Cible , view_erase ) ;
+
+
+#--------------------Sous-ensembles--------------------#
+process_master = 'SLS_CHA_CUB_SLS_CHA_SAP';
+subset_erase = 'z_erase_master_' | vUSER |'_' | process_master;
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME ;
+SubsetCreate ( D_PERIOD , subset_erase ) ;
+Viewdestroy ( C_Cube_Cible , view_erase ) ;
+
+
+
+
+
+DatasourceASCIIDecimalSeparator=',';
+DatasourceASCIIThousandSeparator=' ';
+
+subsetall = 'All';
+
+#====================================#
+#    Désactivation de la consignation#
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 0);
+
+#------------------Réinit des subsets------------------------#
+SubsetDestroy(D_PERIOD, subsetall);
+
+#------------Création d'un subset contenant tous les éléments fins----------
+MDX = '{{[1_G_PERIOD].[Fiscal]},{EXCEPT(
+{FILTER(
+{TM1SORT( {TM1FILTERBYLEVEL( {TM1SUBSETALL( [1_G_PERIOD] )}, 0)}, ASC)},
+[}ElementAttributes_1_G_PERIOD].([}ElementAttributes_1_G_PERIOD].[Index])@<>"T")},
+{TM1FILTERBYPATTERN( {TM1SUBSETALL( [1_G_PERIOD] )}, "*Input")})}}';
+SubsetCreatebyMDX(subsetall, MDX);
+SubsetElementDelete(D_PERIOD,subsetall,1);
+
+
+#------------Remplissage des différents subsets----------#
+SubSize = SubsetGetSize( D_PERIOD, subsetall);
+cpt = SubSize;
+
+#============================================#
+#     Initialisation de la vue à supprimer   #
+#============================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Cible,view_erase);
+subsetdestroy(D_PHASE,subset_erase);
+subsetdestroy(D_PERIOD,subset_erase);
+
+#--------------------Création des objets--------------------#
+ViewCreate(C_Cube_Cible,view_erase);
+subsetcreate(D_PHASE,subset_erase);
+SubsetElementInsert(D_PHASE, subset_erase, P_Phase_Cible, 1);
+
+#format YYYY-MM-DD
+Date = Today(1);
+Date_Jour = SUBST( Date, 9, 2 );
+Date_Annee = SUBST(Date,1 , 4);
+Date_Mois = SUBST(Date, 6, 2);
+M1 = Date_Annee | '.' | Date_Mois;
+Index_M1_Num = StringToNumber(ATTRS(D_PERIOD, M1, 'Index'));
+
+#######ON IMPOSE CHARGEMENT 18 MOIS : PROVISOIRE############
+#Date_Jour = '01';
+###########FIN A SUPPR ######################""
+
+####    Modification VRT   ####
+
+# Modification du nombre de mois à importer selon zParam
+# Si les 2 sont vides, on charge 3 mois
+# Si l'un est vide, ProcessBreak
+
+sCubeParam = 'zPARAM' ;
+sFirstMonth = P_FIRST_MONTH ;
+sLastMonth = P_LAST_MONTH ;
+nFisrtMonthIndex = Dimix ( D_PERIOD , sFirstMonth ) ;
+nLastMonthIndex = Dimix ( D_PERIOD , sLastMonth ) ;
+
+# Controle des paramètres
+# Si 1 des paramètres est vides, blocage
+IF ( sFirstMonth @= '' % sLastMonth @= '' ) ;
+  ProcessError ;
+ENDIF ;
+
+# Boucle pour insérer tous les mois dans la plage sélectionné
+
+subsetcreate( D_PERIOD, subset_erase);
+
+#On parcourt tous les niveaux 0
+nDebutBoucle = DIMIX ( D_PERIOD , sFirstMonth ) ;
+nFinBoucle = DIMIX ( D_PERIOD , sLastMonth ) ;
+
+While( nDebutBoucle <= nFinBoucle );
+
+  #On récupère l'élément et son index
+  Elem = DimNm ( D_PERIOD , nDebutBoucle );
+  IF ( ELLEV ( D_PERIOD , Elem ) <> 0 ) ;
+    #nFinBoucle = nFinBoucle + 1 ;
+  ELSE ;
+    SubsetElementInsert( D_PERIOD, subset_erase, Elem, 1 );
+  ENDIF ;
+    
+  #Incrémentation du compteur while sur subsetall
+  nDebutBoucle = nDebutBoucle + 1;
+
+End;
+
+####   FIN VRT     ####
+
+
+
+######################################
+#itemskip;
+###################################""
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Cible,view_erase, D_PHASE,subset_erase);
+
+
+#On supprime toute la phase si on charge un forecast
+If( DimensionElementPrincipalName(D_PHASE, P_PHASE_CIBLE) @<> 'ACT');
+	ViewSubsetAssign(C_Cube_Cible,view_erase, D_PERIOD,subset_erase);
+EndIf;
+
+#### VRT : Borner le RAZ sur les nouveaux indicateurs  ####
+
+# D_DETAIL_IND
+IF( SubsetExists( D_DETAIL_IND , subset_erase ) = 1 );
+  SubsetDestroy( D_DETAIL_IND , subset_erase );
+ENDIF;
+SubsetCreate ( D_DETAIL_IND , subset_erase ) ; 
+SubsetElementInsert ( D_DETAIL_IND , subset_erase , 'MP_STD' , 1 ) ;
+SubsetElementInsert ( D_DETAIL_IND , subset_erase , 'VAR_COST' , 1 ) ;
+SubsetElementInsert ( D_DETAIL_IND , subset_erase , 'TRF_COST' , 1 ) ;
+SubsetElementInsert ( D_DETAIL_IND , subset_erase , 'FULL_COST' , 1 ) ;
+#SubsetElementInsert ( D_DETAIL_IND , subset_erase , 'PREMIUM' , 1 ) ;
+ViewSubsetAssign ( C_Cube_Cible , view_erase , D_DETAIL_IND, subset_erase ) ; 
+
+####   FIN VRT    ####
+
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Cible,view_erase,1);
+ViewSetSkipCalcs(C_Cube_Cible,view_erase, 1);
+ViewSetSkipZeroes(C_Cube_Cible,view_erase, 1);
+
+#--------------------Suppression des données--------------------#
+ViewZeroOut(C_Cube_Cible,view_erase);
+
+
+#--------------------Sources de données--------------------#
+DatasourceNameForServer = CellGetS( C_zPROCESS_ADMINISTRATION, vPRO_NAME, 'DATASOURCE_NAME_FOR_SERVER', 'Comment');
+
+
+#Initialisation N/A et TOTAL de la Dimension Shipping_Point
+
+# Init des totaux
+
+If( DIMIX( D_SHIP_POINT, 'TOTAL_SHIP_POINT') = 0);
+	DimensionElementInsert(D_SHIP_POINT, '', 'TOTAL_SHIP_POINT', 'N');
+EndIf;
+
+#Init N/A
+
+If( DIMIX( D_SHIP_POINT, 'N/A_SHIP_POINT') = 0);
+	DimensionElementInsert(D_SHIP_POINT, '', 'N/A_SHIP_POINT', 'N');
+	DimensionElementComponentAdd(D_SHIP_POINT, 'TOTAL_SHIP_POINT', 'N/A_SHIP_POINT', 1);
+EndIf;
+
+#ExecuteProcess('SLS_COP_CUB_SLS_CHA_SAP_CUB_SLS_REPORTING', 'P_PHASE_SOURCE', P_PHASE_REP , 'P_SALES_ORG' , 'TOTAL SALES ORG' , 'P_DISTRIB' , 'TOTAL_DISTRIB_CHANNEL'  );
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+ShipTo=SoldTo;
+#****End: Generated Statements****
+
+
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+ShipTo=SoldTo;
+#****End: Generated Statements****
+
+
+#===================================#
+#             Chargement du cube SLS_CHA_SAP  #
+#===================================#
+
+##########On ne charge pas le mois en cours dans le cas du chargement des 18mois ######
+#format YYYY-MM-DD
+Date = Today(1);
+Date_Jour = SUBST( Date, 9, 2 );
+Date_Annee = SUBST(Date,1 , 4);
+Date_Mois = SUBST(Date, 6, 2);
+
+#######ON IMPOSE CHARGEMENT 18 MOIS : PROVISOIRE############
+#Date_Jour = '02';
+###########FIN A SUPPR ######################
+
+Period_F =  Annee | '.' | Mois ;
+period_test = DimensionElementPrincipalName( D_PERIOD, Period_F);
+nPeriod_F_Index = Dimix ( D_PERIOD , period_test ) ;
+
+
+If(Date_Jour @= '01' & Date_Annee|'.'|Date_Mois @= period_test);
+#18 derniers mois
+	itemskip;
+EndIf;
+######Fin itemskip############
+
+
+
+#########   VRT : Controle du mois de chargement  ########
+
+#IF (Date_Jour @<> '01' ) ;
+
+  # sFirstMonth = CellGetS ( sCubeParam , 'First_Month_Actual_New_Ind' , 'Value' ) ;
+  # sLastMonth = CellGetS ( sCubeParam , 'Last_Month_Actual_New_Ind' , 'Value' ) ;
+
+  IF ( sFirstMonth @<> '' & sLastMonth @<> '' ) ;
+
+    sFirstMonth = SUBST ( sFirstMonth , 6 , 2 ) ;
+    sLastMonth = SUBST ( sLastMonth , 6 , 2 ) ;
+
+    IF ( SCAN ( '0' , sFirstMonth ) = 1 ) ;
+      sFirstMonth = SUBST ( sFirstMonth , 2 , 1 ) ;
+    ENDIF ;
+
+    IF ( SCAN ( '0' , sLastMonth ) = 1 ) ;
+      # sLastMonth = SUBST ( sLastMonth , 2 , 1 ) ;
+    ENDIF ;
+
+#ENDIF ;
+
+  # nFirstMonth = StringToNumber ( sFirstMonth ) ;
+  # nLastMonth = StringToNumber ( sLastMonth ) ;
+
+  sMonth = SUBST ( period_test , 6 , 2 ) ;
+
+  IF ( SCAN ( '0' , sMonth ) = 1 ) ;
+    sMonth = SUBST ( sMonth , 2 , 1 ) ;  
+  ENDIF ;
+
+  nMonth = StringToNumber ( sMonth ) ;
+
+
+  IF ( nPeriod_F_Index < nFisrtMonthIndex % nPeriod_F_Index > nLastMonthIndex ) ;
+    ItemSkip ;
+  ENDIF ;
+ENDIF ;
+
+###### FIN VRT   #######
+
+Mat= Material|'.';
+
+If( DIMIX(D_VENDOR ,Vendor)=0);
+	Vendor = 'NA Vendor';
+EndIf;
+
+If( DIMIX(D_SOLD_TO ,SoldTo)=0);
+	SoldTo = 'N/A_SOLD_TO';
+EndIf;
+
+If( DIMIX(D_SHIP_POINT ,Ship_point)=0);
+	Ship_point = 'N/A_SHIP_POINT';
+EndIf;
+
+If( DIMIX(D_PAYER ,Payer)=0);
+	Payer = 'N/A_PAYER';
+EndIf;
+
+If( DIMIX(D_INCOTERM ,Incoterm1)=0);
+	Incoterm1 = 'N/A_INCOTERM';
+EndIf;
+
+If( DIMIX(D_PROD_PLANT ,Prod_plant)=0);
+	Prod_plant = 'N/A_PROD_PLANT';
+EndIf;
+
+If( DIMIX(D_SHIP_PLANT ,Ship_plant)=0);
+	Ship_plant = 'N/A_SHIP_PLANT';
+EndIf;
+
+If( DIMIX( D_SALES_GROUP , Sales_Group )=0);
+	#Sales_Group = 'N/A_SALES_GROUP';
+EndIf;
+
+If( DIMIX( D_DISTRIB_CHANNEL , Distrib )=0);
+	#Distrib = '10';
+EndIf;
+
+If( DIMIX( D_MATERIAL , Mat )=0);
+	#Mat = 'N/A_MATERIAL';
+EndIf;
+
+ShipTo_F = ShipTo| '_' | Sales_Org | Distrib | Division;
+
+If( DIMIX( D_CUSTOMER , ShipTo_F )=0);
+	#ShipTo_F = 'N/A_CUSTOMER';
+EndIf;
+
+IF ( Quota @= '' ) ;
+ # Quota = 'Y' ;
+ Quota = 'Z' ;
+ENDIF;
+
+
+CellIncrementN ( MPstd , C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT' , ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'MP_STD');
+CellIncrementN ( VariableCost , C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT' , ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'VAR_COST');
+CellIncrementN ( TransformationCost , C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT' , ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'TRF_COST');
+CellIncrementN ( FullCost , C_Cube_Cible, vELEM_ACT, Period_F, Sales_Org, Distrib, 'N/A_VOLUME_UNIT' , ShipTo_F, Mat, Sales_Group, Ship_Point, Ship_Plant, Prod_Plant, Vendor, Payer, SoldTo, Incoterm1, Quota, 'FULL_COST');
+
+
+
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+ViewDestroy(C_Cube_Cible,view_erase);
+
+#calcul des prix unitaires au niveau fin
+
+ExecuteProcess('SLS_CAL_CUB_SLS_CHA_SAP_NEW_INDICATEURS', 'P_PHASE', P_PHASE_CIBLE );
+ExecuteProcess('SLS_CAL_CUB_SLS_CHA_SAP_NEW_INDICATEURS_UNIT', 'P_PHASE', P_PHASE_CIBLE);
+ExecuteProcess('SLS_COP_CUB_SLS_REPORTING_CUB_SLS_CHA_SAP_NEW_INDICATEURS_AVEC_PARAMETRES', 'P_PHASE', P_PHASE_REP , 'P_FIRST_MONTH' , P_FIRST_MONTH , 'P_LAST_MONTH' , P_LAST_MONTH , 'P_PHASE_SOURCE' , P_PHASE_CIBLE );
+
+
+#--------------------Destruction des objets--------------------#
+
+subsetdestroy(D_PHASE,subset_erase);
+subsetdestroy(D_PERIOD,subset_erase);
+
+#### VRT : ajout destruction subset indicateur  ####
+SubsetDestroy( D_DETAIL_IND , subset_erase );
+####   FIN VRT    ####
+
+#====================================#
+#   Activation de la consignation    #
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 1);
+#endregion

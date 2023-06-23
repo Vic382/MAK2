@@ -1,0 +1,36 @@
+{
+	"@type":"Cube",
+	"Name":"SLS_NEW_COMBINATION",
+	"Rules@Code.link":"SLS_NEW_COMBINATION.rules",
+	"Dimensions":
+	[
+		{
+			"@id":"Dimensions('1_G_CURRENT_PHASE')"
+		},
+		{
+			"@id":"Dimensions('1_G_PERIOD')"
+		},
+		{
+			"@id":"Dimensions('1_G_SALES_ORG')"
+		},
+		{
+			"@id":"Dimensions('1_G_DISTRIB_CHANNEL')"
+		},
+		{
+			"@id":"Dimensions('SLS_SALES_GROUP')"
+		},
+		{
+			"@id":"Dimensions('1_G_LINE')"
+		},
+		{
+			"@id":"Dimensions('SLS_COMB_TYPE')"
+		},
+		{
+			"@id":"Dimensions('SLS_NEW_COMBINATION_IND')"
+		}
+	],
+	"Views@Code.links":
+	[
+		"SLS_NEW_COMBINATION.views/View1.json"
+	]
+}

@@ -1,0 +1,5 @@
+{
+	"@type":"Subset",
+	"Name":"z_copy_Pascal MUTELET_SLS_CAL_CUB_SLS_SALES_PLAN_SWITCH_MAT_NEW_COMB",
+	"Expression":"{TM1FILTERBYLEVEL(DESCENDANTS([SLS_SALES_PLAN_IND].[SLS_VOL]), 0)}"
+}

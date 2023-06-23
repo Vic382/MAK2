@@ -1,0 +1,29 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+ExecuteProcess('zCHA_DIM_CUSTOMER');
+# Ajout ELH - 27/02/2023 - Suite à atelier avec Cristal Union - Mise à jour de la liste déroulante des Vendors
+ExecuteProcess ( 'SLS_CREATE_VENDOR_PRIORITY_PICKLIST_SLS_ASSIGN' ) ;
+# Fin ajout ELH - 27/02/2023
+ExecuteProcess('zCHA_DIM_MATERIAL_SALES');
+ExecuteProcess('zCHA_DIM_MAT_FREIGHT_GROUP');
+ExecuteProcess('zCHA_DIM_VENDOR');
+ExecuteProcess('zCHA_CUB_CHA_SAP');
+ExecuteProcess('zCHA_CUB_DEAL');
+ExecuteProcess('zCHA_CUB_ORDER');
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

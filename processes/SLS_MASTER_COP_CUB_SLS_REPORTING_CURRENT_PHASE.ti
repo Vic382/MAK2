@@ -1,0 +1,94 @@
+#region Prolog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :   15/04/2020                                                        #
+#                                                                            #
+# Fait par :    ELH		                                        	         #
+#                                                                            #
+# Action : Master copie de phase pour le cube Reporting et MAJ cube CHA_SAP					 #
+#           																 #
+#																			 #
+##############################################################################
+
+#===============================#
+#	Déclaration des variables	#
+#===============================#
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+vUser_Name = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+vUSER = SUBST(vUser_Name, SCAN('/',vUser_Name)+1, 100);
+z_PROCESS = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+# Cube paramètre utilisateur
+sCubeUser = 'zSELECT' ;
+# Utilisateur lancant le processus
+vClient = AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue');
+
+
+#--------------------Paramètres utilisateurs--------------------#
+# Phase source pour la copie
+p_PhaseSource = CellGetS ( sCubeUser , vClient , 'Target Phase' ) ;
+# SALES_ORG
+p_Sales_Org = CellGetS ( sCubeUser , vClient , 'Sales Organisation' ) ;
+IF ( p_Sales_Org @= '' ) ;
+ p_Sales_Org = 'TOTAL SALES ORG' ;
+ENDIF ;
+# DISTRIB_CHANNEL
+p_Distrib_Channel = CellGetS ( sCubeUser , vClient , 'Distribution Channel' ) ;
+IF ( p_Distrib_Channel @= '' ) ;
+ p_Distrib_Channel = 'Total Distribution Channel' ;
+ENDIF ;
+
+# Gestion des PhaseSource non renseignée
+IF ( p_PhaseSource @= '' ) ;
+ ItemReject ( 'Veuillez sélectionner une phase source.' ) ;
+ ProcessQuit ;
+ENDIF ;
+
+
+
+#******************************Exécution des processus*****************************************
+
+# Copie de Phase sur le cube Reporting 
+ExecuteProcess ( 'SLS_COP_CUB_SLS_REPORTING_CURRENT_PHASE' ) ;
+
+# Copie du cube Reporting sur le cube CHA_SAP seulement si le process précédent s'est bien terminé
+sProcessPrec = CellGetS ( sCubeUser , vClient , 'ExecuteProcess' ) ;
+IF ( sProcessPrec @= 'OK' ) ;
+ ExecuteProcess ( 'SLS_COP_CUB_SLS_CHA_SAP_CUB_SLS_REPORTING' , 'P_PHASE_SOURCE', p_PhaseSource , 'P_SALES_ORG' , p_Sales_Org , 'P_DISTRIB' , p_Distrib_Channel ) ;
+ CellPutS ( '' , sCubeUser , vClient , 'ExecuteProcess' ) ;
+ENDIF ;
+#endregion
+#region Metadata
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Epilog
+
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion

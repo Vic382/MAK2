@@ -1,0 +1,200 @@
+#region Prolog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+
+
+
+##############################################################################
+#                         DESCRIPTION DU PROCESSUS                           #
+#                                                                            #
+# Date :                                                       #
+#                                                                            #
+# Fait par :    Elisabeth Mounier                                                 #
+#                                                                            #
+# Action 																 #
+##############################################################################
+
+
+
+#===========================================#
+#             Déclaration des variables     #
+#===========================================#
+
+#--------------------Cubes--------------------#
+C_Cube_Source = 'SLS_SALES_PLAN';
+C_Cube_Cible = 'SLS_SALES_PLAN';
+C_zSELECT = 'zSELECT';
+
+#--------------------Dimensions--------------------#
+D_CURRENT_PHASE = '1_G_CURRENT_PHASE';
+D_PERIOD = '1_G_PERIOD';
+D_SALES_ORG = '1_G_SALES_ORG';
+D_DISTRIB_CHANNEL = '1_G_DISTRIB_CHANNEL';
+D_CURRENCY = '1_G_CURRENCY';
+D_VOLUME_UNIT = '1_G_VOLUME_UNIT';
+D_CUSTOMER = 'SLS_CUSTOMER';
+D_MATERIAL_PLAN = 'SLS_MATERIAL_PLAN';
+D_SALES_GROUP = 'SLS_SALES_GROUP';
+D_SALES_PLAN_IND = 'SLS_SALES_PLAN_IND';
+
+#--------------------Elements--------------------#
+e_Message_Prolog = '';
+
+
+#--------------------Variables globales--------------------#
+vDATE = today(1) | ' ' | TIME;
+vLocalTime =  '_' | today(1) | '_' | subst(TIME,1,2) | 'h' | subst(TIME,4,2);
+vTimeStart_Sec =  StringToNumber(TimSt (Now, '\h'))*3600 +StringToNumber(TimSt (Now, '\i'))*60+StringToNumber(TimSt (Now, '\s'));
+IF (SUBST ( TM1User, 1,3) @='DOM' ) ;
+   vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),7,100);
+ELSEIF  (SUBST ( TM1User, 1,3) @='Cog' ) ; 
+    vUSER = SUBST(AttrS('}Clients',TM1User,'}TM1_DefaultDisplayValue'),16,100);
+ELSE ;
+    vUSER ='Admin';
+ENDIF;
+vPRO_NAME = GetProcessName();
+vSTATUS='KO';
+vNb_lines_recorded=0;
+vNb_lines_recorded_Metadata=0;
+vNb_lines_recorded_Data=0;
+vNb_lines=0;
+err_prolog=0;
+message_err_prolog='';
+
+#--------------------- Paramètres -----------#
+
+Phase = 'Current Phase';
+
+#--------------------Vues--------------------#
+view_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+view_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+#--------------------Sous-ensembles--------------------#
+subset_erase = 'z_erase_' | vUSER |'_' | vPRO_NAME;
+subset_copy = 'z_copy_' | vUSER |'_' | vPRO_NAME;
+
+
+DatasourceASCIIDecimalSeparator='.';
+DatasourceASCIIThousandSeparator='';
+
+#====================================#
+#     Désactivation de la consignation#
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 0);
+
+
+
+#============================================#
+#                  Vérification des paramètres                #
+#============================================#
+
+
+#============================================#
+#        Initialisation de la vue à supprimer#
+#============================================#
+
+#=========================================#
+#     Initialisation de la vue à copier/vue source           #
+#=========================================#
+
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy(D_CURRENT_PHASE, subset_copy);
+SubsetDestroy(D_SALES_PLAN_IND, subset_copy);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_copy);
+SubsetDestroy(D_PERIOD, subset_copy);
+SubsetDestroy(D_CURRENCY, subset_copy);
+
+#--------------------Création des objets--------------------#
+
+ViewCreate(C_Cube_Source,view_copy);
+
+#D_CURRENT_PHASE
+subsetcreate(D_CURRENT_PHASE,subset_copy);
+SubsetElementInsert(D_CURRENT_PHASE, subset_copy, 'Current Phase', 1);
+
+#D_CURRENCY
+subsetcreate(D_CURRENCY,subset_copy);
+SubsetElementInsert(D_CURRENCY, subset_copy, 'EUR', 1);
+
+#D_DISTRIB_CHANNEL
+subsetcreate(D_DISTRIB_CHANNEL,subset_copy);
+SubsetElementInsert(D_DISTRIB_CHANNEL, subset_copy, '20', 1);
+
+#D_PERIOD
+# subsetcreate(D_PERIOD,subset_copy);
+# SubsetElementInsert(D_PERIOD, subset_copy, 'CAMP_ACT_N-1', 1);
+# SubsetElementInsert(D_PERIOD, subset_copy, 'CAL_ACT_N-1', 1);
+# SubsetElementInsert(D_PERIOD, subset_copy, 'FISC_ACT_N-1', 1);
+
+#D_SALES_PLAN_IND
+#MDX_IND = '{{[SLS_SALES_PLAN_IND].[Sales Volume]},{TM1FILTERBYLEVEL(DESCENDANTS([SLS_SALES_PLAN_IND].[Sales Volume] ), 0)}}';
+#SubsetCreatebyMDX( subset_copy, MDX_IND);
+#SubsetElementDelete( D_SALES_PLAN_IND, subset_copy, 1);
+subsetcreate(D_SALES_PLAN_IND,subset_copy);
+SubsetElementInsert(D_SALES_PLAN_IND, subset_copy, 'CONTR_VOL', 1);
+
+#--------------------Affectation des sous-ensembles à la vue--------------------#
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CURRENT_PHASE,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_CURRENCY,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_PERIOD,'Current Phase Periods');
+ViewSubsetAssign(C_Cube_Source,view_copy, D_SALES_PLAN_IND,subset_copy);
+ViewSubsetAssign(C_Cube_Source,view_copy, D_DISTRIB_CHANNEL,subset_copy);
+
+#--------------------Suppression des cellules vides, consolidées, calculées--------------------#
+ViewSetSkipRuleValues(C_Cube_Source,view_copy,1);
+ViewSetSkipCalcs(C_Cube_Source,view_copy, 1);
+ViewSetSkipZeroes(C_Cube_Source,view_copy, 1);
+
+# définition de la vue source#
+
+DatasourceCubeview= view_copy ;
+#endregion
+#region Metadata
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#endregion
+#region Data
+Division = ELPAR(D_MATERIAL_PLAN, vMaterial_Plan, 1);
+Unit = ATTRS('1_G_MATERIAL', Division, 'Volume_Unit');
+If(vVolume_Unit @<> 'TO');
+	itemskip;
+EndIf;
+If(Division @<> 'D_10');
+itemskip;
+EndIf;
+
+FLAG_PERIOD = CellGetN(C_Cube_Source, Phase, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vCurrency, vVolume_Unit, vCustomer, vMaterial_Plan, vSales_Group, Indicateur);
+If(FLAG_PERIOD = 0); 
+	#VOLUME = CellGetN(C_Cube_Source, Phase, 'Campaign', vSales_Org, vDistrib_Channel, vCurrency, vVolume_Unit, vCustomer, vMaterial_Plan, vSales_Group, Indicateur);
+	#'PREMIUM_UNIT'
+    CellPutN(1, C_Cube_Source, Phase, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vCurrency, vVolume_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'CONTR_VOL');
+     CellPutN(1, C_Cube_Source, Phase, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vCurrency, vVolume_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'PROSP_VOL');
+     CellPutN(1, C_Cube_Source, Phase, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vCurrency, vVolume_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'TO_BE_CONTR_VOL');
+    CellPutN(1, C_Cube_Source, Phase, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vCurrency, vVolume_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'PREMIUM_UNIT');
+    CellPutN(1, C_Cube_Source, Phase, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vCurrency, vVolume_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'BASE_UNIT');
+     CellPutN(1, C_Cube_Source, Phase, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vCurrency, vVolume_Unit, vCustomer, vMaterial_Plan, vSales_Group, 'CUST_REBATE_UNIT');
+    asciioutput('..\devrait_etre_flague.csv', C_Cube_Source, Phase, 'N/A PERIOD', vSales_Org, vDistrib_Channel, vCurrency, vVolume_Unit, vCustomer, vMaterial_Plan, vSales_Group, Indicateur);
+EndIf;
+#endregion
+#region Epilog
+#****Begin: Generated Statements***
+#****End: Generated Statements****
+#--------------------Destruction des objets--------------------#
+ViewDestroy(C_Cube_Source,view_copy);
+SubsetDestroy(D_CURRENT_PHASE, subset_copy);
+SubsetDestroy(D_SALES_PLAN_IND, subset_copy);
+SubsetDestroy(D_DISTRIB_CHANNEL, subset_copy);
+SubsetDestroy(D_PERIOD, subset_copy);
+SubsetDestroy(D_CURRENCY, subset_copy);
+
+
+#====================================#
+#        Activation de la consignation#
+#====================================#
+
+OldCubeLogChanges = CUBEGETLOGCHANGES(C_Cube_Cible);
+CUBESETLOGCHANGES(C_Cube_Cible, 1);
+#endregion
